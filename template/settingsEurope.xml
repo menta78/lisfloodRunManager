@@ -214,7 +214,7 @@ AREA AND OUTLETS
 
 <!-- menta -->
 <!--<textvar name="PathRoot" value="/H01_Fresh_Water/Europe/LisfloodEurope">-->
-<textvar name="PathRoot" value="/ADAPTATION/mentalo/lisfloodRun/LisfloodEurope">
+<textvar name="PathRoot" value="@PATH_CONF_ROOT@">
 <comment>
 Root directory
 </comment>
@@ -321,7 +321,7 @@ Number of last time step in simulation
 
 <!-- menta -->
 <!--<textvar name="ReportSteps" value="1..10957">-->
-<textvar name="ReportSteps" value="3..4">
+<textvar name="ReportSteps" value="@STEP_START@..@STEP_END@">
 <comment>
 Time steps at which to write model state maps (i.e. only
 those maps that would be needed to define initial conditions
@@ -577,14 +577,14 @@ Maps for land use fractions and related land use maps
 
 <!--menta-->
 <!--<textvar name="PathWaterUse" value="/H01_Fresh_Water/Europe/BernyRuns/waterdemand/static/hist">-->
-<textvar name="PathWaterUse" value="/ADAPTATION/mentalo/lisfloodRun/waterdemandEurope/static/hist">
+<textvar name="PathWaterUse" value="@PATH_WATER_USE@">
 <comment>
 Water use maps path
 </comment>
 </textvar>
 
 <!--menta-->
-<textvar name="PathMeteo" value="/ADAPTATION/mentalo/lisfloodRun/meteoEurope/CNRM-CERFACS-CNRM-CM5/historical">
+<textvar name="PathMeteo" value="@PATH_METEO@">
 <!--<textvar name="PathMeteo" value="/ADAPTATION/mentalo/lisfloodRun/meteo/input">-->
 <comment>
 ./meteoWatch
@@ -2784,7 +2784,7 @@ soil layer 2 [V/V]
 </comment>
 </textvar>
 
-<textvar name="UZIrrigationState" value="$(PathOut)/uzi.nc">
+<textvar name="UZIrrigationState" value="$(PathOut)/uzi">
 <comment>
 Reported storage in upper response box [mm]
 </comment>

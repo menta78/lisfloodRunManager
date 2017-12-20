@@ -215,7 +215,7 @@ AREA AND OUTLETS
 
 <!-- menta -->
 <!--<textvar name="PathRoot" value="/H01_Fresh_Water/Europe/LisfloodEurope">-->
-<textvar name="PathRoot" value="/ADAPTATION/mentalo/lisfloodRun/LisfloodEurope">
+<textvar name="PathRoot" value="@PATH_CONF_ROOT@">
 <comment>
 Root directory
 </comment>
@@ -275,7 +275,7 @@ TIME-RELATED CONSTANTS
 **************************************************************
 </comment>
 
-<textvar name="CalendarDayStart" value="01/01/1981">
+<textvar name="CalendarDayStart" value="@CALENDAR_START@">
 <comment>
 Calendar day number of 1st day in model run
 Day of the year of first map (e.g. xx000.001) even if the model start from map e.g. 500
@@ -308,7 +308,7 @@ Number of first time step in simulation
 
 <!--menta-->
 <!--<textvar name="StepEnd" value="10957">-->
-<textvar name="StepEnd" value="2">
+<textvar name="StepEnd" value="@STEP_END@">
 <comment>
 IPSL RCP85 	2011-2099 	32507
 
@@ -320,7 +320,7 @@ Number of last time step in simulation
 
 <!-- menta -->
 <!--<textvar name="ReportSteps" value="1..10957">-->
-<textvar name="ReportSteps" value="1..2">
+<textvar name="ReportSteps" value="1..@STEP_END@">
 <comment>
 Time steps at which to write model state maps (i.e. only
 those maps that would be needed to define initial conditions
@@ -504,7 +504,7 @@ FILE PATHS
 </comment>
 
 <!-- menta -->
-<textvar name="PathOut" value="/ADAPTATION/mentalo/lisfloodRun/testEuropeRestartECMWF/out/cold">
+<textvar name="PathOut" value="@PATH_OUT@">
 <comment>
 Output path (org=$(PathRoot)/out)
 </comment>
@@ -568,14 +568,14 @@ Maps for land use fractions and related land use maps
 
 <!--menta-->
 <!--<textvar name="PathWaterUse" value="/H01_Fresh_Water/Europe/BernyRuns/waterdemand/static/hist">-->
-<textvar name="PathWaterUse" value="/ADAPTATION/mentalo/lisfloodRun/waterdemandEurope/static/hist">
+<textvar name="PathWaterUse" value="@PATH_WATER_USE@">
 <comment>
 Water use maps path
 </comment>
 </textvar>
 
 <!--menta-->
-<textvar name="PathMeteo" value="/ADAPTATION/mentalo/lisfloodRun/meteoEurope/CNRM-CERFACS-CNRM-CM5/historical">
+<textvar name="PathMeteo" value="@PATH_METEO@">
 <comment>
 ./meteoWatch
 Meteo path
