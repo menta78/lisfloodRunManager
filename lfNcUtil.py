@@ -69,11 +69,12 @@ def lfNcSliceTime(inputFilePath, outputFilePath, startTime, endTime, timeVarName
     clndr = 'standard'
   intmnum = intmnc[:]
   inTm = netCDF4.num2date(intmnum, tmunits, clndr)
-  stTmNum = netCDF4.date2num(startTime, tmunits, clndr)
-  stTmNumIndx = np.where(intmnum == stTmNum)[0][0]
+  stTmNum = int(np.round(netCDF4.date2num(startTime, tmunits, clndr)))
+  stTmNumIndx = np.where(intmnum >= stTmNum)[0][0]
   if not endTime is None:
     endTmNum = netCDF4.date2num(endTime, tmunits, clndr)
-    endTmNumIndx = np.where(intmnum == endTmNum)[0][0] + 1
+    endtmIII = np.where(intmnum <= endTmNum)[0]
+    endTmNumIndx = endtmIII[-1] + 1 if len(endtmIII) > 0 else -1
   else:
     endTmNumIndx = -1
   if endTmNumIndx >= len(intmnum):

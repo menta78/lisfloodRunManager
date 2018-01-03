@@ -204,7 +204,7 @@ class lisfloodRunManager:
         + ', elapsed time = ' + str(int(round(endtime - starttime))) + ' s')
     self.currentRunStartDate += self.dtRestart
     self._saveNextStartRunDate()
-    return self.getStartDate() <= self.calendarEnd
+    return self.currentRunStartDate <= self.calendarEnd
 
 
   def iterateRun(self):

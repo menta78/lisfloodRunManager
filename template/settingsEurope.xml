@@ -1550,7 +1550,7 @@ TIMESTEP RELATED PARAMETERS
 </comment>
 
 <!-- menta -->
-<textvar name="numCPUs_parallelKinematicWave" value="2"/>
+<textvar name="numCPUs_parallelKinematicWave" value="10"/>
 
 <!-- menta -->
 <textvar name="CalendarConvention" value="proleptic_gregorian"/>
