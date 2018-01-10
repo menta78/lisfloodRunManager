@@ -198,8 +198,8 @@ class lisfloodRunManager:
     out = os.system(lfcmd)
     if out != 0:
       self._raiseException('Lisflood exited with non-zero status. Some error happened. Stopping')
-    endtime = time.time()
     self.storeOutput()
+    endtime = time.time()
     print('  done with ' + str(self.currentRunStartDate) 
         + ', elapsed time = ' + str(int(round(endtime - starttime))) + ' s')
     self.currentRunStartDate += self.dtRestart
@@ -208,9 +208,12 @@ class lisfloodRunManager:
 
 
   def iterateRun(self):
+    starttime = time.time()
     while True:
       if not self.executeNextRun():
         return
+    endtime = time.time()
+    print('All done. Elapsed time = ' + str(int(round(endtime - starttime))) + ' s')
   
     
     
