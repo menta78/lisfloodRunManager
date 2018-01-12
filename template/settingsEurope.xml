@@ -135,7 +135,7 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="0" name="inflow"/>
 
 <!-- menta -->
-<setoption choice="1" name="wateruse"/>
+<setoption choice="@WATER_USE@" name="wateruse"/>
 <!--<setoption choice="0" name="wateruse"/>-->
 <setoption choice="1" name="groundwaterSmooth"/>
 <setoption choice="1" name="wateruseRegion"/> 

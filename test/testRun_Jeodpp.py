@@ -17,6 +17,7 @@ def launchTestRun():
   tmpOutDir = os.path.join(runRootDir, "tmpout")
   outDir = os.path.join(runRootDir, "out")
   rootConfDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope"
+  waterUse = True
   waterUseDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/waterdemandEurope/static/hist"
   meteoDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/LAEAETRS89_BIAS_CORDEX/IPSL-INERIS-WRF331F/historical"
   calendarStart = datetime(1981, 1, 1)
@@ -29,7 +30,7 @@ def launchTestRun():
  
   print('initializing the lisfloodRunManager')
   lfManager = lfrm.lisfloodRunManager( initDir, runningDir, tmpOutDir, outDir,
-                      meteoDir, rootConfDir, waterUseDir,
+                      meteoDir, rootConfDir, waterUse, waterUseDir,
                       calendarStart, calendarEnd, lisfloodcmd,
                       dtRestart=dtRestart, dtReWarmUp=dtReWarmUp )
   print('starting the iterating run')

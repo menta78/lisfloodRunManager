@@ -17,7 +17,7 @@ class lisfloodRunManager:
 
 
   def __init__(self, initDir, runningDir, tmpOutDir, outDir, 
-      meteoDir, rootConfDir, waterUseDir,
+      meteoDir, rootConfDir, waterUse, waterUseDir,
       calendarStart, calendarEnd, lisfloodcmd,
       sttsColdFileTmpl='', sttsWarmFileTmpl='',
       dtRestart=relativedelta(years=1), dtReWarmUp=relativedelta(months=1)):
@@ -26,6 +26,7 @@ class lisfloodRunManager:
     self.tmpOutDir = tmpOutDir
     self.runningDir = runningDir
     self.rootConfDir = rootConfDir
+    self.waterUse = 1 if waterUse else 0
     self.waterUseDir = waterUseDir
     self.outDir = outDir
     self.calendar = lfCalendar(calendarStart)
@@ -93,6 +94,8 @@ class lisfloodRunManager:
     @PATH_INIT@
     @PATH_OUT@
     @PATH_CONF_ROOT@
+    @PATH_WATER_USE@
+    @PATH_METEO@
     """
     initDir = self.initDir
     outDir = self.tmpOutDir
@@ -104,6 +107,7 @@ class lisfloodRunManager:
     calendar = clndr.calendar
     startDate = self.currentRunStartDate - self.dtReWarmUp if not self.isColdStart() else clndr.calendarStart
     endDate = self.currentRunStartDate + self.dtRestart - self.calendar.timeStep
+    waterUse = self.waterUse
     
     stepInit = int(netCDF4.date2num(startDate, clndr.units, clndr.calendar))
     stepStart = stepInit + 1
@@ -121,6 +125,7 @@ class lisfloodRunManager:
     cntnt = cntnt.replace('@PATH_INIT@', initDir)
     cntnt = cntnt.replace('@PATH_OUT@', outDir)
     cntnt = cntnt.replace('@PATH_CONF_ROOT@', rootConfDir)
+    cntnt = cntnt.replace('@WATER_USE@', str(waterUse))
     cntnt = cntnt.replace('@PATH_WATER_USE@', waterUseDir)
     cntnt = cntnt.replace('@PATH_METEO@', meteoDir)
     
