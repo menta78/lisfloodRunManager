@@ -18,7 +18,7 @@ def launchTestRun():
   outDir = os.path.join(runRootDir, "out")
   rootConfDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope"
   waterUseDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/waterdemandEurope/static/hist"
-  meteoDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/LAEAETRS89_BIAS_IPSL-INERIS-WRF331F/historical"
+  meteoDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/LAEAETRS89_BIAS_CORDEX/IPSL-INERIS-WRF331F/historical"
   calendarStart = datetime(1981, 1, 1)
   calendarEnd = datetime(1982, 1, 1)
   dtRestart = relativedelta(months = 1)

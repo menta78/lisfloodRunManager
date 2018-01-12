@@ -153,7 +153,7 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="1" name="simulateReservoirs"/> 
 <setoption choice="1" name="simulatePF"/>
 
-<setoption choice="1" name="SplitRouting"/>
+<setoption choice="0" name="SplitRouting"/>
 <setoption choice="0" name="InitLisflood"/>
 <setoption choice="0" name="InitLisfloodwithoutSplit"/>
 
