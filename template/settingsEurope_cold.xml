@@ -1537,7 +1537,7 @@ TIMESTEP RELATED PARAMETERS
 <textvar name="numCPUs_parallelKinematicWave" value="10"/>
 
 <!-- menta -->
-<textvar name="CalendarConvention" value="proleptic_gregorian"/>
+<textvar name="CalendarConvention" value="@CALENDAR_CONVENTION@"/>
 
 <textvar name="CalendarDayStart" value="$(CalendarDayStart)">
 <comment>

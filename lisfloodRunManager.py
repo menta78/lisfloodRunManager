@@ -10,7 +10,7 @@ class lfCalendar:
     self.calendarStart = calendarStart
     self.timeStep = relativedelta(days=1)
     self.units = 'days since ' + self.calendarStart.strftime('%Y-%m-%d %H:%M:%S')
-    self.calendar = 'gregorian'
+    self.calendar = 'proleptic_gregorian'
 
 
 class lisfloodRunManager:
@@ -86,6 +86,7 @@ class lisfloodRunManager:
     compileTemplate: create workable settings.xml for lisflood.
     Markups handled in this function:
     @CALENDAR_START@
+    @CALENDAR_CONVENTION@
     @STEP_START@
     @STEP_END@
     @STEP_INIT@
@@ -100,6 +101,7 @@ class lisfloodRunManager:
     meteoDir = self.meteoDir
     clndr = self.calendar
     calendarStartStr = clndr.calendarStart.strftime('%m/%d/%Y')
+    calendar = clndr.calendar
     startDate = self.currentRunStartDate - self.dtReWarmUp if not self.isColdStart() else clndr.calendarStart
     endDate = self.currentRunStartDate + self.dtRestart - self.calendar.timeStep
     
@@ -112,6 +114,7 @@ class lisfloodRunManager:
       tmplcntnt = ''.join(fl.readlines())
       fl.close()
     cntnt = tmplcntnt.replace('@CALENDAR_START@', calendarStartStr)
+    cntnt = cntnt.replace('@CALENDAR_CONVENTION@', calendar)
     cntnt = cntnt.replace('@STEP_START@', str(stepStart))
     cntnt = cntnt.replace('@STEP_END@', str(stepEnd))
     cntnt = cntnt.replace('@STEP_INIT@', str(stepInit))
