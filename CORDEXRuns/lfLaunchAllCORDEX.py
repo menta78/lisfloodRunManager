@@ -6,6 +6,21 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 
+generateColdSettingsFileAndQuit = True
+
+
+
+runDirRoot = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/run'
+runDir = os.path.join(runDirRoot, 'conf')
+initDir = os.path.join(runDirRoot, 'init')
+tmpOutDir = os.path.join(runDirRoot, 'tmpout')
+outDir = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex'
+rootConfDir = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope'
+py = '/eos/jeodpp/data/projects/CRITECH/miniconda3/envs/LISFLOOD/bin/python'
+lisfloodpy = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisflood/Lisflood/lisf1.py'
+lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)
+
+
 
 def launchAll():
   meteoDataDirectory = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/LAEAETRS89_BIAS_CORDEX'
@@ -212,6 +227,12 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
   for m in ks:
     print('    ' + m + ': ' + miscVars[m])
   
+  if generateColdSettingsFileAndQuit:
+    from lisfloodRunManager import lisfloodRunManager
+    runDirDiag = os.path.join(runDir, 'diagnostics')
+    mng = lisfloodRunManager(initDir, runDirDiag, tmpOutDir, outDir,
+            rootConfDir, waterUse, calendarDayStart, calendarDayEnd, calendar, lisfloodcmd, miscVars, verbose=False)
+    mng.compileTemplate()
 
 
 if __name__ == '__main__':

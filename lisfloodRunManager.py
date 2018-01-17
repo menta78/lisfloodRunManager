@@ -6,11 +6,11 @@ import lfNcUtil
 
 
 class lfCalendar:
-  def __init__(self, calendarStart):
+  def __init__(self, calendarStart, calendar='proleptic_gregorian'):
     self.calendarStart = calendarStart
     self.timeStep = relativedelta(days=1)
     self.units = 'days since ' + self.calendarStart.strftime('%Y-%m-%d %H:%M:%S')
-    self.calendar = 'proleptic_gregorian'
+    self.calendar = calendar
 
 
 class lisfloodRunManager:
@@ -18,18 +18,17 @@ class lisfloodRunManager:
 
   def __init__(self, initDir, runningDir, tmpOutDir, outDir, 
       rootConfDir, waterUse,
-      calendarStart, calendarEnd, lisfloodcmd, miscVars,
+      calendarStart, calendarEnd, calendar, lisfloodcmd, miscVars,
       sttsColdFileTmpl='', sttsWarmFileTmpl='',
-      dtRestart=relativedelta(years=1), dtReWarmUp=relativedelta(months=1)):
+      dtRestart=relativedelta(years=1), dtReWarmUp=relativedelta(months=1), verbose=True):
     self.initDir = initDir
-    self.meteoDir = meteoDir
     self.tmpOutDir = tmpOutDir
     self.runningDir = runningDir
     self.rootConfDir = rootConfDir
     self.waterUse = 1 if waterUse else 0
     self.transientLandUseChange = self.waterUse
     self.outDir = outDir
-    self.calendar = lfCalendar(calendarStart)
+    self.calendar = lfCalendar(calendarStart, calendar=calendar)
     self.calendarEnd = calendarEnd
     self.lisfloodcmd = lisfloodcmd
     self.miscVars = miscVars
@@ -49,7 +48,8 @@ class lisfloodRunManager:
         self.currentRunStartDate = pickle.load(open(self.currentRunStartDateFile_prior))
     else:
       self.currentRunStartDate = self.calendar.calendarStart
-    self._printState()
+    if verbose:
+      self._printState()
 
 
   def _printState(self):
@@ -132,7 +132,10 @@ class lisfloodRunManager:
     
     stepInit = int(netCDF4.date2num(startDate, clndr.units, clndr.calendar))
     stepStart = stepInit + 1
-    stepEnd = int(netCDF4.date2num(endDate, clndr.units, clndr.calendar) + 1)
+    try:
+      stepEnd = int(netCDF4.date2num(endDate, clndr.units, clndr.calendar) + 1)
+    except:
+      stepEnd = int(netCDF4.date2num(endDate - relativedelta(days=1), clndr.units, clndr.calendar) + 1)
 
     tmplFile = self.getSettingsTemplate()
     with open(tmplFile) as fl:
