@@ -933,25 +933,25 @@ prefix LAI irrigation maps
 </comment>
 </textvar>
 
-<textvar name="PrefixWaterUseDomestic" value="dom">
+<textvar name="PrefixWaterUseDomestic" value="@PREFIX_WATER_USE_DOMESTIC@">
 <comment>
 prefix domestic water use maps
 </comment>
 </textvar>
 
-<textvar name="PrefixWaterUseLivestock" value="liv">
+<textvar name="PrefixWaterUseLivestock" value="@PREFIX_WATER_USE_LIVESTOCK@">
 <comment>
 prefix livestock water use maps
 </comment>
 </textvar>
 
-<textvar name="PrefixWaterUseEnergy" value="ene">
+<textvar name="PrefixWaterUseEnergy" value="@PREFIX_WATER_USE_ENERGY@">
 <comment>
 prefix energy water use maps
 </comment>
 </textvar>
 
-<textvar name="PrefixWaterUseIndustry" value="ind">
+<textvar name="PrefixWaterUseIndustry" value="@PREFIX_WATER_USE_INDUSTRY@">
 <comment>
 prefix industry water use maps
 </comment>
@@ -2466,7 +2466,7 @@ Population
 </comment>
 </textvar>
 
-<textvar name="PopulationMaps" value="$(PathWaterUse)/pop">
+<textvar name="PopulationMaps" value="@POPULATION_MAPS@">
 <comment>
 Population
 </comment>
@@ -4098,7 +4098,7 @@ urban area (0-1)
 </comment>
 </textvar>
 
-<textvar name="DirectRunoffFractionMaps" value="$(PathMapsLandUseChange)">
+<textvar name="DirectRunoffFractionMaps" value="@DIRECT_RUNOFF_FRACTION_MAPS@">
 <comment>
 stack of Direct Runoff fraction maps (0-1)
 </comment>
@@ -4111,7 +4111,7 @@ forest fraction of a pixel (0-1)
 </comment>
 </textvar>
 
-<textvar name="ForestFractionMaps" value="$(PathMapsLandUseChange)">
+<textvar name="ForestFractionMaps" value="@FOREST_FRACTION_MAPS@">
 <comment>
 $(PathMapsLandUseChange)/
 stack of forest fraction maps (0-1)
@@ -4125,7 +4125,7 @@ forest fraction of a pixel (0-1)
 </comment>
 </textvar>
 
-<textvar name="WaterFractionMaps" value="$(PathMapsLandUseChange)">
+<textvar name="WaterFractionMaps" value="@WATER_FRACTION_MAPS@">
 <comment>
 $(PathMapsLandUseChange)/
 stack of water fraction maps (0-1)
@@ -4139,7 +4139,7 @@ forest fraction of a pixel (0-1)
 </comment>
 </textvar>
 
-<textvar name="OtherFractionMaps" value="$(PathMapsLandUseChange)">
+<textvar name="OtherFractionMaps" value="@OTHER_FRACTION_MAPS@">
 <comment>
 $(PathMapsLandUseChange)/
 stack of other fraction maps (0-1)
@@ -4153,7 +4153,7 @@ irrigated area fraction of a pixel (0-1)
 </comment>
 </textvar>
 
-<textvar name="IrrigationFractionMaps" value="$(PathMapsLandUseChange)">
+<textvar name="IrrigationFractionMaps" value="@IRRIGATION_FRACTION_MAPS@">
 <comment>
 $(PathMapsLandUseChange)/
 stack of Irrigation fraction maps (0-1)
@@ -4173,7 +4173,7 @@ rice fraction of a pixel (0-1)
 </comment>
 </textvar>
 
-<textvar name="RiceFractionMaps" value="$(PathMapsLandUseChange)">
+<textvar name="RiceFractionMaps" value="@RICE_FRACTION_MAPS@">
 <comment>
 stack of rice fraction maps (0-1)
 </comment>

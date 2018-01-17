@@ -18,7 +18,7 @@ class lisfloodRunManager:
 
   def __init__(self, initDir, runningDir, tmpOutDir, outDir, 
       rootConfDir, waterUse,
-      calendarStart, calendarEnd, lisfloodcmd, mapPaths,
+      calendarStart, calendarEnd, lisfloodcmd, miscVars,
       sttsColdFileTmpl='', sttsWarmFileTmpl='',
       dtRestart=relativedelta(years=1), dtReWarmUp=relativedelta(months=1)):
     self.initDir = initDir
@@ -32,7 +32,7 @@ class lisfloodRunManager:
     self.calendar = lfCalendar(calendarStart)
     self.calendarEnd = calendarEnd
     self.lisfloodcmd = lisfloodcmd
-    self.mapPaths = mapPaths
+    self.miscVars = miscVars
     moddir = os.path.dirname(os.path.abspath(__file__))
     defaultSttsColdFileTmpl = os.path.join(moddir, 'template/settingsEurope_cold.xml')
     defaultSttsWarmFileTmpl = os.path.join(moddir, 'template/settingsEurope.xml')
@@ -100,6 +100,9 @@ class lisfloodRunManager:
     @PATH_WATER_USE@
     @PATH_METEO@
     @PATH_LAND_USE@
+    @DIRECT_RUNOFF_FRACTION_MAPS@
+    ...
+    see below
     """
     initDir = self.initDir
     outDir = self.tmpOutDir
@@ -112,9 +115,20 @@ class lisfloodRunManager:
     waterUse = self.waterUse
     transientLandUseChange = self.transientLandUseChange
 
-    waterUseDir = self.mapPaths['waterUseDir']
-    landUseDir = self.mapPaths['landUseDir']
-    meteoDir = self.mapPaths['meteoDir']
+    waterUseDir = self.miscVars['waterUseDir']
+    landUseDir = self.miscVars['landUseDir']
+    meteoDir = self.miscVars['meteoDir']
+    directRunoffFractionMaps = self.miscVars['directRunoffFractionMaps']
+    forestFractionMaps = self.miscVars['forestFractionMaps']
+    waterFractionMaps = self.miscVars['waterFractionMaps']
+    otherFractionMaps = self.miscVars['otherFractionMaps']
+    irrigationFractionMaps = self.miscVars['irrigationFractionMaps']
+    riceFractionMaps = self.miscVars['riceFractionMaps']
+    populationMaps = self.miscVars['populationMaps']
+    prefixWaterUseDomestic = self.miscVars['prefixWaterUseDomestic']
+    prefixWaterUseLivestock = self.miscVars['prefixWaterUseLivestock']
+    prefixWaterUseEnergy = self.miscVars['prefixWaterUseEnergy']
+    prefixWaterUseIndustry = self.miscVars['prefixWaterUseIndustry']
     
     stepInit = int(netCDF4.date2num(startDate, clndr.units, clndr.calendar))
     stepStart = stepInit + 1
@@ -137,6 +151,17 @@ class lisfloodRunManager:
     cntnt = cntnt.replace('@PATH_WATER_USE@', waterUseDir)
     cntnt = cntnt.replace('@PATH_METEO@', meteoDir)
     cntnt = cntnt.replace('@PATH_LAND_USE@', landUseDir)
+    cntnt = cntnt.replace('@DIRECT_RUNOFF_FRACTION_MAPS@', directRunoffFractionMaps)
+    cntnt = cntnt.replace('@FOREST_FRACTION_MAPS@', directRunoffFractionMaps)
+    cntnt = cntnt.replace('@WATER_FRACTION_MAPS@', waterFractionMaps)
+    cntnt = cntnt.replace('@OTHER_FRACTION_MAPS@', otherFractionMaps)
+    cntnt = cntnt.replace('@IRRIGATION_FRACTION_MAPS@', irrigationFractionMaps)
+    cntnt = cntnt.replace('@RICE_FRACTION_MAPS@', riceFractionMaps)
+    cntnt = cntnt.replace('@POPULATION_MAPS@', populationMaps)
+    cntnt = cntnt.replace('@PREFIX_WATER_USE_DOMESTIC@', prefixWaterUseDomestic)
+    cntnt = cntnt.replace('@PREFIX_WATER_USE_LIVESTOCK@', prefixWaterUseLivestock)
+    cntnt = cntnt.replace('@PREFIX_WATER_USE_ENERGY@', prefixWaterUseEnergy)
+    cntnt = cntnt.replace('@PREFIX_WATER_USE_INDUSTRY@', prefixWaterUseIndustry)
     
     runningDir = self.runningDir
     if not os.path.isdir(runningDir):
