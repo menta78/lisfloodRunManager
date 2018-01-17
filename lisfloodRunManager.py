@@ -17,7 +17,7 @@ class lisfloodRunManager:
 
 
   def __init__(self, initDir, runningDir, tmpOutDir, outDir, 
-      meteoDir, rootConfDir, waterUse, waterUseDir,
+      meteoDir, rootConfDir, waterUse, waterUseDir, landUseDir,
       calendarStart, calendarEnd, lisfloodcmd,
       sttsColdFileTmpl='', sttsWarmFileTmpl='',
       dtRestart=relativedelta(years=1), dtReWarmUp=relativedelta(months=1)):
@@ -28,6 +28,8 @@ class lisfloodRunManager:
     self.rootConfDir = rootConfDir
     self.waterUse = 1 if waterUse else 0
     self.waterUseDir = waterUseDir
+    self.transientLandUseChange = self.waterUse
+    self.landUseDir = landUseDir
     self.outDir = outDir
     self.calendar = lfCalendar(calendarStart)
     self.calendarEnd = calendarEnd
@@ -86,6 +88,8 @@ class lisfloodRunManager:
     """
     compileTemplate: create workable settings.xml for lisflood.
     Markups handled in this function:
+    @WATER_USE@
+    @TRANSIENT_LAND_CHANGE@
     @CALENDAR_START@
     @CALENDAR_CONVENTION@
     @STEP_START@
@@ -96,6 +100,7 @@ class lisfloodRunManager:
     @PATH_CONF_ROOT@
     @PATH_WATER_USE@
     @PATH_METEO@
+    @PATH_LAND_USE@
     """
     initDir = self.initDir
     outDir = self.tmpOutDir
@@ -108,6 +113,8 @@ class lisfloodRunManager:
     startDate = self.currentRunStartDate - self.dtReWarmUp if not self.isColdStart() else clndr.calendarStart
     endDate = self.currentRunStartDate + self.dtRestart - self.calendar.timeStep
     waterUse = self.waterUse
+    transientLandUseChange = self.transientLandUseChange
+    landUseDir = self.landUseDir
     
     stepInit = int(netCDF4.date2num(startDate, clndr.units, clndr.calendar))
     stepStart = stepInit + 1
@@ -126,8 +133,10 @@ class lisfloodRunManager:
     cntnt = cntnt.replace('@PATH_OUT@', outDir)
     cntnt = cntnt.replace('@PATH_CONF_ROOT@', rootConfDir)
     cntnt = cntnt.replace('@WATER_USE@', str(waterUse))
+    cntnt = cntnt.replace('@TRANSIENT_LAND_CHANGE@', str(transientLandUseChange))
     cntnt = cntnt.replace('@PATH_WATER_USE@', waterUseDir)
     cntnt = cntnt.replace('@PATH_METEO@', meteoDir)
+    cntnt = cntnt.replace('@PATH_LAND_USE@', landUseDir)
     
     runningDir = self.runningDir
     if not os.path.isdir(runningDir):

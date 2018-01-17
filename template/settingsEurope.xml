@@ -135,7 +135,8 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="0" name="inflow"/>
 
 <!-- menta -->
-<setoption choice="@WATER_USE@" name="wateruse"/>
+<!--<setoption choice="@WATER_USE@" name="wateruse"/>-->
+<setoption choice="1" name="wateruse"/>
 <!--<setoption choice="0" name="wateruse"/>-->
 <setoption choice="1" name="groundwaterSmooth"/>
 <setoption choice="1" name="wateruseRegion"/> 
@@ -143,8 +144,8 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="1" name="riceIrrigation"/> 
 <setoption choice="1" name="indicator"/>
 
-<setoption choice="0" name="TransientLandUseChange"/>
-<setoption choice="1" name="TransientWaterDemandChange"/>
+<setoption choice="@TRANSIENT_LAND_CHANGE@" name="TransientLandUseChange"/>
+<setoption choice="@WATER_USE@" name="TransientWaterDemandChange"/>
 
 <setoption choice="1" name="openwaterevapo"/>
 <setoption choice="0" name="varfractionwater"/>
@@ -562,14 +563,15 @@ Maps instead tables for soil hydraulics path
 </comment>
 </textvar>
 
-<textvar name="PathMapsLandUseChange" value="$(PathRoot)/maps_netcdf/landusechange">
+<textvar name="PathMapsLandUseChange" value="$(PathRoot)/maps_netcdf/landuse20112099">
 <comment>
 Maps for transient land use changes 
 rcp85_20062125
 </comment>
 </textvar>
 
-<textvar name="PathMapsLanduse" value="$(PathRoot)/maps_netcdf/landuse2010">
+<!--menta-->
+<textvar name="PathMapsLanduse" value="@PATH_LAND_USE@">
 <comment>
 Maps for land use fractions and related land use maps
 </comment>

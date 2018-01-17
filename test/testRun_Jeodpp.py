@@ -1,6 +1,7 @@
 import os
 import sys
 libpath = os.path.join( os.path.dirname(os.path.abspath(__file__)), '../' )
+print('adding path ' + libpath)
 sys.path.append(libpath)
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
