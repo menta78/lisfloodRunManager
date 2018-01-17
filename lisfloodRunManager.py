@@ -17,8 +17,8 @@ class lisfloodRunManager:
 
 
   def __init__(self, initDir, runningDir, tmpOutDir, outDir, 
-      meteoDir, rootConfDir, waterUse, waterUseDir, landUseDir,
-      calendarStart, calendarEnd, lisfloodcmd,
+      rootConfDir, waterUse,
+      calendarStart, calendarEnd, lisfloodcmd, mapPaths,
       sttsColdFileTmpl='', sttsWarmFileTmpl='',
       dtRestart=relativedelta(years=1), dtReWarmUp=relativedelta(months=1)):
     self.initDir = initDir
@@ -27,13 +27,12 @@ class lisfloodRunManager:
     self.runningDir = runningDir
     self.rootConfDir = rootConfDir
     self.waterUse = 1 if waterUse else 0
-    self.waterUseDir = waterUseDir
     self.transientLandUseChange = self.waterUse
-    self.landUseDir = landUseDir
     self.outDir = outDir
     self.calendar = lfCalendar(calendarStart)
     self.calendarEnd = calendarEnd
     self.lisfloodcmd = lisfloodcmd
+    self.mapPaths = mapPaths
     moddir = os.path.dirname(os.path.abspath(__file__))
     defaultSttsColdFileTmpl = os.path.join(moddir, 'template/settingsEurope_cold.xml')
     defaultSttsWarmFileTmpl = os.path.join(moddir, 'template/settingsEurope.xml')
@@ -105,8 +104,6 @@ class lisfloodRunManager:
     initDir = self.initDir
     outDir = self.tmpOutDir
     rootConfDir = self.rootConfDir
-    waterUseDir = self.waterUseDir
-    meteoDir = self.meteoDir
     clndr = self.calendar
     calendarStartStr = clndr.calendarStart.strftime('%m/%d/%Y')
     calendar = clndr.calendar
@@ -114,7 +111,10 @@ class lisfloodRunManager:
     endDate = self.currentRunStartDate + self.dtRestart - self.calendar.timeStep
     waterUse = self.waterUse
     transientLandUseChange = self.transientLandUseChange
-    landUseDir = self.landUseDir
+
+    waterUseDir = self.mapPaths['waterUseDir']
+    landUseDir = self.mapPaths['landUseDir']
+    meteoDir = self.mapPaths['meteoDir']
     
     stepInit = int(netCDF4.date2num(startDate, clndr.units, clndr.calendar))
     stepStart = stepInit + 1

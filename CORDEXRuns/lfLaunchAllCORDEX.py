@@ -63,15 +63,19 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC			(copying to cid)
           print('  skipping historical/no water use')
         calendarDayStart = calendarDayStartByScen[scen]
         calendarDayEnd = calendarDayEndByScen[scen]
+        meteoDataPath = os.path.join(meteoDataDirectory, mdl, scen)
         curWaterDataPath = waterUseDataPath[(scen, currUseWater)]
         curLandUseDataPath = landUseDataPath[(scen, currUseWater)]
-        launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, currUseWater, currWaterDataPath, curLandUseDataPath)
+        pths = {
+          'meteoDir': meteoDataPath,
+          'waterUseDir': curWaterDataPath,
+          'landUseDir': landUseDataPath
+          }
+        launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, currUseWater, pths)
 
 
 
-def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, waterUse, waterUseDataPath, landUseDataPath):
-  meteoDataPath = os.path.join(meteoDataDirectory, mdl, scen)
-
+def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, waterUse, paths):
   testNcFile = os.path.join(meteoDataPath, 'pr.nc')
   ds = netCDF4.Dataset(testNCFile)
   try:
@@ -92,8 +96,9 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, waterUse, wat
           scen=scen, mdl=mdl, currUseWater=str(currUseWater)), cal=calendar)
   print('  stepStart == ' + calendarDayStart.strftime('%Y-%m-%d'))
   print('  stepEnd == ' + str(stepEnd))
-  print('  water use path: ' + waterUserDataPath)
-  print('  land use path: ' + landUseDataPath)
+  print('  map paths:')
+  for m in paths.keys():
+    print('    ' + m + ': ' + paths[m])
   
 
 
