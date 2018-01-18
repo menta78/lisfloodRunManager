@@ -181,8 +181,8 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="1" name="repStressDays"/>
 
 <!-- menta -->
-<setoption choice="1" name="repAverageDis" />
-<setoption choice="1" name="repLZAvInflowMap" />
+<setoption choice="0" name="repAverageDis" />
+<setoption choice="0" name="repLZAvInflowMap" />
 
 <setoption choice="1"  name="readNetcdfStack"/>
 <setoption choice="1"  name="writeNetcdfStack"/>
@@ -197,6 +197,9 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="1" name="repTotalAbs"/>
 <setoption choice="0" name="repTotalWUse"/>
 <setoption choice="1" name="repWIndex"/>
+
+<!--menta-->
+<setoption choice="1" name="repDischargeTs"/>
 
 
 </lfoptions>
