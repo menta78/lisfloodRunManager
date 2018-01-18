@@ -563,7 +563,7 @@ Maps instead tables for soil hydraulics path
 </comment>
 </textvar>
 
-<textvar name="PathMapsLandUseChange" value="$(PathRoot)/maps_netcdf/landuse20112099">
+<textvar name="PathMapsLandUseChange" value="@PATH_LAND_USE@">
 <comment>
 Maps for transient land use changes 
 rcp85_20062125
@@ -571,7 +571,7 @@ rcp85_20062125
 </textvar>
 
 <!--menta-->
-<textvar name="PathMapsLanduse" value="@PATH_LAND_USE@">
+<textvar name="PathMapsLanduse" value="$(PathRoot)/maps_netcdf/landuse2010">
 <comment>
 Maps for land use fractions and related land use maps
 </comment>
