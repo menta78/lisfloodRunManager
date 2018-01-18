@@ -1,4 +1,4 @@
-import os, sys
+import os, sys, shutil
 import netCDF4
 libpath = os.path.join( os.path.dirname(os.path.abspath(__file__)), '..' )
 sys.path.append(libpath)
@@ -56,74 +56,74 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   waterUse = [True, False]
   waterUseDataPathRoot = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/waterdemandCordex/cordex'
   waterUseDataPath = {
-    ('historical', True): os.path.join(waterUseDataPathRoot, 'hist/waterdemand2010'),
+    ('historical', False): os.path.join(waterUseDataPathRoot, 'hist/waterdemand2010'),
     ('rcp85', True): os.path.join(waterUseDataPathRoot, 'rcp/dynamic'),
     ('rcp85', False): os.path.join(waterUseDataPathRoot, 'rcp/static/waterdemand2010'),
     ('rcp45', True): os.path.join(waterUseDataPathRoot, 'rcp/dynamic'),
     ('rcp45', False): os.path.join(waterUseDataPathRoot, 'rcp/static/waterdemand2010'),
     }
   landUseDataPathRoot = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/landuse/cordex'
+  staticLandUseDir = os.path.join(landUseDataPathRoot, 'hist/landuse2010')
   landUseDataPath = {
-    ('historical', True): os.path.join(landUseDataPathRoot, 'hist/landuse2010'),
+    ('historical', False): staticLandUseDir,
     ('rcp85', True): os.path.join(landUseDataPathRoot, 'rcp'),
-    ('rcp85', False): os.path.join(landUseDataPathRoot, 'hist/landuse2010'),
+    ('rcp85', False): staticLandUseDir,
     ('rcp45', True): os.path.join(landUseDataPathRoot, 'rcp'),
-    ('rcp45', False): os.path.join(landUseDataPathRoot, 'hist/landuse2010'),
+    ('rcp45', False): staticLandUseDir,
     }
-  staticFracMaps = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/landuse20112099'
   directRunoffFractionMaps = {
-    ('historical', True): staticFracMaps,
-    ('rcp85', False): staticFracMaps,
-    ('rcp85', True, 'proleptic_gregorian'): os.path.join(staticFracMaps, 'fracsealed/frsealed_2011_2099'),
-    ('rcp85', True, '360_day'): os.path.join(staticFracMaps, 'fracsealed_360Day/frsealed_2011_2099_360day'),
-    ('rcp85', True, '365_day'): os.path.join(staticFracMaps, 'fracsealed_365Day/frsealed_2011_2099_365day'),
-    ('rcp45', False): staticFracMaps,
-    ('rcp45', True, 'proleptic_gregorian'): os.path.join(staticFracMaps, 'fracsealed/frsealed_2011_2099'),
-    ('rcp45', True, '360_day'): os.path.join(staticFracMaps, 'fracsealed_360Day/frsealed_2011_2099_360day'),
-    ('rcp45', True, '365_day'): os.path.join(staticFracMaps, 'fracsealed_365Day/frsealed_2011_2099_365day'),
+    ('historical', False): os.path.join(landUseDataPath[('historical', False)], 'fracsealed'),
+    ('rcp85', False): os.path.join(landUseDataPath[('rcp85', False)], 'fracsealed'),
+    ('rcp85', True, 'proleptic_gregorian'): os.path.join(landUseDataPath[('rcp85', True)], 'fracsealed/frsealed_2011_2099'),
+    ('rcp85', True, '360_day'): os.path.join(landUseDataPath[('rcp85', True)], 'fracsealed_360Day/frsealed_2011_2099_360day'),
+    ('rcp85', True, '365_day'): os.path.join(landUseDataPath[('rcp85', True)], 'fracsealed_365Day/frsealed_2011_2099_365day'),
+    ('rcp45', False): os.path.join(landUseDataPath[('rcp45', False)], 'fracsealed'),
+    ('rcp45', True, 'proleptic_gregorian'): os.path.join(landUseDataPath[('rcp45', True)], 'fracsealed/frsealed_2011_2099'),
+    ('rcp45', True, '360_day'): os.path.join(landUseDataPath[('rcp45', True)], 'fracsealed_360Day/frsealed_2011_2099_360day'),
+    ('rcp45', True, '365_day'): os.path.join(landUseDataPath[('rcp45', True)], 'fracsealed_365Day/frsealed_2011_2099_365day'),
     }
   forestFractionMaps = {
-    ('historical', True): staticFracMaps,
-    ('rcp85', False): staticFracMaps,
-    ('rcp85', True, 'proleptic_gregorian'): os.path.join(staticFracMaps, 'fracforest/frforet_2011_2099'),
-    ('rcp85', True, '360_day'): os.path.join(staticFracMaps, 'fracforest_360Day/frforet_2011_2099_360day'),
-    ('rcp85', True, '365_day'): os.path.join(staticFracMaps, 'fracforest_365Day/frforet_2011_2099_365day'),
-    ('rcp45', False): staticFracMaps,
-    ('rcp45', True, 'proleptic_gregorian'): os.path.join(staticFracMaps, 'fracforest/frforet_2011_2099'),
-    ('rcp45', True, '360_day'): os.path.join(staticFracMaps, 'fracforest_360Day/frforet_2011_2099_360day'),
-    ('rcp45', True, '365_day'): os.path.join(staticFracMaps, 'fracforest_365Day/frforet_2011_2099_365day'),
+    ('historical', False): os.path.join(landUseDataPath[('historical', False)], 'fracforest'),
+    ('rcp85', False): os.path.join(landUseDataPath[('rcp85', False)], 'fracforest'),
+    ('rcp85', True, 'proleptic_gregorian'): os.path.join(landUseDataPath[('rcp85', True)], 'fracforest/frforet_2011_2099'),
+    ('rcp85', True, '360_day'): os.path.join(landUseDataPath[('rcp85', True)], 'fracforest_360Day/frforet_2011_2099_360day'),
+    ('rcp85', True, '365_day'): os.path.join(landUseDataPath[('rcp85', True)], 'fracforest_365Day/frforet_2011_2099_365day'),
+    ('rcp45', False): os.path.join(landUseDataPath[('rcp45', False)], 'fracforest'),
+    ('rcp45', True, 'proleptic_gregorian'): os.path.join(landUseDataPath[('rcp45', True)], 'fracforest/frforet_2011_2099'),
+    ('rcp45', True, '360_day'): os.path.join(landUseDataPath[('rcp45', True)], 'fracforest_360Day/frforet_2011_2099_360day'),
+    ('rcp45', True, '365_day'): os.path.join(landUseDataPath[('rcp45', True)], 'fracforest_365Day/frforet_2011_2099_365day'),
     }
   waterFractionMaps = {
-    ('historical', True): staticFracMaps,
-    ('rcp85', False): staticFracMaps,
-    ('rcp85', True): os.path.join(staticFracMaps, 'fracwater/frwater_2011_2099'),
-    ('rcp45', False): staticFracMaps,
-    ('rcp45', True): os.path.join(staticFracMaps, 'fracwater/frwater_2011_2099'),
+    ('historical', False): os.path.join(landUseDataPath[('historical', False)], 'fracwater'),
+    ('rcp85', False): os.path.join(landUseDataPath[('rcp85', False)], 'fracwater'),
+    ('rcp85', True): os.path.join(landUseDataPath[('rcp85', True)], 'fracwater/frwater_2011_2099'),
+    ('rcp45', False): os.path.join(landUseDataPath[('rcp45', False)], 'fracwater'),
+    ('rcp45', True): os.path.join(landUseDataPath[('rcp45', True)], 'fracwater/frwater_2011_2099'),
     }
   otherFractionMaps = {
-    ('historical', True): staticFracMaps,
-    ('rcp85', False): staticFracMaps,
-    ('rcp85', True, 'proleptic_gregorian'): os.path.join(staticFracMaps, 'fracother/frother_2011_2099'),
-    ('rcp85', True, '360_day'): os.path.join(staticFracMaps, 'fracother_360Day/frother_2011_2099_360day'),
-    ('rcp85', True, '365_day'): os.path.join(staticFracMaps, 'fracother_365Day/frother_2011_2099_365day'),
-    ('rcp45', False): staticFracMaps,
-    ('rcp45', True, 'proleptic_gregorian'): os.path.join(staticFracMaps, 'fracother/frother_2011_2099'),
-    ('rcp45', True, '360_day'): os.path.join(staticFracMaps, 'fracother_360Day/frother_2011_2099_360day'),
-    ('rcp45', True, '365_day'): os.path.join(staticFracMaps, 'fracother_365Day/frother_2011_2099_365day'),
+    ('historical', False): os.path.join(landUseDataPath[('historical', False)], 'fracother'),
+    ('rcp85', False): os.path.join(landUseDataPath[('rcp85', False)], 'fracother'),
+    ('rcp85', True, 'proleptic_gregorian'): os.path.join(landUseDataPath[('rcp85', True)], 'fracother/frother_2011_2099'),
+    ('rcp85', True, '360_day'): os.path.join(landUseDataPath[('rcp85', True)], 'fracother_360Day/frother_2011_2099_360day'),
+    ('rcp85', True, '365_day'): os.path.join(landUseDataPath[('rcp85', True)], 'fracother_365Day/frother_2011_2099_365day'),
+    ('rcp45', False): os.path.join(landUseDataPath[('rcp45', False)], 'fracother'),
+    ('rcp45', True, 'proleptic_gregorian'): os.path.join(landUseDataPath[('rcp45', True)], 'fracother/frother_2011_2099'),
+    ('rcp45', True, '360_day'): os.path.join(landUseDataPath[('rcp45', True)], 'fracother_360Day/frother_2011_2099_360day'),
+    ('rcp45', True, '365_day'): os.path.join(landUseDataPath[('rcp45', True)], 'fracother_365Day/frother_2011_2099_365day'),
     }
   irrigationFractionMaps = {
-    ('historical', True): staticFracMaps,
-    ('rcp85', False): staticFracMaps,
-    ('rcp85', True): os.path.join(staticFracMaps, 'fracirrigated/frirrig_2011_2099'),
-    ('rcp45', False): staticFracMaps,
-    ('rcp45', True): os.path.join(staticFracMaps, 'fracirrigated/frirrig_2011_2099'),
+    ('historical', False): os.path.join(landUseDataPath[('historical', False)], 'fracirrigated'),
+    ('rcp85', False): os.path.join(landUseDataPath[('rcp85', False)], 'fracirrigated'),
+    ('rcp85', True): os.path.join(landUseDataPath[('rcp85', True)], 'fracirrigated/frirrig_2011_2099'),
+    ('rcp45', False): os.path.join(landUseDataPath[('rcp45', False)], 'fracirrigated'),
+    ('rcp45', True): os.path.join(landUseDataPath[('rcp45', True)], 'fracirrigated/frirrig_2011_2099'),
     }
   riceFractionMaps = {
-    ('historical', True): staticFracMaps,
-    ('rcp85', False): staticFracMaps,
-    ('rcp85', True): os.path.join(staticFracMaps, 'fracrice/fracrice_2011_2099'),
-    ('rcp45', False): staticFracMaps,
-    ('rcp45', True): os.path.join(staticFracMaps, 'fracrice/fracrice_2011_2099'),
+    ('historical', False): os.path.join(landUseDataPath[('historical', False)], 'fracrice'),
+    ('rcp85', False): os.path.join(landUseDataPath[('rcp85', False)], 'fracrice'),
+    ('rcp85', True): os.path.join(landUseDataPath[('rcp85', True)], 'fracrice/fracrice_2011_2099'),
+    ('rcp45', False): os.path.join(landUseDataPath[('rcp45', False)], 'fracrice'),
+    ('rcp45', True): os.path.join(landUseDataPath[('rcp45', True)], 'fracrice/fracrice_2011_2099'),
     }
 
   prefixWaterUseDomestic = {
@@ -168,7 +168,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   for scen in scenarios:
     for currUseWater in waterUse:
       for mdl in models:
-        if scen == 'historical' and (not currUseWater):
+        if scen == 'historical' and currUseWater:
           print('')
           continue
         calendarDayStart = calendarDayStartByScen[scen]
@@ -232,7 +232,11 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
     runDirDiag = os.path.join(runDir, 'diagnostics')
     mng = lisfloodRunManager(initDir, runDirDiag, tmpOutDir, outDir,
             rootConfDir, waterUse, calendarDayStart, calendarDayEnd, calendar, lisfloodcmd, miscVars, verbose=False)
-    mng.compileTemplate()
+    flpath = mng.compileTemplate()
+    wUseStr = 'waterUse' if waterUse else 'notWaterUse'
+    nflpath = flpath + '_' + wUseStr + '_' + scen + '_' + mdl + '.xml'
+    shutil.move(flpath, nflpath)
+    return
 
 
 if __name__ == '__main__':
