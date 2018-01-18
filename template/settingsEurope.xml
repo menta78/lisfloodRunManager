@@ -575,7 +575,7 @@ rcp85_20062125
 </textvar>
 
 <!--menta-->
-<textvar name="PathMapsLanduse" value="$(PathRoot)/maps_netcdf/landuse2010">
+<textvar name="PathMapsLanduse" value="$(PathRoot)/maps_netcdf/landuse/cordex/hist/landuse2010">
 <comment>
 Maps for land use fractions and related land use maps
 </comment>
