@@ -1989,7 +1989,7 @@ INITIAL CONDITIONS FOR THE WATER BALANCE MODEL
 **************************************************************
 </comment>
 
-<textvar name="LZAvInflowMap" value="$(PathInitCold)/lzavin.map">
+<textvar name="LZAvInflowMap" value="$(PathInitCold)/lzavin">
 <comment>
 $(PathInitCold)/lzavin.map
 Reported map of average percolation rate from upper to
@@ -1997,7 +1997,7 @@ lower groundwater zone (reported for end of simulation)
 </comment>
 </textvar>
 
-<textvar name="AvgDis" value="$(PathInitCold)/avgdis.map">
+<textvar name="AvgDis" value="$(PathInitCold)/avgdis">
 <comment>
 $(PathInitCold)/avgdis.map
 CHANNEL split routing in two lines
@@ -4077,7 +4077,7 @@ LAND USE RELATED MAPS AND TABLES
 **************************************************************
 </comment>
 
-<textvar name="DirectRunoffFraction" value="$(PathMapsLanduse)/fracsealed.map">
+<textvar name="DirectRunoffFraction" value="$(PathMapsLanduse)/fracsealed">
 <comment>
 $(PathMapsLanduse)/fracsealed.map
 urban area (0-1)
@@ -4090,7 +4090,7 @@ stack of Direct Runoff fraction maps (0-1)
 </comment>
 </textvar>
 
-<textvar name="ForestFraction" value="$(PathMapsLanduse)/fracforest.map">
+<textvar name="ForestFraction" value="$(PathMapsLanduse)/fracforest">
 <comment>
 $(PathMapsLanduse)/fracforest.map
 forest fraction of a pixel (0-1)
@@ -4104,7 +4104,7 @@ stack of forest fraction maps (0-1)
 </comment>
 </textvar>
 
-<textvar name="WaterFraction" value="$(PathMapsLanduse)/fracwater.map">
+<textvar name="WaterFraction" value="$(PathMapsLanduse)/fracwater">
 <comment>
 $(PathMapsLanduse)/fracwater.map
 forest fraction of a pixel (0-1)
@@ -4118,7 +4118,7 @@ stack of water fraction maps (0-1)
 </comment>
 </textvar>
 
-<textvar name="OtherFraction" value="$(PathMapsLanduse)/fracother.map">
+<textvar name="OtherFraction" value="$(PathMapsLanduse)/fracother">
 <comment>
 $(PathMapsLanduse)/fracother.map
 forest fraction of a pixel (0-1)
@@ -4132,7 +4132,7 @@ stack of other fraction maps (0-1)
 </comment>
 </textvar>
 
-<textvar name="IrrigationFraction" value="$(PathMapsLanduse)/fracirrigated.map">
+<textvar name="IrrigationFraction" value="$(PathMapsLanduse)/fracirrigated">
 <comment>
 $(PathMapsLanduse)/fracirrigated.map
 irrigated area fraction of a pixel (0-1)
@@ -4153,7 +4153,7 @@ drained fraction from irrigated area  (0-1)
 </comment>
 </textvar>
 
-<textvar name="RiceFraction" value="$(PathMapsLanduse)/fracrice.map">
+<textvar name="RiceFraction" value="$(PathMapsLanduse)/fracrice">
 <comment>
 rice fraction of a pixel (0-1)
 </comment>
@@ -4165,13 +4165,13 @@ stack of rice fraction maps (0-1)
 </comment>
 </textvar>
 
-<textvar name="FractionGroundwaterUsed" value="$(PathMapsLanduse)/fracgwusedNew.map">
+<textvar name="FractionGroundwaterUsed" value="$(PathMapsLanduse)/fracgwused">
 <comment>
 groundwater used fraction of a pixel (0-1)
 </comment>
 </textvar>
 
-<textvar name="FractionNonConventionalWaterUsed" value="$(PathMapsLanduse)/fracncused.map">
+<textvar name="FractionNonConventionalWaterUsed" value="$(PathMapsLanduse)/fracncused">
 <comment>
 NonConventionalWaterUsed (0-1)
 </comment>
