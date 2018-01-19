@@ -20,7 +20,7 @@ class lisfloodRunManager:
       rootConfDir, waterUse,
       calendarStart, calendarEnd, calendar, lisfloodcmd, miscVars,
       sttsColdFileTmpl='', sttsWarmFileTmpl='',
-      dtRestart=relativedelta(years=1), dtReWarmUp=relativedelta(months=1), verbose=True):
+      dtRestart=relativedelta(years=1), dtReWarmUp=relativedelta(months=1), modelTag='lisflood', verbose=True):
     self.initDir = initDir
     self.tmpOutDir = tmpOutDir
     self.runningDir = runningDir
@@ -41,6 +41,7 @@ class lisfloodRunManager:
     self.dtReWarmUp = dtReWarmUp
     self.currentRunStartDateFile = os.path.join(runningDir, 'nextRunStart.pkl')
     self.currentRunStartDateFile_prior = os.path.join(runningDir, 'nextRunStart_prior.pkl')
+    self.modelTag = modelTag
     if os.path.isfile(self.currentRunStartDateFile):
       try:
         self.currentRunStartDate = pickle.load(open(self.currentRunStartDateFile))
@@ -181,6 +182,7 @@ class lisfloodRunManager:
 
   def extractInitConditions(self):
     print('    init extraction start:')
+    modelTag = self.modelTag
     if self.isColdStart():
       print('      this is the cold start. Skipping')
       return
@@ -194,7 +196,9 @@ class lisfloodRunManager:
       except:
         pass
       priorRunStartDate = self.currentRunStartDate - self.dtRestart
-      priorRunStartPattern = '(.*)_' + priorRunStartDate.strftime('%Y%m%d%H') + '\.nc'
+      dtStr = priorRunStartDate.strftime('%Y%m%d%H')
+      ptrnStr = modelTag + '_' + dtStr if modelTag != '' else dtStr
+      priorRunStartPattern = '(.*)_' + ptrnStr + '\.nc'
       fls = [f for f in os.listdir(self.outDir) if re.match(priorRunStartPattern, f)]
       if fls == []:
         self._raiseException('no init files found')
@@ -217,11 +221,13 @@ class lisfloodRunManager:
     store them to outDir with a name that includes the years.
     """
     print('   storing output to ' + self.outDir)
+    modelTag = self.modelTag
     currentRunDateStr = self.currentRunStartDate.strftime('%Y%m%d%H')
+    tagStr = modelTag + '_' + currentRunDateStr if modelTag != '' else currentRunDateStr
     fls = [f for f in os.listdir(self.tmpOutDir) if re.match('(.*)\.nc', f)]
     for f in fls:
       fpth = os.path.join(self.tmpOutDir, f)
-      ofl = re.sub('\.nc', '_' + currentRunDateStr + '.nc', f)
+      ofl = re.sub('\.nc', '_' + tagStr + '.nc', f)
       oflpth = os.path.join(self.outDir, ofl)
       print('      elaborating file ' + f)
       print('        writing ' + fpth)
@@ -231,7 +237,7 @@ class lisfloodRunManager:
 
     fpth = os.path.join(self.tmpOutDir, 'disWin.tss')
     if os.path.isfile(fpth):
-      ofl = re.sub('\.tss', '_' + currentRunDateStr + '.tss', f)
+      ofl = re.sub('\.tss', '_' + tagStr + '.tss', f)
       shutil.move(fpth, ofl)
 
     print('      output successfully stored')
