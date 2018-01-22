@@ -235,10 +235,12 @@ class lisfloodRunManager:
       lfNcUtil.lfNcSliceTime(fpth, oflpth, self.currentRunStartDate, None)
       os.remove(fpth)
 
-    fpth = os.path.join(self.tmpOutDir, 'disWin.tss')
+    f = 'disWin.tss'
+    fpth = os.path.join(self.tmpOutDir, f)
     if os.path.isfile(fpth):
       ofl = re.sub('\.tss', '_' + tagStr + '.tss', f)
-      shutil.move(fpth, ofl)
+      oflpth = os.path.join(self.outDir, ofl)
+      shutil.move(fpth, oflpth)
 
     print('      output successfully stored')
       

@@ -1,12 +1,14 @@
 import os, sys, shutil
+import pickle
 import netCDF4
 libpath = os.path.join( os.path.dirname(os.path.abspath(__file__)), '..' )
 sys.path.append(libpath)
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from lfLaunchOneCORDEX import _iniObj
 
 
-generateColdSettingsFileAndQuit = True
+generateColdSettingsFileAndQuit = False
 
 
 
@@ -237,6 +239,67 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
     nflpath = flpath + '_' + wUseStr + '_' + scen + '_' + mdl + '.xml'
     shutil.move(flpath, nflpath)
     return
+  else:
+    runDirMdl = os.path.join(runDir, scen, mdl)
+    try:
+      os.makedirs(runDirMdl)
+    except:
+      pass
+
+    initDirMdl = os.path.join(initDir, scen, mdl)
+    try:
+      os.makedirs(initDirMdl)
+    except:
+      pass
+    
+    tmpOutDirMdl = os.path.join(tmpOutDir, scen, mdl)
+    try:
+      os.makedirs(tmpOutDirMdl)
+    except:
+      pass
+
+    outDirMdl = os.path.join(outDir, scen, mdl)
+    try:
+      os.makedirs(outDirMdl)
+    except:
+      pass
+
+    rootConfDirMdl = rootConfDir
+    
+    ii = _iniObj()
+    ii.runDirMdl = runDirMdl
+    ii.initDirMdl = initDirMdl
+    ii.tmpOutDirMdl = tmpOutDirMdl
+    ii.outDirMdl = outDirMdl
+    ii.rootConfDirMdl = rootConfDirMdl
+    ii.waterUse = waterUse
+    ii.scen = scen
+    ii.mdl = mdl
+    ii.calendarDayStart = calendarDayStart
+    ii.calendarDayEnd = calendarDayEnd
+    ii.calendar = calendar
+    ii.miscVars = miscVars
+    jobInitFlPth = os.path.join(runDirMdl, 'init.pkl')
+    with open(jobInitFlPth, 'w') as ifl:
+      pickle.dump(ii, ifl)
+      ifl.close()
+   
+    cdir = os.path.dirname(os.path.abspath(__file__))
+    condorJobExecutable = os.path.join(cdir, 'lfLaunchOneCORDEX.sh')
+    condorConfDir = runDirMdl
+    condorSubTemplateFile = os.path.join(cdir, '../template/lisfloodCondorSubmit.sh')
+    with open(condorSubTemplateFile) as ctf:
+      condorSubScrptTxt = ctf.read()
+    condorSubScrptTxt = condorSubScrptTxt.replace('@CONF_DIR@', runDirMdl)
+    condorSubScrptTxt = condorSubScrptTxt.replace('@EXECUTABLE@', condorJobExecutable)
+    condorSubScrptFile = os.path.join(runDirMdl, 'lisfloodCondorSubmit.sh')
+    with open(condorSubScrptFile, 'w') as cst:
+      cst.write(condorSubScrptTxt)
+      cst.close()
+    import pdb; pdb.set_trace()
+    os.system('chmod a+x ' + condorSubScrptFile)
+    #CONDOR SUBMIT
+    
 
 
 if __name__ == '__main__':
