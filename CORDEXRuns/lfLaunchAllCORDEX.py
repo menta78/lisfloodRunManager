@@ -296,9 +296,10 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
     with open(condorSubScrptFile, 'w') as cst:
       cst.write(condorSubScrptTxt)
       cst.close()
-    import pdb; pdb.set_trace()
     os.system('chmod a+x ' + condorSubScrptFile)
     #CONDOR SUBMIT
+    import pdb; pdb.set_trace()
+    os.system('condor_submit ' + condorSubScrptFile)
     
 
 
