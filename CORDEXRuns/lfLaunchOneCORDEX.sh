@@ -1,5 +1,7 @@
 #!/bin/bash
+echo "launching lisflood!!"
 logFile=$LF_LOG_FILE
+echo $logFile
 
 source /eos/jeodpp/data/projects/CRITECH/miniconda3/envs/LISFLOOD/bin/activate LISFLOOD
 

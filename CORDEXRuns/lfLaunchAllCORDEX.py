@@ -167,6 +167,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
     return dctnr.get(key1, dctnr.get(key2, ''))
 
 
+  import pdb; pdb.set_trace()
   for scen in scenarios:
     for currUseWater in waterUse:
       for mdl in models:
@@ -229,36 +230,36 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
   for m in ks:
     print('    ' + m + ': ' + miscVars[m])
   
+  wUseStr = 'waterUse' if waterUse else 'notWaterUse'
   if generateColdSettingsFileAndQuit:
     from lisfloodRunManager import lisfloodRunManager
     runDirDiag = os.path.join(runDir, 'diagnostics')
     mng = lisfloodRunManager(initDir, runDirDiag, tmpOutDir, outDir,
             rootConfDir, waterUse, calendarDayStart, calendarDayEnd, calendar, lisfloodcmd, miscVars, verbose=False)
     flpath = mng.compileTemplate()
-    wUseStr = 'waterUse' if waterUse else 'notWaterUse'
     nflpath = flpath + '_' + wUseStr + '_' + scen + '_' + mdl + '.xml'
     shutil.move(flpath, nflpath)
     return
   else:
-    runDirMdl = os.path.join(runDir, scen, mdl)
+    runDirMdl = os.path.join(runDir, scen, mdl, wUseStr)
     try:
       os.makedirs(runDirMdl)
     except:
       pass
 
-    initDirMdl = os.path.join(initDir, scen, mdl)
+    initDirMdl = os.path.join(initDir, scen, mdl, wUseStr)
     try:
       os.makedirs(initDirMdl)
     except:
       pass
     
-    tmpOutDirMdl = os.path.join(tmpOutDir, scen, mdl)
+    tmpOutDirMdl = os.path.join(tmpOutDir, scen, mdl, wUseStr)
     try:
       os.makedirs(tmpOutDirMdl)
     except:
       pass
 
-    outDirMdl = os.path.join(outDir, scen, mdl)
+    outDirMdl = os.path.join(outDir, scen, mdl, wUseStr)
     try:
       os.makedirs(outDirMdl)
     except:
@@ -290,16 +291,17 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
     condorSubTemplateFile = os.path.join(cdir, '../template/lisfloodCondorSubmit.sh')
     with open(condorSubTemplateFile) as ctf:
       condorSubScrptTxt = ctf.read()
+    tagstr = '_'.join(['lisflood', wUseStr, scen, mdl]
     condorSubScrptTxt = condorSubScrptTxt.replace('@CONF_DIR@', runDirMdl)
     condorSubScrptTxt = condorSubScrptTxt.replace('@EXECUTABLE@', condorJobExecutable)
-    condorSubScrptFile = os.path.join(runDirMdl, 'lisfloodCondorSubmit.sh')
+    condorSubScrptTxt = condorSubScrptTxt.replace('@JOB_TAG@', tagstr) )
+    condorSubScrptFile = os.path.join(runDirMdl, 'run_' + tagstr + '.sh')
     with open(condorSubScrptFile, 'w') as cst:
       cst.write(condorSubScrptTxt)
       cst.close()
     os.system('chmod a+x ' + condorSubScrptFile)
     #CONDOR SUBMIT
-    import pdb; pdb.set_trace()
-    os.system('condor_submit ' + condorSubScrptFile)
+    os.system('condor_submit -disable ' + condorSubScrptFile)
     
 
 
