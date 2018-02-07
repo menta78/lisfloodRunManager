@@ -9,7 +9,7 @@ environment = "LF_INIT_FILE=@CONF_DIR@/init.pkl LF_LOG_FILE=@CONF_DIR@/runAll.lo
 executable   = @EXECUTABLE@
 +Owner="critechproc"
 
-RequestCpus = 7
+RequestCpus = 8
 RequestMemory = 100Gb
 
 #Standar outputs

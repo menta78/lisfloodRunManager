@@ -1,4 +1,4 @@
-import os, sys, shutil
+import os, sys, shutil, time
 import pickle
 import netCDF4
 libpath = os.path.join( os.path.dirname(os.path.abspath(__file__)), '..' )
@@ -52,7 +52,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   calendarDayEndByScen = {
     'historical': datetime(2010, 12, 31),
     'rcp85': datetime(2099, 12, 31),
-    'rcp45': datetime(2011, 12, 31)
+    'rcp45': datetime(2099, 12, 31)
     }
 
   waterUse = [True, False]
@@ -291,10 +291,10 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
     condorSubTemplateFile = os.path.join(cdir, '../template/lisfloodCondorSubmit.sh')
     with open(condorSubTemplateFile) as ctf:
       condorSubScrptTxt = ctf.read()
-    tagstr = '_'.join(['lisflood', wUseStr, scen, mdl]
+    tagstr = '_'.join(['lisflood', wUseStr, scen, mdl])
     condorSubScrptTxt = condorSubScrptTxt.replace('@CONF_DIR@', runDirMdl)
     condorSubScrptTxt = condorSubScrptTxt.replace('@EXECUTABLE@', condorJobExecutable)
-    condorSubScrptTxt = condorSubScrptTxt.replace('@JOB_TAG@', tagstr) )
+    condorSubScrptTxt = condorSubScrptTxt.replace('@JOB_TAG@', tagstr) 
     condorSubScrptFile = os.path.join(runDirMdl, 'run_' + tagstr + '.sh')
     with open(condorSubScrptFile, 'w') as cst:
       cst.write(condorSubScrptTxt)
@@ -302,6 +302,7 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
     os.system('chmod a+x ' + condorSubScrptFile)
     #CONDOR SUBMIT
     os.system('condor_submit -disable ' + condorSubScrptFile)
+    time.sleep(30)
     
 
 

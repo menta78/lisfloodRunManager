@@ -269,6 +269,9 @@ class lisfloodRunManager:
   def iterateRun(self):
     starttime = time.time()
     while True:
+      print('""" RUN MANAGER STATE """')
+      self._printState()
+      print('"""')
       if not self.executeNextRun():
         return
     endtime = time.time()
