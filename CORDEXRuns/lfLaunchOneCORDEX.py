@@ -30,7 +30,7 @@ def doLaunch():
   miscVars = ii.miscVars
 
   dtRestart = relativedelta(years = 1)
-  dtReWarmUp = relativedelta(months = 1)
+  dtReWarmUp = miscVars['dtReWarmUp']
   py = '/eos/jeodpp/data/projects/CRITECH/miniconda3/envs/LISFLOOD/bin/python'
   lisfloodpy = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisflood/Lisflood/lisf1.py'
   lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)

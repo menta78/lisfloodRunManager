@@ -22,9 +22,11 @@ py = '/eos/jeodpp/data/projects/CRITECH/miniconda3/envs/LISFLOOD/bin/python'
 lisfloodpy = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisflood/Lisflood/lisf1.py'
 lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)
 
+scenarios = ['historical', 'rcp85', 'rcp45']  
 
+dtReWarmUp = relativedelta(months = 1)
 
-def launchAll():
+def launchAll(scenarios=scenarios, outDir=outDir, runDirRoot=runDirRoot, dtReWarmUp=dtReWarmUp):
   meteoDataDirectory = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/LAEAETRS89_BIAS_CORDEX'
 
   models = """
@@ -43,7 +45,6 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   models = [m.strip(' \n\t\r') for m in models.strip(' \n\t\r').split('\n') if m.strip(' \n\t\r')]
  # READ THE CALENDARS DIRECTLY FROM THE FILES
 
-  scenarios = ['historical', 'rcp85', 'rcp45']  
   calendarDayStartByScen = {
     'historical': datetime(1981, 1, 1),
     'rcp85': datetime(2011, 1, 1),
@@ -192,6 +193,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
         cPrefixWaterUseEnergy = prefixWaterUseEnergy[calendar]
         cPrefixWaterUseIndustry = prefixWaterUseIndustry[calendar]
         miscVars = {
+          'dtReWarmUp': dtReWarmUp,
           'meteoDir': meteoDataPath,
           'waterUseDir': curWaterDataPath,
           'landUseDir': curLandUseDataPath,
