@@ -6,6 +6,7 @@ sys.path.append(libpath)
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from lfLaunchOneCORDEX import _iniObj
+import lfJeodppLogFileParser
 
 
 generateColdSettingsFileAndQuit = False
@@ -13,9 +14,6 @@ generateColdSettingsFileAndQuit = False
 
 
 runDirRoot = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/run'
-runDir = os.path.join(runDirRoot, 'conf')
-initDir = os.path.join(runDirRoot, 'init')
-tmpOutDir = os.path.join(runDirRoot, 'tmpout')
 outDir = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex'
 rootConfDir = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope'
 py = '/eos/jeodpp/data/projects/CRITECH/miniconda3/envs/LISFLOOD/bin/python'
@@ -28,6 +26,9 @@ dtReWarmUp = relativedelta(months = 1)
 
 def launchAll(scenarios=scenarios, outDir=outDir, runDirRoot=runDirRoot, dtReWarmUp=dtReWarmUp):
   meteoDataDirectory = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/LAEAETRS89_BIAS_CORDEX'
+  runDir = os.path.join(runDirRoot, 'conf')
+  initDir = os.path.join(runDirRoot, 'init')
+  tmpOutDir = os.path.join(runDirRoot, 'tmpout')
 
   models = """
 IPSL-INERIS-WRF331F
@@ -209,11 +210,16 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
           'prefixWaterUseEnergy': cPrefixWaterUseEnergy,
           'prefixWaterUseIndustry': cPrefixWaterUseIndustry
           }
-        launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, currUseWater, miscVars)
+        launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, currUseWater, miscVars,
+                         outDir=outDir, runDirRoot=runDirRoot)
 
 
 
-def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, waterUse, miscVars):
+def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, waterUse, miscVars, 
+                     outDir=outDir, runDirRoot=runDirRoot):
+  runDir = os.path.join(runDirRoot, 'conf')
+  initDir = os.path.join(runDirRoot, 'init')
+  tmpOutDir = os.path.join(runDirRoot, 'tmpout')
   calUnitStr = 'days since ' + calendarDayStart.strftime('%Y-%m-%d')
   try:
     stepEnd = netCDF4.date2num(calendarDayEnd, calUnitStr, calendar)
@@ -230,7 +236,7 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
   ks = miscVars.keys()
   ks.sort()
   for m in ks:
-    print('    ' + m + ': ' + miscVars[m])
+    print('    ' + m + ': ' + str(miscVars[m]))
   
   wUseStr = 'waterUse' if waterUse else 'notWaterUse'
   if generateColdSettingsFileAndQuit:
@@ -268,6 +274,11 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
       pass
 
     rootConfDirMdl = rootConfDir
+    logDir = '/eos/jeodpp/htcondor/processing_logs/CRITECH'
+
+    if lfJeodppLogFileParser.jobIsAlive(mdl, scen, wUseStr, logDir):
+      print('       Alive run. Skipping')
+      continue
     
     ii = _iniObj()
     ii.runDirMdl = runDirMdl
