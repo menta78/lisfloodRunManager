@@ -31,6 +31,7 @@ def doLaunch():
 
   dtRestart = relativedelta(years = 1)
   dtReWarmUp = miscVars['dtReWarmUp']
+  preliminaryRun = miscVars['preliminaryRun']
   py = '/eos/jeodpp/data/projects/CRITECH/miniconda3/envs/LISFLOOD/bin/python'
   lisfloodpy = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisflood/Lisflood/lisf1.py'
   lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)
@@ -41,6 +42,8 @@ def doLaunch():
                       calendarDayStart, calendarDayEnd, calendar, lisfloodcmd, miscVars,
                       modelTag=modelTag,
                       dtRestart=dtRestart, dtReWarmUp=dtReWarmUp )
+  if preliminaryRun:
+    lfManager.setPreliminaryRun()
   print('starting the iterating run')
   lfManager.iterateRun()
   

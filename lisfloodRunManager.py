@@ -35,8 +35,10 @@ class lisfloodRunManager:
     moddir = os.path.dirname(os.path.abspath(__file__))
     defaultSttsColdFileTmpl = os.path.join(moddir, 'template/settingsEurope_cold.xml')
     defaultSttsWarmFileTmpl = os.path.join(moddir, 'template/settingsEurope.xml')
+    defaultSttsPreliminaryFileTmpl = os.path.join(moddir, 'template/settingsEurope_preliminary.xml')
     self.sttsColdFileTmpl = sttsColdFileTmpl if sttsColdFileTmpl != '' else defaultSttsColdFileTmpl
     self.sttsWarmFileTmpl = sttsWarmFileTmpl if sttsWarmFileTmpl != '' else defaultSttsWarmFileTmpl
+    self.sttsPreliminaryFileTmpl = defaultSttsPreliminaryFileTmpl
     self.dtRestart = dtRestart
     self.dtReWarmUp = dtReWarmUp
     self.currentRunStartDateFile = os.path.join(runningDir, 'nextRunStart.pkl')
@@ -51,7 +53,10 @@ class lisfloodRunManager:
       self.currentRunStartDate = self.calendar.calendarStart
     if verbose:
       self._printState()
+    self.preliminaryRun = False
 
+  def setPreliminaryRun(self):
+    self.preliminaryRun = True
 
   def _printState(self):
     print('lisfloodRunManager, setup:')
@@ -78,6 +83,8 @@ class lisfloodRunManager:
 
 
   def getSettingsTemplate(self):
+    if self.preliminaryRun:
+      return self.
     if self.isColdStart():
       return self.sttsColdFileTmpl
     else:
@@ -263,7 +270,10 @@ class lisfloodRunManager:
         + ', elapsed time = ' + str(int(round(endtime - starttime))) + ' s')
     self.currentRunStartDate += self.dtRestart
     self._saveNextStartRunDate()
-    return self.currentRunStartDate <= self.calendarEnd
+    if self.preliminaryRun:
+      return False
+    else:
+      return self.currentRunStartDate <= self.calendarEnd
 
 
   def iterateRun(self):

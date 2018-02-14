@@ -24,7 +24,7 @@ scenarios = ['historical', 'rcp85', 'rcp45']
 
 dtReWarmUp = relativedelta(months = 1)
 
-def launchAll(scenarios=scenarios, outDir=outDir, runDirRoot=runDirRoot, dtReWarmUp=dtReWarmUp):
+def launchAll(scenarios=scenarios, outDir=outDir, runDirRoot=runDirRoot, dtReWarmUp=dtReWarmUp, preliminaryRun=False):
   meteoDataDirectory = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/LAEAETRS89_BIAS_CORDEX'
   runDir = os.path.join(runDirRoot, 'conf')
   initDir = os.path.join(runDirRoot, 'init')
@@ -194,6 +194,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
         cPrefixWaterUseEnergy = prefixWaterUseEnergy[calendar]
         cPrefixWaterUseIndustry = prefixWaterUseIndustry[calendar]
         miscVars = {
+          'preliminaryRun': preliminaryRun,
           'dtReWarmUp': dtReWarmUp,
           'meteoDir': meteoDataPath,
           'waterUseDir': curWaterDataPath,

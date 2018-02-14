@@ -155,30 +155,30 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="1" name="simulatePF"/>
 
 <setoption choice="1" name="SplitRouting"/>
-<setoption choice="0" name="InitLisflood"/>
+<setoption choice="1" name="InitLisflood"/>
 <setoption choice="0" name="InitLisfloodwithoutSplit"/>
 
 <setoption choice="0" name="repEndMaps"/> 
 <!--menta-->
-<setoption choice="1" name="repStateMaps" />
-<setoption choice="1" name="repTopSoilMoistureMaps"/>
-<setoption choice="1" name="repSurfaceSoilMoistureMaps"/>
+<setoption choice="0" name="repStateMaps" />
+<setoption choice="0" name="repTopSoilMoistureMaps"/>
+<setoption choice="0" name="repSurfaceSoilMoistureMaps"/>
 <setoption choice="1" name="repDischargeMaps"/>
 <setoption choice="0" name="repsimulateLakes"/>
 <setoption choice="0" name="repsimulateReservoirs"/>
-<setoption choice="1" name="repSurfaceRunoffMaps"/>
+<setoption choice="0" name="repSurfaceRunoffMaps"/>
 
 <!-- menta -->
-<setoption choice="1" name="repSnowMaps"/>
-<setoption choice="1" name="repSnowCoverMaps"/>
+<setoption choice="0" name="repSnowMaps"/>
+<setoption choice="0" name="repSnowCoverMaps"/>
 
-<setoption choice="1" name="repPFMaps"/>
-<setoption choice="1" name="repThetaMaps"/>
-<setoption choice="1" name="repLZMaps"/>
-<setoption choice="1" name="repUZMaps"/>
-<setoption choice="1" name="repGwPercUZLZMaps"/>
-<setoption choice="1" name="repRWS"/>
-<setoption choice="1" name="repStressDays"/>
+<setoption choice="0" name="repPFMaps"/>
+<setoption choice="0" name="repThetaMaps"/>
+<setoption choice="0" name="repLZMaps"/>
+<setoption choice="0" name="repUZMaps"/>
+<setoption choice="0" name="repGwPercUZLZMaps"/>
+<setoption choice="0" name="repRWS"/>
+<setoption choice="0" name="repStressDays"/>
 
 <!-- menta -->
 <setoption choice="1" name="repAverageDis" />
@@ -194,9 +194,9 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="0" name="repMBTs"/>
 <setoption choice="0" name="repInternalCom"/>
 
-<setoption choice="1" name="repTotalAbs"/>
+<setoption choice="0" name="repTotalAbs"/>
 <setoption choice="0" name="repTotalWUse"/>
-<setoption choice="1" name="repWIndex"/>
+<setoption choice="0" name="repWIndex"/>
 
 <!--menta-->
 <setoption choice="1" name="repDischargeTs"/>
@@ -279,8 +279,6 @@ TIME-RELATED CONSTANTS
 **************************************************************
 </comment>
 
-<!--menta: date format: mm/dd/yyyy -->
-<!--<textvar name="CalendarDayStart" value="01/01/1981">-->
 <textvar name="CalendarDayStart" value="@CALENDAR_START@">
 <comment>
 Calendar day number of 1st day in model run
@@ -305,7 +303,7 @@ Within the model,the smallest out of DtSecChannel and DtSec is used
 </comment>
 </textvar>
 
-<textvar name="StepStart" value="@STEP_START@">
+<textvar name="StepStart" value="1">
 <comment>
 SMHI r1-r4	1/1/2066 = 21916
 Number of first time step in simulation
@@ -314,19 +312,16 @@ Number of first time step in simulation
 
 <!--menta-->
 <!--<textvar name="StepEnd" value="10957">-->
-<textvar name="StepEnd" value="@STEP_END@">
+<!--<textvar name="StepEnd" value="@STEP_END@">-->
+<textvar name="StepEnd" value="5479">
 <comment>
-IPSL RCP85 	2011-2099 	32507
-
-
-
-Number of last time step in simulation
+About 15 years for the initialization run
 </comment>
 </textvar>
 
 <!-- menta -->
 <!--<textvar name="ReportSteps" value="1..10957">-->
-<textvar name="ReportSteps" value="@STEP_START@..@STEP_END@">
+<textvar name="ReportSteps" value="1..@STEP_END@">
 <comment>
 Time steps at which to write model state maps (i.e. only
 those maps that would be needed to define initial conditions
@@ -516,17 +511,9 @@ Output path (org=$(PathRoot)/out)
 </comment>
 </textvar>
 
-<!--menta-->
 <textvar name="PathInitCold" value="$(PathRoot)/init">
 <comment>
-Initialization path for the cold start
-</comment>
-</textvar>
-
-<!--<textvar name="PathInit" value="/ADAPTATION/mentalo/lisfloodRun/testEuropeRestartECMWF/init">-->
-<textvar name="PathInit" value="@PATH_INIT@">
-<comment>
-Path of the initial value maps for the warm start
+Path of the initial value maps e.g. lzavin.map (org=$(PathRoot)/outPo)
 </comment>
 </textvar>
 
@@ -591,7 +578,6 @@ Water use maps path
 
 <!--menta-->
 <textvar name="PathMeteo" value="@PATH_METEO@">
-<!--<textvar name="PathMeteo" value="/ADAPTATION/mentalo/lisfloodRun/meteo/input">-->
 <comment>
 ./meteoWatch
 Meteo path
@@ -622,7 +608,7 @@ INITIAL CONDITIONS
 **************************************************************
 </comment>
 
-<textvar name="timestepInit" value="@STEP_INIT@">
+<textvar name="timestepInit" value="1">
 <comment>
 if init. condition are stored as netCDF with different time steps
 this variable indicates which time step to use
@@ -630,56 +616,55 @@ Either as date e.g. 1/1/2010 or as number e.g. 5
 </comment>
 </textvar>
 
-<textvar name="WaterDepthInitValue" value="$(PathInit)/wdept">
+<textvar name="WaterDepthInitValue" value="0">
 <comment>
 initial overland flow water depth [mm]
 </comment>
 </textvar>
 
-<textvar name="SnowCoverAInitValue" value="$(PathInit)/scova">
+<textvar name="SnowCoverAInitValue" value="0">
 <comment>
 initial snow depth in snow zone A [mm]
 </comment>
 </textvar>
 
-<textvar name="SnowCoverBInitValue" value="$(PathInit)/scovb">
+<textvar name="SnowCoverBInitValue" value="0">
 <comment>
 initial snow depth in snow zone B [mm]
 </comment>
 </textvar>
 
-<textvar name="SnowCoverCInitValue" value="$(PathInit)/scovc">
+<textvar name="SnowCoverCInitValue" value="0">
 <comment>
 initial snow depth in snow zone C [mm]
 </comment>
 </textvar>
 
-<textvar name="FrostIndexInitValue" value="$(PathInit)/frost">
+<textvar name="FrostIndexInitValue" value="0">
 <comment>
 initial Frost Index value
 </comment>
 </textvar>
 
-<textvar name="CumIntInitValue" value="$(PathInit)/cum">
+<textvar name="CumIntInitValue" value="0">
 <comment>
 cumulative interception [mm]
 </comment>
 </textvar>
 
-<textvar name="UZInitValue" value="$(PathInit)/uz">
+<textvar name="UZInitValue" value="0">
 <comment>
 water in upper store [mm]
 </comment>
 </textvar>
 
-<textvar name="DSLRInitValue" value="$(PathInit)/dslr">
+<textvar name="DSLRInitValue" value="1">
 <comment>
 days since last rainfall
 </comment>
 </textvar>
 
 </group>
-
 
 <group>
 
@@ -691,63 +676,63 @@ of -9999
 **************************************************************
 </comment>
 
-<textvar name="LZInitValue" value="$(PathInit)/lz">
+<textvar name="LZInitValue" value="-9999">
 <comment>
 water in lower store [mm]
 -9999: use steady-state storage
 </comment>
 </textvar>
 
-<textvar name="TotalCrossSectionAreaInitValue" value="$(PathInit)/chcro">
+<textvar name="TotalCrossSectionAreaInitValue" value="-9999">
 <comment>
 initial cross-sectional area of flow in channel[m2]
 -9999: use half bankfull
 </comment>
 </textvar>
 
-<textvar name="ThetaInit1Value" value="$(PathInit)/tha">
+<textvar name="ThetaInit1Value" value="-9999">
 <comment>
 initial soil moisture content layer 1
 -9999: use field capacity values
 </comment>
 </textvar>
 
-<textvar name="ThetaInit2Value" value="$(PathInit)/thb">
+<textvar name="ThetaInit2Value" value="-9999">
 <comment>
 initial soil moisture content layer 2
 -9999: use field capacity values
 </comment>
 </textvar>
 
-<textvar name="ThetaInit3Value" value="$(PathInit)/thc">
+<textvar name="ThetaInit3Value" value="-9999">
 <comment>
 initial soil moisture content layer 2
 -9999: use field capacity values
 </comment>
 </textvar>
 
-<textvar name="CrossSection2AreaInitValue" value="$(PathInit)/ch2cr">
+<textvar name="CrossSection2AreaInitValue" value="-9999">
 <comment>
 initial channel crosssection for 2nd routing channel
 -9999: use 0
 </comment>
 </textvar>
 
-<textvar name="PrevSideflowInitValue" value="$(PathInit)/chside">
+<textvar name="PrevSideflowInitValue" value="-9999">
 <comment>
 initial channel cross section for 2nd routing channel
 -9999: use 0
 </comment>
 </textvar>
 
-<textvar name="LakeInitialLevelValue" value="$(PathInit)/lakeh">
+<textvar name="LakeInitialLevelValue" value="-9999">
 <comment>
 Initial lake level [m]
 -9999 sets initial value to steady-state level
 </comment>
 </textvar>
 
-<textvar name="PrevDischarge" value="$(PathInit)/dis">
+<textvar name="PrevDischarge" value="-9999">
 <comment>
 initial discharge from previous run for lakes, reservoirs and transmission loss
 only needed for lakes reservoirs and transmission loss
@@ -758,7 +743,6 @@ only needed for lakes reservoirs and transmission loss
 
 </group>
 
-
 <group>
 
 <comment>
@@ -768,39 +752,39 @@ INITIAL CONDITIONS FOREST
 **************************************************************
 </comment>
 
-<textvar name="CumIntForestInitValue" value="$(PathInit)/cumf">
+<textvar name="CumIntForestInitValue" value="0">
 <comment>
 cumulative interception [mm]
 </comment>
 </textvar>
 
-<textvar name="UZForestInitValue" value="$(PathInit)/uzf">
+<textvar name="UZForestInitValue" value="0">
 <comment>
 water in upper store [mm]
 </comment>
 </textvar>
 
-<textvar name="DSLRForestInitValue" value="$(PathInit)/dslf">
+<textvar name="DSLRForestInitValue" value="1">
 <comment>
 days since last rainfall
 </comment>
 </textvar>
 
-<textvar name="ThetaForestInit1Value" value="$(PathInit)/thfa">
+<textvar name="ThetaForestInit1Value" value="-9999">
 <comment>
 initial soil moisture content layer 1
 -9999: use field capacity values
 </comment>
 </textvar>
 
-<textvar name="ThetaForestInit2Value" value="$(PathInit)/thfb">
+<textvar name="ThetaForestInit2Value" value="-9999">
 <comment>
 initial soil moisture content layer 2
 -9999: use field capacity values
 </comment>
 </textvar>
 
-<textvar name="ThetaForestInit3Value" value="$(PathInit)/thfc">
+<textvar name="ThetaForestInit3Value" value="-9999">
 <comment>
 initial soil moisture content layer 2
 -9999: use field capacity values
@@ -819,39 +803,39 @@ INITIAL CONDITIONS IRRIGATION
 **************************************************************
 </comment>
 
-<textvar name="CumIntIrrigationInitValue" value="$(PathInit)/cumi">
+<textvar name="CumIntIrrigationInitValue" value="0">
 <comment>
 cumulative interception [mm]
 </comment>
 </textvar>
 
-<textvar name="UZIrrigationInitValue" value="$(PathInit)/uzi">
+<textvar name="UZIrrigationInitValue" value="0">
 <comment>
 water in upper store [mm]
 </comment>
 </textvar>
 
-<textvar name="DSLRIrrigationInitValue" value="$(PathInit)/dsli">
+<textvar name="DSLRIrrigationInitValue" value="1">
 <comment>
 days since last rainfall
 </comment>
 </textvar>
 
-<textvar name="ThetaIrrigationInit1Value" value="$(PathInit)/thia">
+<textvar name="ThetaIrrigationInit1Value" value="-9999">
 <comment>
 initial soil moisture content layer 1
 -9999: use field capacity values
 </comment>
 </textvar>
 
-<textvar name="ThetaIrrigationInit2Value" value="$(PathInit)/thib">
+<textvar name="ThetaIrrigationInit2Value" value="-9999">
 <comment>
 initial soil moisture content layer 2
 -9999: use field capacity values
 </comment>
 </textvar>
 
-<textvar name="ThetaIrrigationInit3Value" value="$(PathInit)/thic">
+<textvar name="ThetaIrrigationInit3Value" value="-9999">
 <comment>
 initial soil moisture content layer 2
 -9999: use field capacity values
@@ -859,7 +843,6 @@ initial soil moisture content layer 2
 </textvar>
 
 </group>
-
 
 <group>
 
@@ -870,16 +853,13 @@ INITIAL CONDITIONS IMPERVIOUS AREAS
 **************************************************************
 </comment>
 
-<textvar name="CumIntSealedInitValue" value="$(PathInit)/cseal">
+<textvar name="CumIntSealedInitValue" value="0">
 <comment>
 cumulative interception [mm]
 </comment>
 </textvar>
 
 </group>
-
-
-
 
 <group>
 
@@ -1398,7 +1378,7 @@ the smallest out of DtSecReservoirs and DtSec is used.
 </comment>
 </textvar>
 
-<textvar name="ReservoirInitialFillValue" value="$(PathInit)/rsfil">
+<textvar name="ReservoirInitialFillValue" value="-9999">
 <comment>
 Initial reservoir fill fraction
 -9999 sets initial fill to normal storage limit
@@ -1559,7 +1539,6 @@ TIMESTEP RELATED PARAMETERS
 <textvar name="numCPUs_parallelKinematicWave" value="10"/>
 
 <!-- menta -->
-<!--<textvar name="CalendarConvention" value="proleptic_gregorian"/>-->
 <textvar name="CalendarConvention" value="@CALENDAR_CONVENTION@"/>
 
 <textvar name="CalendarDayStart" value="$(CalendarDayStart)">
@@ -2009,7 +1988,7 @@ INITIAL CONDITIONS FOR THE WATER BALANCE MODEL
 
 <textvar name="LZAvInflowMap" value="$(PathInitCold)/lzavin">
 <comment>
-$(PathInit)/lzavin.map
+$(PathInitCold)/lzavin.map
 Reported map of average percolation rate from upper to
 lower groundwater zone (reported for end of simulation)
 </comment>
@@ -2017,7 +1996,7 @@ lower groundwater zone (reported for end of simulation)
 
 <textvar name="AvgDis" value="$(PathInitCold)/avgdis">
 <comment>
-$(PathInit)/avgdis.map
+$(PathInitCold)/avgdis.map
 CHANNEL split routing in two lines
 Average discharge map [m3/s]
 </comment>
