@@ -277,9 +277,10 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
     rootConfDirMdl = rootConfDir
     logDir = '/eos/jeodpp/htcondor/processing_logs/CRITECH'
 
-    if lfJeodppLogFileParser.jobIsAlive(mdl, scen, wUseStr, logDir):
-      print('       Alive run. Skipping')
-      continue
+    jobAlive, jobId = lfJeodppLogFileParser.jobIsAlive(mdl, scen, wUseStr, logDir)
+    if jobAlive:
+      print('       Alive run (job id == ' + str(jobId) + '). Skipping')
+      return
     
     ii = _iniObj()
     ii.runDirMdl = runDirMdl

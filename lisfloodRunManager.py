@@ -84,7 +84,7 @@ class lisfloodRunManager:
 
   def getSettingsTemplate(self):
     if self.preliminaryRun:
-      return self.
+      return self.sttsPreliminaryFileTmpl
     if self.isColdStart():
       return self.sttsColdFileTmpl
     else:
