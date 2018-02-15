@@ -15,7 +15,7 @@ def jobIsAlive(model, scenario, waterUseStr, logDir='/eos/jeodpp/htcondor/proces
     else:
       print('        Job ' + jobId + ' is alive.')
       return True, jobId
-  print('        This model is not running any more')
+  print('        This model is not running, yet or any more')
   return False, -1
       
   

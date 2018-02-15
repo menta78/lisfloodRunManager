@@ -15,6 +15,7 @@ generateColdSettingsFileAndQuit = False
 
 runDirRoot = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/run'
 outDir = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex'
+coldInitDir = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/coldInit'
 rootConfDir = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope'
 py = '/eos/jeodpp/data/projects/CRITECH/miniconda3/envs/LISFLOOD/bin/python'
 lisfloodpy = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisflood/Lisflood/lisf1.py'
@@ -193,6 +194,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
         cPrefixWaterUseLivestock = prefixWaterUseLivestock[calendar]
         cPrefixWaterUseEnergy = prefixWaterUseEnergy[calendar]
         cPrefixWaterUseIndustry = prefixWaterUseIndustry[calendar]
+
         miscVars = {
           'preliminaryRun': preliminaryRun,
           'dtReWarmUp': dtReWarmUp,
@@ -213,6 +215,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
           }
         launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, currUseWater, miscVars,
                          outDir=outDir, runDirRoot=runDirRoot)
+        pass
 
 
 
@@ -273,6 +276,13 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
       os.makedirs(outDirMdl)
     except:
       pass
+
+    coldInitDirMdl = os.path.join(coldInitDir, scen, mdl, wUseStr)
+    try:
+      os.makedirs(coldInitDirMdl)
+    except:
+      pass
+    miscVars['pathInitCold'] = coldInitDirMdl
 
     rootConfDirMdl = rootConfDir
     logDir = '/eos/jeodpp/htcondor/processing_logs/CRITECH'

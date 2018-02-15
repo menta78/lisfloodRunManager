@@ -126,7 +126,7 @@ class lisfloodRunManager:
     waterUseDir = self.miscVars['waterUseDir']
     landUseDir = self.miscVars['landUseDir']
     meteoDir = self.miscVars['meteoDir']
-    pathInitCold = self.miscVars['pathInitCold'] if self.has_key('pathInitCold') else os.path.join(rootConfDir, 'init')
+    pathInitCold = self.miscVars['pathInitCold'] if self.miscVars.has_key('pathInitCold') else os.path.join(rootConfDir, 'init')
     directRunoffFractionMaps = self.miscVars['directRunoffFractionMaps']
     forestFractionMaps = self.miscVars['forestFractionMaps']
     waterFractionMaps = self.miscVars['waterFractionMaps']
