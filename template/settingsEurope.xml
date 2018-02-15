@@ -517,7 +517,7 @@ Output path (org=$(PathRoot)/out)
 </textvar>
 
 <!--menta-->
-<textvar name="PathInitCold" value="$(PathRoot)/init">
+<textvar name="PathInitCold" value="@PATH_INIT_COLD@">
 <comment>
 Initialization path for the cold start
 </comment>

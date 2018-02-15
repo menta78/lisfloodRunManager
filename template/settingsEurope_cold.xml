@@ -514,7 +514,7 @@ Output path (org=$(PathRoot)/out)
 </comment>
 </textvar>
 
-<textvar name="PathInitCold" value="$(PathRoot)/init">
+<textvar name="PathInitCold" value="@PATH_INIT_COLD@">
 <comment>
 Path of the initial value maps e.g. lzavin.map (org=$(PathRoot)/outPo)
 </comment>
