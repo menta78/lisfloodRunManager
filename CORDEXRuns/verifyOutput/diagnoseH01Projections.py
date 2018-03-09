@@ -5,6 +5,7 @@ from datetime import datetime
 import loadTssFile
 import loadOutletDischargeFromNc
 from matplotlib import pyplot as plt
+import plotBaselineMeasuresScatter
 
 
 def printMsrMdlsMaxima():
@@ -58,6 +59,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
   plt.tight_layout()
   axmtxflt = np.array(axmtx).flatten()
+  axinvisible = []
   for mdl, axmdl in zip(models, axmtxflt):
     modelName = mdl.replace('/', '_')
     print('  elaborating model ' + modelName)
@@ -67,13 +69,14 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
       ncFlPth = os.path.join(h0NcRootDir, mdl, 'hist/Europe_all/dis.nc')
       if not os.path.isfile(ncFlPth):
         print('      Cannot find output nc either. Skipping model')
-        axmdl.set_visible(False)
+        axinvisible.append(axmdl)
         continue
       loadOutletDischargeFromNc.nc2tss(ncOutletPth, ncFlPth, tssFlPth)
-    mdlDir = os.path.join(rootDir, mdl, 'notWaterUse')
-    plotModelScatter(axmdl, modelName, tssFlPth)
+    plotBaselineMeasuresScatter.plotModelScatter(axmdl, modelName, tssFlPth)
     plt.tight_layout()
     pass
+  for ax in axinvisible:
+    ax.set_visible(False)
   axmtxflt[-1].set_visible(False)
   f.savefig(outputfig, dpi=300)
 

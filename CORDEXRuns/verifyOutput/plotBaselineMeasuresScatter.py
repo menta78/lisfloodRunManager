@@ -115,6 +115,11 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
     
     
   
-
+def plotModelScatterEfas():
+  modelTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
+  modelStartDate = datetime(1990, 1, 1, 0, 0)
+  ax = plt.gca()
+  plotModelScatter(ax, 'EFAS', modelTssFile, modelStartDate=modelStartDate)
+  
 
 
