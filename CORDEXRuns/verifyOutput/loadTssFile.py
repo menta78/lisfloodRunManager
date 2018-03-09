@@ -53,7 +53,7 @@ def loadTssFile(filePath, startDate=datetime(1981, 01, 01), timeDelta = relative
 
 
 
-def loadTssFromDir(dirPath, selectStatIds, startDate=datetime(1981, 01, 01), timeDelta = relativedelta(days=1)):
+def loadTssFromDir(dirPath, selectStatIds=None, startDate=datetime(1981, 01, 01), timeDelta = relativedelta(days=1)):
   print('loading from ' + dirPath)
   fls = [f for f in os.listdir(dirPath) if re.match('disWin(.*)\.tss', f)]
   fls.sort()
