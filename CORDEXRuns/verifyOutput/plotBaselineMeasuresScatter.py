@@ -73,11 +73,17 @@ def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,0
   ax.set_yticks([])
 
   mdltxt = modelName
-  if len(mdltxt) > 31:
-    mdltxt = mdltxt.replace('_', '\n', 1)
+  mdltxt = mdltxt.replace('_BC_', '\n', 1)
+  mdltxt = mdltxt.replace('_BC', '', 1)
   txtx = (max(lm) - min(lm))/2.
   txty = (max(lm) - min(lm))/1.2
-  ax.text(txtx, txty, mdltxt, fontsize=7, ha='center', va='center')
+  ax.text(txtx, txty, mdltxt, fontsize=9, ha='center', va='center')
+  txty = (max(lm) - min(lm))/30.
+  ax.text(txtx, txty, 'observ.', fontsize=12, ha='center', va='center')
+  txtx = txty
+  txty = (max(lm) - min(lm))/2.
+  ax.text(txtx, txty, 'model', fontsize=12, ha='center', va='center', rotation=-90)
+  pass
 
 
 
@@ -103,23 +109,31 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
   f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
   plt.tight_layout()
-  axmtxflt = np.array(axmtx).flatten()
+
+  axHind = axmtx[0, 0]
+  hindTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
+  hindStartDate = datetime(1990, 1, 1, 0, 0)
+  plotModelScatter(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate)
+
+  axmtxflt = np.array(axmtx).flatten()[1:]
   for mdl, axmdl in zip(models, axmtxflt):
     mdlDir = os.path.join(rootDir, mdl, 'notWaterUse')
     plotModelScatter(axmdl, mdl, mdlDir)
     plt.tight_layout()
     pass
-  axmtxflt[-1].set_visible(False)
   f.savefig(outputfig, dpi=300)
 
     
     
   
 def plotModelScatterEfas():
+  outputfig = 'mdlScatterHindcast.png'
   modelTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
   modelStartDate = datetime(1990, 1, 1, 0, 0)
-  ax = plt.gca()
-  plotModelScatter(ax, 'EFAS', modelTssFile, modelStartDate=modelStartDate)
+  f = plt.figure(figsize=(3, 3))
+  ax = f.gca()
+  plotModelScatter(ax, 'Hindcast', modelTssFile, modelStartDate=modelStartDate)
+  f.savefig(outputfig, dpi=300)
   
 
 
