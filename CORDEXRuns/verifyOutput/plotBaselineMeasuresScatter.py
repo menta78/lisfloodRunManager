@@ -25,7 +25,44 @@ def getYMax(tms, dis, startDate, endDate):
   return yrs, disMax
 
 
-def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,01,01), msrsTssFl=defMsrsTssFile, msrsStartDate=datetime(1990, 01, 01)):
+def getYMin(tms, dis, startDate, endDate):
+  cnd = np.logical_and(tms >= startDate, tms <= endDate)
+  tms = tms[cnd]
+  dis = dis[cnd, :]
+  estYrs = np.array([t.year for t in tms])
+  yrs = np.unique(estYrs)
+  ny = len(yrs)
+  disMin = np.ones([ny, dis.shape[1]])*np.nan
+
+  for iy in range(ny):
+    y = yrs[iy]
+    cndy = estYrs == y
+    disy = dis[cndy, :]
+    disMiny = np.min(disy, 0)
+    disMin[iy, :] = disMiny
+  return yrs, disMin
+
+
+def getYMean(tms, dis, startDate, endDate):
+  cnd = np.logical_and(tms >= startDate, tms <= endDate)
+  tms = tms[cnd]
+  dis = dis[cnd, :]
+  estYrs = np.array([t.year for t in tms])
+  yrs = np.unique(estYrs)
+  ny = len(yrs)
+  disMean = np.ones([ny, dis.shape[1]])*np.nan
+
+  for iy in range(ny):
+    y = yrs[iy]
+    cndy = estYrs == y
+    disy = dis[cndy, :]
+    disMeany = np.mean(disy, 0)
+    disMean[iy, :] = disMeany
+  return yrs, disMean
+
+
+def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,01,01), 
+       msrsTssFl=defMsrsTssFile, msrsStartDate=datetime(1990, 01, 01), getStat=getYMax):
   if os.path.isfile(modelTssPath):
     tmsMdl, statIdsMdl, disMdl = loadTssFile.loadTssFile(modelTssPath, startDate=modelStartDate)
   else:
@@ -36,19 +73,19 @@ def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,0
   startDate = max(min(tmsMdl), min(tmsMsrs))
   endDate = min(max(tmsMdl), max(tmsMsrs))
 
-  yrs, mdlMax = getYMax(tmsMdl, disMdl, startDate, endDate)
-  yrs, msrMax = getYMax(tmsMsrs, disMsrs, startDate, endDate)
+  yrs, mdlStat = getStat(tmsMdl, disMdl, startDate, endDate)
+  yrs, msrStat = getStat(tmsMsrs, disMsrs, startDate, endDate)
 
-  mdlMax = np.sort(mdlMax, 0)
-  msrMax = np.sort(msrMax, 0)
+  mdlStat = np.sort(mdlStat, 0)
+  msrStat = np.sort(msrStat, 0)
 
-  mdlMaxFlt = mdlMax.flatten()
-  msrMaxFlt = msrMax.flatten()
-  cnd0 = msrMaxFlt > .1
-  mdlMaxFlt = mdlMaxFlt[cnd0]
-  msrMaxFlt = msrMaxFlt[cnd0]
+  mdlStatFlt = mdlStat.flatten()
+  msrStatFlt = msrStat.flatten()
+  cnd0 = msrStatFlt > .1
+  mdlStatFlt = mdlStatFlt[cnd0]
+  msrStatFlt = msrStatFlt[cnd0]
   
-  ax.scatter(msrMaxFlt, mdlMaxFlt, 10)
+  ax.scatter(msrStatFlt, mdlStatFlt, 10)
   ax.set_aspect('equal')
   ax.grid('on')
   
@@ -60,7 +97,7 @@ def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,0
   ax.set_ylim(lm)
   ax.plot(lm, lm, 'k')
 
-  pc = np.polyfit(msrMaxFlt, mdlMaxFlt, 1)
+  pc = np.polyfit(msrStatFlt, mdlStatFlt, 1)
   fitLn0 = pc[0]*lm[0] + pc[1]
   fitLn1 = pc[0]*lm[1] + pc[1]
   ax.plot(lm, [fitLn0, fitLn1], 'r')
@@ -88,7 +125,7 @@ def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,0
 
 
 
-def plotAllScatters():
+def plotAllMaxScatters():
   outputfig = 'allMdlScatterYrMx.png'
   models = """
 IPSL-INERIS-WRF331F
@@ -121,7 +158,90 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
     plotModelScatter(axmdl, mdl, mdlDir)
     plt.tight_layout()
     pass
+
+  plt.suptitle('Annual Maxima', y=.995, fontsize=13)
   f.savefig(outputfig, dpi=300)
+
+
+
+
+def plotAllMinScatters():
+  outputfig = 'allMdlScatterYrMin.png'
+  models = """
+IPSL-INERIS-WRF331F
+SMHI-RCA4_BC_CNRM-CERFACS-CNRM-CM5
+SMHI-RCA4_BC_ICHEC-EC-EARTH
+SMHI-RCA4_BC_IPSL-IPSL-CM5A-MR
+SMHI-RCA4_BC_MOHC-HadGEM2-ES
+SMHI-RCA4_BC_MPI-M-MPI-ESM-LR
+CLMcom-CCLM4-8-17_BC_CNRM-CERFACS-CNRM-CM5
+CLMcom-CCLM4-8-17_BC_ICHEC-EC-EARTH
+CLMcom-CCLM4-8-17_BC_MPI-M-MPI-ESM-LR
+DMI-HIRHAM5-ICHEC-EC-EARTH_BC
+KNMI-RACMO22E-ICHEC-EC-EARTH_BC
+"""
+  models = models.split()
+
+  rootDir = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/'
+
+  f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
+  plt.tight_layout()
+
+  axHind = axmtx[0, 0]
+  hindTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
+  hindStartDate = datetime(1990, 1, 1, 0, 0)
+  plotModelScatter(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, getStat=getYMin)
+
+  axmtxflt = np.array(axmtx).flatten()[1:]
+  for mdl, axmdl in zip(models, axmtxflt):
+    mdlDir = os.path.join(rootDir, mdl, 'notWaterUse')
+    plotModelScatter(axmdl, mdl, mdlDir, getStat=getYMin)
+    plt.tight_layout()
+    pass
+
+  plt.suptitle('Annual Minima', y=.995, fontsize=13)
+  f.savefig(outputfig, dpi=300)
+
+
+
+
+def plotAllMeanScatters():
+  outputfig = 'allMdlScatterYrMean.png'
+  models = """
+IPSL-INERIS-WRF331F
+SMHI-RCA4_BC_CNRM-CERFACS-CNRM-CM5
+SMHI-RCA4_BC_ICHEC-EC-EARTH
+SMHI-RCA4_BC_IPSL-IPSL-CM5A-MR
+SMHI-RCA4_BC_MOHC-HadGEM2-ES
+SMHI-RCA4_BC_MPI-M-MPI-ESM-LR
+CLMcom-CCLM4-8-17_BC_CNRM-CERFACS-CNRM-CM5
+CLMcom-CCLM4-8-17_BC_ICHEC-EC-EARTH
+CLMcom-CCLM4-8-17_BC_MPI-M-MPI-ESM-LR
+DMI-HIRHAM5-ICHEC-EC-EARTH_BC
+KNMI-RACMO22E-ICHEC-EC-EARTH_BC
+"""
+  models = models.split()
+
+  rootDir = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/'
+
+  f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
+  plt.tight_layout()
+
+  axHind = axmtx[0, 0]
+  hindTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
+  hindStartDate = datetime(1990, 1, 1, 0, 0)
+  plotModelScatter(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, getStat=getYMean)
+
+  axmtxflt = np.array(axmtx).flatten()[1:]
+  for mdl, axmdl in zip(models, axmtxflt):
+    mdlDir = os.path.join(rootDir, mdl, 'notWaterUse')
+    plotModelScatter(axmdl, mdl, mdlDir, getStat=getYMean)
+    plt.tight_layout()
+    pass
+
+  plt.suptitle('Annual Means', y=.995, fontsize=13)
+  f.savefig(outputfig, dpi=300)
+
 
     
     
