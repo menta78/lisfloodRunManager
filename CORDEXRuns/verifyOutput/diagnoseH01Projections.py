@@ -30,7 +30,7 @@ def printMsrMdlsMaxima():
 
 
 
-def plotScatterH01Models():
+def plotScatterH01ModelsMax():
   outputfig = 'allMdlScatterYrMxH0.png'
   ncOutletPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/outlets.nc'
   
@@ -58,7 +58,14 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
   f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
   plt.tight_layout()
-  axmtxflt = np.array(axmtx).flatten()
+
+  axHind = axmtx[0, 0]
+  hindTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
+  hindStartDate = datetime(1990, 1, 1, 0, 0)
+  plotBaselineMeasuresScatter.plotModelScatter(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, 
+       getStat=plotBaselineMeasuresScatter.getYMax)
+
+  axmtxflt = np.array(axmtx).flatten()[1:]
   axinvisible = []
   for mdl, axmdl in zip(models, axmtxflt):
     modelName = mdl.replace('/', '_')
@@ -72,12 +79,138 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
         axinvisible.append(axmdl)
         continue
       loadOutletDischargeFromNc.nc2tss(ncOutletPth, ncFlPth, tssFlPth)
-    plotBaselineMeasuresScatter.plotModelScatter(axmdl, modelName, tssFlPth)
+    plotBaselineMeasuresScatter.plotModelScatter(axmdl, modelName, tssFlPth,
+       getStat=plotBaselineMeasuresScatter.getYMax)
     plt.tight_layout()
     pass
   for ax in axinvisible:
     ax.set_visible(False)
-  axmtxflt[-1].set_visible(False)
+
+  plt.suptitle('Annual Maxima (H0)', y=.995, fontsize=13)
   f.savefig(outputfig, dpi=300)
 
   
+
+
+
+def plotScatterH01ModelsMin():
+  outputfig = 'allMdlScatterYrMinH0.png'
+  ncOutletPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/outlets.nc'
+  
+  h0NcRootDir = '/H01_Fresh_Water/Europe/BernyRuns/RunsCCLUWDproj/'
+  h0TssRootDir = './h01tss/'
+  try:
+    os.mkdir(h0TssRootDir)
+  except:
+    pass
+
+  mdls = """
+IPSL-INERIS-WRF331F_BC
+SMHI-RCA4_BC/CNRM-CERFACS-CNRM-CM5
+SMHI-RCA4_BC/ICHEC-EC-EARTH
+SMHI-RCA4_BC/IPSL-IPSL-CM5A-MR
+SMHI-RCA4_BC/MOHC-HadGEM2-ES
+SMHI-RCA4_BC/MPI-M-MPI-ESM-LR
+CLMcom-CCLM4-8-17_BC/CNRM-CERFACS-CNRM-CM5
+CLMcom-CCLM4-8-17_BC/ICHEC-EC-EARTH
+CLMcom-CCLM4-8-17_BC/MPI-M-MPI-ESM-LR
+DMI-HIRHAM5-ICHEC-EC-EARTH_BC
+KNMI-RACMO22E-ICHEC-EC-EARTH_BC
+"""
+  models = mdls.split()
+
+  f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
+  plt.tight_layout()
+
+  axHind = axmtx[0, 0]
+  hindTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
+  hindStartDate = datetime(1990, 1, 1, 0, 0)
+  plotBaselineMeasuresScatter.plotModelScatter(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, 
+       getStat=plotBaselineMeasuresScatter.getYMin)
+
+  axmtxflt = np.array(axmtx).flatten()[1:]
+  axinvisible = []
+  for mdl, axmdl in zip(models, axmtxflt):
+    modelName = mdl.replace('/', '_')
+    print('  elaborating model ' + modelName)
+    tssFlPth = os.path.join(h0TssRootDir, 'disWin_' + modelName + '.tss')
+    if not os.path.isfile(tssFlPth):
+      print('    tss file not found, creating it (this can take a while): ' + tssFlPth)
+      ncFlPth = os.path.join(h0NcRootDir, mdl, 'hist/Europe_all/dis.nc')
+      if not os.path.isfile(ncFlPth):
+        print('      Cannot find output nc either. Skipping model')
+        axinvisible.append(axmdl)
+        continue
+      loadOutletDischargeFromNc.nc2tss(ncOutletPth, ncFlPth, tssFlPth)
+    plotBaselineMeasuresScatter.plotModelScatter(axmdl, modelName, tssFlPth,
+       getStat=plotBaselineMeasuresScatter.getYMin)
+    plt.tight_layout()
+    pass
+  for ax in axinvisible:
+    ax.set_visible(False)
+
+  plt.suptitle('Annual Minima (H0)', y=.995, fontsize=13)
+  f.savefig(outputfig, dpi=300)
+
+
+
+def plotScatterH01ModelsMean():
+  outputfig = 'allMdlScatterYrMeanH0.png'
+  ncOutletPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/outlets.nc'
+  
+  h0NcRootDir = '/H01_Fresh_Water/Europe/BernyRuns/RunsCCLUWDproj/'
+  h0TssRootDir = './h01tss/'
+  try:
+    os.mkdir(h0TssRootDir)
+  except:
+    pass
+
+  mdls = """
+IPSL-INERIS-WRF331F_BC
+SMHI-RCA4_BC/CNRM-CERFACS-CNRM-CM5
+SMHI-RCA4_BC/ICHEC-EC-EARTH
+SMHI-RCA4_BC/IPSL-IPSL-CM5A-MR
+SMHI-RCA4_BC/MOHC-HadGEM2-ES
+SMHI-RCA4_BC/MPI-M-MPI-ESM-LR
+CLMcom-CCLM4-8-17_BC/CNRM-CERFACS-CNRM-CM5
+CLMcom-CCLM4-8-17_BC/ICHEC-EC-EARTH
+CLMcom-CCLM4-8-17_BC/MPI-M-MPI-ESM-LR
+DMI-HIRHAM5-ICHEC-EC-EARTH_BC
+KNMI-RACMO22E-ICHEC-EC-EARTH_BC
+"""
+  models = mdls.split()
+
+  f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
+  plt.tight_layout()
+
+  axHind = axmtx[0, 0]
+  hindTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
+  hindStartDate = datetime(1990, 1, 1, 0, 0)
+  plotBaselineMeasuresScatter.plotModelScatter(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, 
+       getStat=plotBaselineMeasuresScatter.getYMean)
+
+  axmtxflt = np.array(axmtx).flatten()[1:]
+  axinvisible = []
+  for mdl, axmdl in zip(models, axmtxflt):
+    modelName = mdl.replace('/', '_')
+    print('  elaborating model ' + modelName)
+    tssFlPth = os.path.join(h0TssRootDir, 'disWin_' + modelName + '.tss')
+    if not os.path.isfile(tssFlPth):
+      print('    tss file not found, creating it (this can take a while): ' + tssFlPth)
+      ncFlPth = os.path.join(h0NcRootDir, mdl, 'hist/Europe_all/dis.nc')
+      if not os.path.isfile(ncFlPth):
+        print('      Cannot find output nc either. Skipping model')
+        axinvisible.append(axmdl)
+        continue
+      loadOutletDischargeFromNc.nc2tss(ncOutletPth, ncFlPth, tssFlPth)
+    plotBaselineMeasuresScatter.plotModelScatter(axmdl, modelName, tssFlPth,
+       getStat=plotBaselineMeasuresScatter.getYMean)
+    plt.tight_layout()
+    pass
+  for ax in axinvisible:
+    ax.set_visible(False)
+
+  plt.suptitle('Annual Means (H0)', y=.995, fontsize=13)
+  f.savefig(outputfig, dpi=300)
+
+
