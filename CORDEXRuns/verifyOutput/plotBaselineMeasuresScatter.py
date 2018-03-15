@@ -4,7 +4,8 @@ from datetime import datetime
 from matplotlib import pyplot as plt
 import loadTssFile
 
-defMsrsTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/testdata/disWin_measuresGauges.tss'
+#defMsrsTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/testdata/disWin_measuresGauges.tss'
+defMsrsTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/validationData/Qts_Europe_measurements.csv'
 
 
 def getYMax(tms, dis, startDate, endDate):
@@ -20,7 +21,7 @@ def getYMax(tms, dis, startDate, endDate):
     y = yrs[iy]
     cndy = estYrs == y
     disy = dis[cndy, :]
-    disMaxy = np.max(disy, 0)
+    disMaxy = np.nanmax(disy, 0)
     disMax[iy, :] = disMaxy
   return yrs, disMax
 
@@ -38,7 +39,7 @@ def getYMin(tms, dis, startDate, endDate):
     y = yrs[iy]
     cndy = estYrs == y
     disy = dis[cndy, :]
-    disMiny = np.min(disy, 0)
+    disMiny = np.nanmin(disy, 0)
     disMin[iy, :] = disMiny
   return yrs, disMin
 
@@ -56,7 +57,7 @@ def getYMean(tms, dis, startDate, endDate):
     y = yrs[iy]
     cndy = estYrs == y
     disy = dis[cndy, :]
-    disMeany = np.mean(disy, 0)
+    disMeany = np.nanmean(disy, 0)
     disMean[iy, :] = disMeany
   return yrs, disMean
 
@@ -67,7 +68,7 @@ def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,0
     tmsMdl, statIdsMdl, disMdl = loadTssFile.loadTssFile(modelTssPath, startDate=modelStartDate)
   else:
     tmsMdl, statIdsMdl, disMdl = loadTssFile.loadTssFromDir(modelTssPath, startDate=modelStartDate)
-  tmsMsrs, statIdsMsrs, disMsrs = loadTssFile.loadTssFile(msrsTssFl, startDate=msrsStartDate)
+  tmsMsrs, statIdsMsrs, disMsrs = loadTssFile.loadMeasurePseudoTss(msrsTssFl, selectStatIds=statIdsMdl)
   assert (statIdsMdl == statIdsMsrs).all()
   
   startDate = max(min(tmsMdl), min(tmsMsrs))
@@ -81,9 +82,14 @@ def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,0
 
   mdlStatFlt = mdlStat.flatten()
   msrStatFlt = msrStat.flatten()
-  cnd0 = msrStatFlt > .1
-  mdlStatFlt = mdlStatFlt[cnd0]
-  msrStatFlt = msrStatFlt[cnd0]
+  cnd = np.logical_not( 
+       np.logical_or(np.isnan(msrStatFlt), np.isnan(mdlStatFlt))
+       )
+  mdlStatFlt = mdlStatFlt[cnd]
+  msrStatFlt = msrStatFlt[cnd]
+  cnd = np.logical_and(mdlStatFlt >= .1*msrStatFlt, msrStatFlt >= .1*mdlStatFlt)
+  mdlStatFlt = mdlStatFlt[cnd]
+  msrStatFlt = msrStatFlt[cnd]
   
   ax.scatter(msrStatFlt, mdlStatFlt, 10)
   ax.set_aspect('equal')

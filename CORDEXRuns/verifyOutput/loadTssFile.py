@@ -47,7 +47,7 @@ def loadTssFile(filePath, startDate=datetime(1981, 01, 01), timeDelta = relative
     dis = dis[:, idx]
     statIds = selectStatIds
 
-  dis[dis > 1e20] = 0
+  dis[dis > 1e20] = np.nan
 
   return tms, statIds, dis
 
@@ -72,4 +72,40 @@ def loadTssFromDir(dirPath, selectStatIds=None, startDate=datetime(1981, 01, 01)
   return tms, statIds, dis
     
     
+
+
+# msr file: /STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/validationData/Qts_Europe_measurements.csv
+def loadMeasurePseudoTss(msrFilePath, selectStatIds = None):
+  fl = open(msrFilePath)
+  stats = fl.readline().strip(' \n\r\t,').split(',')
+  statIds = [int(st.replace('C', '')) for st in stats]
+  
+  tms = []
+  dis = []
+  for ln in fl:
+    ln = ln.strip(' \n\r\t')
+    vls = ln.split(',')
+    disActDate =[float(v) if v != '' else np.nan for v in vls[1:]]
+    actDate = datetime.strptime(vls[0], '%m/%d/%Y')
+    tms.append(actDate)
+    dis.append(disActDate)
+
+  tms = np.array(tms)
+  statIds = np.array(statIds)
+  dis = np.array(dis)
+
+  statIndx = np.argsort(statIds)
+  statIds = statIds[statIndx]
+  dis = dis[:, statIndx]
+
+  if not selectStatIds is None:
+    selectStatIds = np.array(selectStatIds)
+    idx = np.searchsorted(statIds, selectStatIds)
+    dis = dis[:, idx]
+    statIds = selectStatIds
+
+  dis[dis > 1e20] = np.nan
+
+  return tms, statIds, dis
+
 
