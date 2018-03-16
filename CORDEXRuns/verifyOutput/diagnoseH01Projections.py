@@ -30,7 +30,7 @@ def printMsrMdlsMaxima():
 
 
 
-def plotScatterH01ModelsMax():
+def plotScatterH01ModelsMax(avgYearsByYear=False):
   outputfig = 'allMdlScatterYrMxH0.png'
   ncOutletPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/outlets.nc'
   
@@ -59,11 +59,13 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
   plt.tight_layout()
 
+  getStat = plotBaselineMeasuresScatter.getYMax if avgYearsByYear else plotBaselineMeasuresScatter.getYMaxMean
+
   axHind = axmtx[0, 0]
   hindTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
   hindStartDate = datetime(1990, 1, 1, 0, 0)
-  plotBaselineMeasuresScatter.plotModelScatter(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, 
-       getStat=plotBaselineMeasuresScatter.getYMax)
+  plotBaselineMeasuresScatter.plotModelScatterLog(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, 
+       getStat=getStat)
 
   axmtxflt = np.array(axmtx).flatten()[1:]
   axinvisible = []
@@ -79,8 +81,8 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
         axinvisible.append(axmdl)
         continue
       loadOutletDischargeFromNc.nc2tss(ncOutletPth, ncFlPth, tssFlPth)
-    plotBaselineMeasuresScatter.plotModelScatter(axmdl, modelName, tssFlPth,
-       getStat=plotBaselineMeasuresScatter.getYMax)
+    plotBaselineMeasuresScatter.plotModelScatterLog(axmdl, modelName, tssFlPth,
+       getStat=getStat)
     plt.tight_layout()
     pass
   for ax in axinvisible:
@@ -93,7 +95,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
 
 
-def plotScatterH01ModelsMin():
+def plotScatterH01ModelsMin(avgYearsByYear=False):
   outputfig = 'allMdlScatterYrMinH0.png'
   ncOutletPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/outlets.nc'
   
@@ -122,11 +124,13 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
   plt.tight_layout()
 
+  getStat = plotBaselineMeasuresScatter.getYMin if avgYearsByYear else plotBaselineMeasuresScatter.getYMinMean
+
   axHind = axmtx[0, 0]
   hindTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
   hindStartDate = datetime(1990, 1, 1, 0, 0)
-  plotBaselineMeasuresScatter.plotModelScatter(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, 
-       getStat=plotBaselineMeasuresScatter.getYMin)
+  plotBaselineMeasuresScatter.plotModelScatterLog(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, 
+       getStat=getStat)
 
   axmtxflt = np.array(axmtx).flatten()[1:]
   axinvisible = []
@@ -142,8 +146,8 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
         axinvisible.append(axmdl)
         continue
       loadOutletDischargeFromNc.nc2tss(ncOutletPth, ncFlPth, tssFlPth)
-    plotBaselineMeasuresScatter.plotModelScatter(axmdl, modelName, tssFlPth,
-       getStat=plotBaselineMeasuresScatter.getYMin)
+    plotBaselineMeasuresScatter.plotModelScatterLog(axmdl, modelName, tssFlPth,
+       getStat=getStat)
     plt.tight_layout()
     pass
   for ax in axinvisible:
@@ -154,7 +158,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
 
 
-def plotScatterH01ModelsMean():
+def plotScatterH01ModelsMean(avgYearsByYear=False):
   outputfig = 'allMdlScatterYrMeanH0.png'
   ncOutletPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/outlets.nc'
   
@@ -183,11 +187,13 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   f, axmtx = plt.subplots(3, 4, figsize=(12, 9))
   plt.tight_layout()
 
+  getStat = plotBaselineMeasuresScatter.getYMean if avgYearsByYear else plotBaselineMeasuresScatter.getTotMean
+
   axHind = axmtx[0, 0]
   hindTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/efasTss/disWin.tss'
   hindStartDate = datetime(1990, 1, 1, 0, 0)
-  plotBaselineMeasuresScatter.plotModelScatter(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, 
-       getStat=plotBaselineMeasuresScatter.getYMean)
+  plotBaselineMeasuresScatter.plotModelScatterLog(axHind, 'Hindcast', hindTssFile, modelStartDate=hindStartDate, 
+       getStat=getStat)
 
   axmtxflt = np.array(axmtx).flatten()[1:]
   axinvisible = []
@@ -203,8 +209,8 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
         axinvisible.append(axmdl)
         continue
       loadOutletDischargeFromNc.nc2tss(ncOutletPth, ncFlPth, tssFlPth)
-    plotBaselineMeasuresScatter.plotModelScatter(axmdl, modelName, tssFlPth,
-       getStat=plotBaselineMeasuresScatter.getYMean)
+    plotBaselineMeasuresScatter.plotModelScatterLog(axmdl, modelName, tssFlPth,
+       getStat=getStat)
     plt.tight_layout()
     pass
   for ax in axinvisible:
