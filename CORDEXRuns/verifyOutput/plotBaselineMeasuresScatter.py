@@ -398,4 +398,31 @@ def plotModelScatterEfasMin():
   plotModelScatterLog(ax, 'Hindcast', modelTssFile, modelStartDate=modelStartDate, scatterSize=10, getStat=getYMinMean)
   f.savefig(outputfig, dpi=300)
 
+def plotModelScatter_testValerioSttsIPSLinput():
+  outputfig = 'testValerioSttsIPSLinput_max.png'
+  modelTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/validationData/disWin_test_valerioStts_IPSLinput.tss'
+  modelStartDate = datetime(1990, 1, 1, 0, 0)
+  f = plt.figure(figsize=(3, 3))
+  ax = f.gca()
+  plotModelScatter(ax, 'test hindcast stts\nIPSL input, max', modelTssFile, modelStartDate=modelStartDate, scatterSize=10, getStat=getYMaxMean)
+  f.savefig(outputfig, dpi=300)
+  plt.cla()
+
+  outputfig = 'testValerioSttsIPSLinput_mean.png'
+  modelTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/validationData/disWin_test_valerioStts_IPSLinput.tss'
+  modelStartDate = datetime(1990, 1, 1, 0, 0)
+  f = plt.figure(figsize=(3, 3))
+  ax = f.gca()
+  plotModelScatter(ax, 'test hindcast stts\nIPSL input, mean', modelTssFile, modelStartDate=modelStartDate, scatterSize=10, getStat=getTotMean)
+  f.savefig(outputfig, dpi=300)
+  plt.cla()
+
+  outputfig = 'testValerioSttsIPSLinput_min.png'
+  modelTssFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/validationData/disWin_test_valerioStts_IPSLinput.tss'
+  modelStartDate = datetime(1990, 1, 1, 0, 0)
+  f = plt.figure(figsize=(3, 3))
+  ax = f.gca()
+  plotModelScatter(ax, 'test hindcast stts\nIPSL input, min', modelTssFile, modelStartDate=modelStartDate, scatterSize=10, getStat=getYMinMean)
+  f.savefig(outputfig, dpi=300)
+  plt.cla()
 
