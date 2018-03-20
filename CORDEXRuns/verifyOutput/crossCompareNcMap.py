@@ -100,7 +100,9 @@ def plotAll():
     ax = axmtx[0, i]
     ct = ax.contourf(xx, yy, ratioM, range(-mx, mx, dc), cmap='jet')
     cbaxes = inset_axes(ax, width='3%', height='50%', loc=1)
-    plt.colorbar(ct, cax=cbaxes, orientation='vertical')
+    cb = plt.colorbar(ct, cax=cbaxes, orientation='vertical')
+    if varName == 'ta':
+      cb.set_label('$\Delta T (K)$', labelpad=-40)
     cbaxes.yaxis.set_ticks_position('left')
     ax.set_xticklabels([])
     ax.set_yticklabels([])
