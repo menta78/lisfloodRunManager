@@ -1,0 +1,54 @@
+[GENERIC]
+
+NETCDF_REFERENCE = \n       A European daily high-resolution gridded meteorological data set for 1990 - 2011\n      - V. Ntegeka, P. Salamon, G. Gomes, H. Sint, V., Lorini, J. Thielen\n
+NETCDF_TITLE = Lisflood meteo maps 1990-2014 for European setting Feb. 2015
+NETCDF_KEYWORDS = Lisflood, Europe
+NETCDF_SOURCE = Lisflood Europe meteo maps - pb2015
+NETCDF_INSTITUTION = JRC H01/H07
+
+[DIMENSION]
+
+TOP = +2695000
+BOTTOM = -1355000
+LEFT = -1700000
+RIGHT = +1700000
+
+CELL_SIZE = 5000
+
+COLUMNS = 680
+ROWS = 810
+
+[PROJECTION]
+
+FALSE_EASTING = 0.0
+FALSE_NORTHING = 0.0
+ORIGIN_LONGITUDE = 9.0
+ORIGIN_LATITUDE = 48.0
+SEMI_MAJOR_AXIS = 6378388.0
+INVERSE_FLATTENING = 0.0
+PARAMS = +proj=laea +ellps=sphere +units=m +R=6378388 +lat_0=48 +lon_0=9 +x_0=0 +y_0=0
+EPSG_CODE = 
+GRID_MAPPING = lambert_azimuthal_equal_area
+STRING = PROJCS["GISCO LAEA",GEOGCS["Not specified",DATUM["Not specified",SPHEROID["Sphere",6378388.0,0.0]],PRIMEM["Greenwich",0.0],UNIT["Degree",0.0174532925199433]],PROJECTION["Lambert_Azimuthal_Equal_Area"],PARAMETER["False_Easting",0.0],PARAMETER["False_Northing",0.0],PARAMETER["latitude_of_center",48],PARAMETER["longitude_of_center",9],UNIT["Meter",1.0]]
+
+[VAR_X]
+
+NAME = x
+STANDARD_NAME = projection_x_coordinate
+LONG_NAME = x coordinate of projection
+UNIT = Meter
+
+[VAR_Y]
+
+NAME = y
+STANDARD_NAME = projection_Y_coordinate
+LONG_NAME = Y coordinate of projection
+UNIT = Meter
+
+[VAR_TIME]
+
+NAME = time
+STANDARD_NAME = time
+LONG_NAME = time
+UNIT = days since 1990-01-01 00:00:00.0
+
