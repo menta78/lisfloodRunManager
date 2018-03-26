@@ -137,6 +137,35 @@ def plotAll():
 
   fg.savefig(outputfig, dpi=300)
 
+
+
+
+def plotMeanETBerny():
+  outputfig = 'crossComparisonEtBerny.png'
+  hindcastMeteoFlPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/input/hindcast/et.nc'
+  cordexMeteoFlPth = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/bernyTest/et_mean.nc'
+  fg = plt.figure(figsize=(4, 4))
+  ax = fg.gca()
+  xx, yy, mnH, pctl95H, pctl99H = getMaps(hindcastMeteoFlPth, 'et', 'hindcast')
+  
+  ds = xarray.open_dataset(cordexMeteoFlPth)
+  mnP = np.squeeze(np.array(ds.variables['et']))
+  ds.close()
+  
+  ratioM = (mnP/mnH - 1)*100.
+  dc = 10
+  mx = int(np.ceil(np.nanpercentile(ratioM[:], 99.5)/10)*10)
+  ct = ax.contourf(xx, yy, ratioM, range(-mx, mx, dc), cmap='jet')
+  cbaxes = inset_axes(ax, width='3%', height='50%', loc=1)
+  cb = plt.colorbar(ct, cax=cbaxes, orientation='vertical')
+  cb.set_label('$\Delta$ %', labelpad=-55, fontsize=10)
+  ax.set_xticklabels([])
+  ax.set_yticklabels([])
+  ax.grid('on')
+  #plt.tight_layout()
+
+  fg.savefig(outputfig, dpi=300)
+  
   
 
 
@@ -226,3 +255,4 @@ def plotAllAlfieri():
   plt.tight_layout()
 
   fg.savefig(outputfig, dpi=300)
+  
