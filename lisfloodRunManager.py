@@ -255,6 +255,9 @@ class lisfloodRunManager:
       
 
   def executeNextRun(self):
+    if self.currentRunStartDate >= self.calendarEnd:
+      print('  all run complete. Quitting')
+      return False
     print('  elaborating ' + str(self.currentRunStartDate))
     self.extractInitConditions()
     settingsFile = self.compileTemplate()
@@ -275,7 +278,7 @@ class lisfloodRunManager:
     if self.preliminaryRun:
       return False
     else:
-      return self.currentRunStartDate <= self.calendarEnd
+      return self.currentRunStartDate < self.calendarEnd
 
 
   def iterateRun(self):
