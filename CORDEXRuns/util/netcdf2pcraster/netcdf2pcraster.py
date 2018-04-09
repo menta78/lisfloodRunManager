@@ -39,7 +39,7 @@ def parseArguments():
 def netcdf2pcraster(ncFilePath, ncVarName, pcrPrototype, pcrOutDir, asc2mapcmd='asc2map', tmpdir='/dev/shm/',
                     nctimevar='time', ncxvar='x', ncyvar='y', recovery=False, pcrVarName=''):
   ndim = 3
-  mapNameNChar = 12
+  mapNameNChar = 11
 
   tmpdir1 = os.path.join(tmpdir, 'tmp')
   try:
@@ -68,8 +68,8 @@ def netcdf2pcraster(ncFilePath, ncVarName, pcrPrototype, pcrOutDir, asc2mapcmd='
     iDimTime = ncvar.dims.index(nctimevar)
     ntime = ncvar.shape[iDimTime]
     for itime in range(ntime):
-      print()
-      print()
+      print
+      print
       print('time step ' + str(itime + 1))
   
       namePaddingLen = mapNameNChar - len(pcrVarName)
@@ -95,9 +95,9 @@ def netcdf2pcraster(ncFilePath, ncVarName, pcrPrototype, pcrOutDir, asc2mapcmd='
       if exst != 0:
         raise Exception('something wrong. Quitting')
       
-      print()
-      print()
-      print('All done! Quitting')
+    print
+    print
+    print('All done! Quitting')
   finally:
     try:
       shutil.rmtree(tmpdir1)
