@@ -1,0 +1,189 @@
+#! /usr/bin/env python2.4
+#
+# Simple LISVAP batch utility version 27 July 2006 (based on lfbatch 1 June 2006)
+# Author: JvdK
+# Requires Python v. 2.4 or better
+#
+# LFPath needs to be installed in same directory as LISVAP wrapper!
+#
+# In case of different LISVAP versions, just install lfbatch in dir of version
+# you want to use and execute it from there.
+#
+# TODO:     1. maybe put all generated sh scripts in temporary dir?
+#           2. Redirect stdout/stderr to same dir, using file names that refer to job-IDs (error tracking!)?
+
+import sys, os, string, imp
+
+def main_is_frozen():
+    return (hasattr(sys, "frozen") or # new py2exe
+            hasattr(sys, "importers") # old py2exe
+            or imp.is_frozen("__main__")) # tools/freeze
+
+def get_main_dir():
+    if main_is_frozen():
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(sys.argv[0])
+
+def errorExit(msg):
+    print "ERROR (lfbatch): "+msg
+    sys.exit()
+
+
+def addPath(PathIn,FileIn):
+    # This function appends a file name (FileIn) to a path definition (PathIn)
+    # Result conforms to OS conventions (forward/backard slashes)
+    #
+    # Example:
+    #
+    # addpath("d:/whereever","whatever.doc")
+    #
+    # result: d:\whereever\whatever.doc (Win)
+    # result: d:/whereever/whatever.doc (Linux)
+    #
+    # Using forward slashes in input arguments is always the safest bet
+    # (backward slashes may give unpredictable results, so avoid them!)
+    #
+    result=os.path.normpath(PathIn+ "/" + FileIn)
+    return result
+
+def isAbsolutePath(PathIn):
+    # Returns True if file path appears to be absolute path,
+    # False otherwise
+
+    if os.path.basename(PathIn) == PathIn:
+        result=False
+    else:
+        result=True
+    return result
+
+# /// MAIN CODE STARTS HERE!!///
+
+
+# Construct some text strings that contain info on model
+# and command-line arguments
+
+LFInfo="\n"
+LFInfo=LFInfo + "  lvbatch version 27 July 2006 (JvdK)" + "\n"
+
+LFUsage="\n"
+LFUsage=LFUsage + "  usage : lvbatch <InputList> [SubmitString]" + "\n"
+LFUsage=LFUsage + "\n"
+LFUsage=LFUsage + "  [SubmitString] is optional, and should be wrapped in quotes"  + "\n"
+LFUsage=LFUsage + "   if it contains any whitespace characters (e.g. qsub switches etc.)" + "\n"
+LFUsage=LFUsage + "\n"
+
+# Command line arguments to string variable 'argv'
+argv=sys.argv
+
+# What's the full path / location where lfbatch is located (it is assumed that LISVAP
+# itself is also located here!!)
+
+LF_Path=get_main_dir()
+LF_Path=os.path.abspath(LF_Path)
+
+# Default command to submit job to queue (can be overruled on command-line) 
+SubmitString="qsub -q big"
+
+# Count number of arguments (remember first argument -
+# which has index 0 - is the executable/script name!!
+argc=len(argv)
+
+# Wrong number of arguments: display syntax and exit..
+if argc < 2:
+    print LFInfo
+    print LFUsage
+    sys.exit()
+
+# Command-line arguments
+
+# 1st argument: input file
+InputFile=os.path.normpath(argv[1])
+
+# 2nd argument (optional): alternative submit string (between quotes if containing
+# whitespace chars)
+if argc > 2:
+    SubmitString=argv[2]
+
+# Lisvap application (full path)
+LisvapApp=addPath(LF_Path,"lisvap")
+
+# Check if Lisvap executable exists and exit if not
+if os.path.isfile(LisvapApp)==False:
+    msg=LisvapApp +" does not exist!"
+    errorExit(msg)
+
+# Check if input list (file) exists
+if os.path.isfile(InputFile)==False:
+    msg=InputFile + " does not exist!"
+    errorExit(msg)
+
+# Print some info to screen
+print LFInfo
+
+# Full path of current dir (or working directory)
+# This is the location where each job's bash script is generated
+WorkDir=os.path.abspath(os.path.curdir)
+
+# Load input file for reading 
+f=open(InputFile,"r")
+
+# Put contents of file into a list.
+# Beware of Python's way of numbering list elements:
+# MyConfig[0] is first element, MyConfig[1] second, and so on
+myInputList=f.readlines()
+f.close()
+
+# How many lines do we have here?
+numberOfLines=len(myInputList)
+
+# Parse input list, create bash script for each job & submit it
+
+for i in range(0,numberOfLines,1):
+    # Strip any leading/trailing crap
+    thisLine=string.strip(myInputList[i])
+
+    # Split at whitespace
+    thisLine=string.split(thisLine)
+
+    # Number of items?
+    noItemsLine=len(thisLine)
+
+    # Only process lines that contain sth meaningful (this will get rid of
+    # any trailing empty lines)
+    if noItemsLine > 1:
+
+        # First item: job-ID
+        thisJobID=thisLine[0]
+
+        print "Processing job-ID " + thisJobID
+
+        # Initialise text string that will contain bash script for this run
+        bashString="#!/bin/sh" + "\n" + "#$ -S /bin/sh" + "\n"
+
+        for j in range(1,noItemsLine,1):
+            thisItem=os.path.normpath(thisLine[j])
+            # Does item contain full (absolute) path?
+            isAbsolute=isAbsolutePath(thisItem)
+
+            if isAbsolute==False:
+                # No full path, assume file must be in current dir (i.e. the dir from which
+                # lfbatch is executed)
+                thisItem=addPath(WorkDir,thisItem)
+
+            # Add command to bash string script    
+            bashString=bashString + LisvapApp + " " + thisItem + "\n"
+
+        # Name of output bash script
+        bashFile=addPath(WorkDir,"lfbatch." + thisJobID)
+
+        # Write bash script
+        f=open(bashFile,"w")
+        f.writelines(bashString)
+        f.close()
+
+        # Submit bash script to queue
+        thisSubmit=SubmitString  + " " + bashFile
+        os.system(thisSubmit)
+
+
+

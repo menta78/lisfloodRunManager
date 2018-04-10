@@ -1,0 +1,72 @@
+<!-- stripped external subset of original pcraster.dtd -->
+
+<!ENTITY % PCRasterNS 'xmlns:pcr CDATA #FIXED "http://www.pcraster.nl/dtd"'>
+
+
+<!ENTITY % String 'CDATA' >
+
+<!ENTITY % InterSpacedSentence 'CDATA'>
+
+<!ENTITY % DateFormat '(MONDDYYYY|ISO8601)'>
+<!ENTITY % Date       'CDATA' >
+
+<!ENTITY % Word 'CDATA' >
+
+<!ENTITY % BinDoubleLE      'CDATA'>
+
+<!ENTITY % Boolean         '(true|false)'>
+<!ENTITY % PositiveInteger 'CDATA'>
+<!ENTITY % Integer         'CDATA'>
+<!ENTITY % Double          'CDATA'>
+
+<!ENTITY % DataEnvelopEncoding       '(pcrseal|text)'>
+<!ELEMENT dataEnvelop  (#PCDATA)>
+<!ATTLIST dataEnvelop
+          encoding     %DataEnvelopEncoding; #REQUIRED>
+
+<!ELEMENT runTimeSeal (systemLicense?,dataEnvelop+)>
+<!ATTLIST runTimeSeal
+          version         %PositiveInteger; #REQUIRED
+          fromPublicFile  %String;          #IMPLIED
+          xmlns           %String;          #IMPLIED
+          %PCRasterNS;>
+
+
+<!ELEMENT sealValueOf  EMPTY>
+<!ATTLIST sealValueOf
+          pattern      %String; #REQUIRED>
+<!ELEMENT sealSpecification  (sealValueOf+, systemLicense?)>
+
+<!ELEMENT systemLicense
+          (licensee,
+           expirationDate?,
+           licensedFeature*,
+           licenseKey*)>
+<!ATTLIST systemLicense
+          %PCRasterNS;>
+
+<!ELEMENT licensee EMPTY>
+<!ATTLIST licensee
+          value %InterSpacedSentence; #REQUIRED>
+
+<!ELEMENT expirationDate EMPTY>
+<!ATTLIST expirationDate
+          value      %Date;       #REQUIRED
+          dateFormat %DateFormat; #IMPLIED>
+
+<!ENTITY % LicensedFeatureEnum '(
+               DevelopersLicense|
+               EsriSupport|
+               GuiDesignSupport|
+               OrganizerSupport|
+               OptimizerSupport|
+               SealSupport
+               )' >
+<!ELEMENT licensedFeature EMPTY>
+<!ATTLIST licensedFeature
+          value %LicensedFeatureEnum; #REQUIRED>
+
+<!ELEMENT licenseKey   EMPTY>
+<!ATTLIST licenseKey
+          value %Word; #REQUIRED>
+

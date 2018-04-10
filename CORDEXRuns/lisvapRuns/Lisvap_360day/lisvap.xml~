@@ -1,0 +1,699 @@
+<?xml version="1.0" ?>
+<!DOCTYPE lisflood
+  SYSTEM 'lisflood.dtd'>
+<!-- Lisvap master code, JvdK,24-07-2006 --><lisflood>
+<sealSpecification>
+ <sealValueOf pattern="initial"/>
+ <sealValueOf pattern="dynamic"/>
+ <sealValueOf pattern="lfoption"/>
+</sealSpecification>
+<metadata>
+
+<date>02 May 2013</date>
+<author>Peter Burek, Johan van der Knijff</author>
+
+<notes>
+
+#######################################################
+#
+# ##       ####  ######  ##     ##    ###    ########  
+# ##        ##  ##    ## ##     ##   ## ##   ##     ## 
+# ##        ##  ##       ##     ##  ##   ##  ##     ## 
+# ##        ##   ######  ##     ## ##     ## ########  
+# ##        ##        ##  ##   ##  ######### ##        
+# ##        ##  ##    ##   ## ##   ##     ## ##        
+# ######## ####  ######     ###    ##     ## ##  
+# 
+#######################################################
+#
+#   Potential evaporation pre-processor for LISFLOOD water balance and flood model
+# 
+#    (C) Institute for Environment and Sustainability
+#        Joint Research Centre of the European Commission
+#        TP261, I-21020 Ispra (Va), Italy
+#
+# IMPORTANT(1): Lisvap is designed to be run using a DAILY time step. Using other time
+# intervals may give unexpected results and therefore doing so is NOT RECOMMENDED!
+#
+# IMPORTANT (2): it is assumed that all input maps have already been corrected
+# for altitude (if necessary). Lisvap script contains no altitude corrections,
+# (except for psychrometric constant)
+#
+# IMPORTANT (3): from WOFOST documentation (http://www.treemail.nl/download/treebook7/weather/chapt4.htm#eq4_26):
+#
+#   "The calculation of the photoperiodic day length makes no sense when the sun is 
+#   continuously at higher inclinations, therefore this calculation method is limited to 
+#   -66.5+4 and 66.5-4 degrees of latitude"
+#
+# ==> prevent any computation outside of this range (will yield negative extra-terrrestrial
+# radiation values for high latitudes!!
+# ------------------------------------------------------------
+#
+# # LISVAP02052013.XML   PCR2009W2M007
+# fixed Brunt_e=0.2 and Brunt_f=0.9 because with 2 values for each there was clear boundary forming around the 45 lat line in the output
+
+# LISVAP29102012.XML   PCR2009W2M006
+# major change with input from Victor Ntegeka
+# - net long-wave-radiation calculated now by default with Allen et al. 1994 formular
+# - old method by Brunt can be use with option useBrunt = 1
+# - removed use of table for Brunt_e Brunt_f as there are only 2 values in
+#    and default approach for calculating net long-wave-radiation is Allen et al. 1994
+# - Reading Actual vapour pressure maps (pd) and Incoming daily global solar radiation maps (rg) are default
+# - if option useRgdMaps = 0  use Hargreaves radiation equation (default:useRgdMaps = 1)
+# - if option usePenmanET =  0  use Hargreaves evapotranspiration (default:usePenmanET = 1)
+# Lisvap needs at least Pcraster version 2009 
+
+
+# LISVAP07072011.XML   PCR2007W1M005
+# added option useTavg
+# - uses avergae tempature instead of min and max Temperature
+# - only useful if you use radiantion rn, rg
+#
+#
+# LISVAP0204208.xml
+# Differences with respect to lisvap24012008.xml:
+# 1. Values of constants Brunt_e and Brunt_f are now defined in a lookup table as a function
+#    of latitude (Lat). Requires additional tables TabEBrunt and TabFBrunt
+#
+# LISVAP24012008.xml
+# Differences with respect to lisvap28072006.xml:
+#
+# All changes with respect to previous version were introduced to correct unintentional MV
+# creation at high latitudes:
+#
+# 1. DayLength eqn: changed 2nd occurrence of tmp1 by tmp2 (doesn't make any difference btw)
+# 2. Computation of DayLength resulted in MV at high latitudes. This is now corrected using
+#    a cover statement
+# 3. Computation of integral solar height resulted in MV and negative values at high latitudes.
+#    Added maximize and cover statement to fix this.
+# 4. Missing values in sunshine duration at high latitudes are now covered up (MV caused by zero 
+#    division in atmospheric transmission equation if Angot radiation equals 0)
+#
+#
+# LISVAP28072006.xml
+# Differences with respect to lisvap24072006.xml:
+#
+# 1. Changed handling of missing values; apparently simply setting a variable to 1e31 doesn't automatically
+#    result in mv! Instead, use variable "Nothing". 
+#
+#
+# LISVAP24072006.XML
+# 
+# based on evapmars09082005.mod + evapera26042004.mod
+# 
+# "lisvap" new name for LISFLOOD pre-processor to calculate evaporation
+#  lisvap uses wrapper similar to LISFLOOD wrapper (same layout applies) 
+#
+# Differences with respect to evapmars09082005:
+#
+# 1. Incorporated alternative input (e.g. TDew as substitute for EAct)
+# 2. Cloud cover / sunshine hours: it is now possible to exclude one (or both)
+#    of these variables
+# 3. Re-structured Rgd calculations.
+# 4. Standard PCRaster missing value identifier (NoDataFlag) is now used to identify missing values in 
+#    meteo input. Makes handling of multiple input variable combinations easier, and makes it easier to detect 
+#    if any essential input is missing (in that case there will be "holes" in the output maps). Modify interpolation
+#    scripts for this (use "1e31" for mv in sunshine, cloud cover, etc). 
+# 
+#
+
+
+</notes>
+
+</metadata>
+
+
+<lfmodule name="setConstants">
+<initial>
+
+Nothing=if(MaskMap eq 0, 1.0);
+	# Nonsense statement to create map of only missing values
+	# Note that non-mv may occur outside "true" part of MaskMap,
+	# but as long as PCRaster's missing value compression is activated
+	# (-m switch) nothing is calculated there anyway
+
+ZeroMask=if(MaskMap eq 1, scalar(0));
+	# Another nonsense statement to create map of scalar zero values
+	# (used to cover up missing values in relative sunshine duration
+	# computation)
+
+ZeroKelvin=273.15;
+	# Temperature in Kelvin corresponding to 0 degrees Centigrade
+
+Pi=3.14159265358979323846;
+	# Numerical value of Pi
+
+MJtoJ=1E6;
+	# Conversion factor from [MJ] to [J]
+
+DtDay=DtSec/86400;
+	# Time step, expressed as fraction of day 
+
+Cs=Cs*MJtoJ;
+Bh=Bh*MJtoJ;
+	# Convert Cs and Bh coefficients to [J/m2/d]
+
+<lfoption name="useBrunt" choice="1" default="0" >
+Brunt_e=0.2;
+Brunt_f=0.9;
+# with 2 values there is clear boundary forming around the 45 lat line in the output
+# 02 and 0.9 according to V. Ntegeka
+
+#Brunt_e=if(Lat lt 45,0.3,0.1);
+#Brunt_f=if(Lat lt 45,0.7,0.9);
+	# Brunt constants (net outgoing radiation equation)
+	# NOTE: in previous versions the values for Lat > 45
+	# were always used (i.e. 0.1 and 0.9, which were hard-coded!) 
+</lfoption>
+
+</initial>
+</lfmodule>
+
+<lfmodule name="readMeteo">
+<dynamic>
+
+# ************************************************************
+# ***** READ METEOROLOGICAL DATA *****************************
+# ************************************************************
+
+<lfoption name="useTavg" choice="0" default="1" >
+TMax=timeinput(TMaxMaps);
+	# Maximum temperature [deg C or K]
+
+TMin=timeinput(TMinMaps);
+	# Minimum temperature [deg C or K]
+
+
+</lfoption>
+
+<lfoption name="useTavg" choice="1" default="0" >
+TAvg=timeinput(TAvgMaps);
+DeltaT=scalar(0);
+	# average temperature [deg C or K]
+</lfoption>
+
+<lfoption name="usePenmanET" choice="1" default="1">
+ <lfoption name="useEActMaps" choice="1" default="1" >
+ EAct=timeinput(EActMaps);
+	# Actual vapour pressure [mbar]
+ </lfoption>
+
+ <lfoption name="useEActMaps" choice="0" default="0" >
+ EAct=Nothing;
+	# Flag to indicate missing Actual vapour pressure [mbar]
+ </lfoption>
+
+ <lfoption name="useTDewMaps" choice="1" default="0" >
+ TDew=timeinput(TDewMaps);
+ 	# Dewpoint temperature [deg C]
+ </lfoption>
+
+ <lfoption name="useTDewMaps" choice="0" default="1" >
+ TDew=Nothing;
+	# Flag to indicate missing dewpoint temperature
+ </lfoption>
+
+ <lfoption name="useWindMaps" choice="1" default="1" >
+ Wind=timeinput(WindMaps);
+	# Windspeed at 10 m altitude [m/s]
+ </lfoption>
+
+ <lfoption name="useWindMaps" choice="0" default="0" >
+ Wind=Nothing;
+	# Flag to indicate missing windspeed
+ </lfoption>
+
+ <lfoption name="useWindUVMaps" choice="1" default="0" >
+ WindV=timeinput(WindVMaps);
+ WindU=timeinput(WindUMaps);
+	# V- and U windspeed components at 10 m altitude [m/s]
+ </lfoption>
+
+ <lfoption name="useWindUVMaps" choice="0" default="1" >
+ WindV=Nothing;
+ WindU=Nothing;
+	# Flag to indicate missing V and U components
+ </lfoption>
+
+
+ <lfoption name="useSunMaps" choice="1" default="0" >
+ SunshineHour=timeinput(SunMaps);
+	# Number of daily bright sunshine hours  [hours]
+ </lfoption>
+
+ <lfoption name="useSunMaps" choice="0" default="1" >
+ SunshineHour=Nothing;
+	# Flag to indicate missing sunshine duration
+ </lfoption>
+
+ <lfoption name="useCloudMaps" choice="1" default="0" >
+ CloudCover=timeinput(CloudMaps);
+	# Cloud cover [octas]
+ </lfoption>
+
+ <lfoption name="useCloudMaps" choice="0" default="1" >
+ CloudCover=Nothing;
+ 	# Flag to indicate missing cloud cover
+ </lfoption>
+</lfoption>
+
+<lfoption name="usePenmanET" choice="0" default="0">
+ SunshineHour=Nothing;
+ CloudCover=Nothing;
+</lfoption>
+
+<lfoption name="useRgdMaps" choice="1" default="1" >
+# Following statements allow for the use of pre-calculated values
+# of incoming solar radiation and net longwave radiation, respectively
+# (resp. SSRD and STR in ERA40). 
+
+Rgd=timeinput(RgdMaps);
+	# Incoming (downward surface) solar radiation [J/m2/d] (SSRD variable in ERA40)
+</lfoption>
+
+<lfoption name="useRgdMaps" choice="0" default="0" >
+Rgd=Nothing;
+	# Incoming (downward surface) solar radiation [J/m2/d] (SSRD variable in ERA40)
+</lfoption>
+
+
+<lfoption name="useRNMaps" choice="1" default="0" >
+RN=(timeinput(RNMaps))*-1;
+	# Net longwave radiation [J/m2/d] (STR variable in ERA40) 
+	# Value of RN always *negative* (because net radiation flux is 
+	#   outgoing, i.e. from soil surface to atmosphere). Converted to
+	#   positive value here for consistency with original MARS version)
+
+</lfoption>
+
+
+</dynamic>
+</lfmodule>
+
+<lfmodule name="prepatoryCalculations">
+<dynamic>
+
+# ************************************************************
+# ***** PREPATORY CALCULATIONS********************************
+# ************************************************************
+
+CalendarDay=time()*DtDay +(CalendarDayStart-1);
+	# Current calendar day (days [1...366], 1st of January = 1 , and so on)
+ 
+CalendarDay=CalendarDay-rounddown(CalendarDay/365.25)*365.25;
+	# correction such that daynumber 366 is regarded as day 1 again etc.
+	# Takes into account leap years by setting year length to 365.25 days
+	# Produces non-integer values but this is no problem here...
+
+ <lfoption name="useTavg" choice="0" default="1" >
+ TAvg=0.5*(TMax+TMin);
+    # daily average temperature [deg C]
+ TMax=if(TemperatureInKelvinFlag eq 1, TMax- ZeroKelvin, TMax); 
+ TMin=if(TemperatureInKelvinFlag eq 1, TMin- ZeroKelvin, TMin);
+    # Convert to [deg C] if TMax/TMin/TDew are in Kelvin
+ DeltaT=max(TMax-TMin,0.0);
+    # difference between daily maximum and minimum temperature [deg C]
+ </lfoption>
+
+ TAvg=if(TemperatureInKelvinFlag eq 1, TAvg- ZeroKelvin, TAvg);
+    # Convert to [deg C] if TMax/TMin/TDew are in Kelvin
+
+<lfoption name="usePenmanET" choice="1" default="1">
+ TDew=if(TemperatureInKelvinFlag eq 1, TDew- ZeroKelvin, TDew);
+	# Convert to [deg C] if TMax/TMin/TDew are in Kelvin
+
+ # Actual vapour pressure: may be substituted by dewpoint temperature
+ # Following will work:
+ # 1. Combination of EActMaps and TDewMaps (in that case pixels where either variable
+ #    is missing should be indicated with MV)
+ # 2. Only EActMaps (defined for every pixel) 
+ # 3. Only TDewMaps (defined for every pixel) 
+ #
+ # If both are missing output will contain missing values
+
+ EActFromTDew=6.10588*exp((17.32491*TDew)/(TDew+238.102));
+	# Goudriaan equation (1977)
+	# actual vapour pressure [mbar]
+	# TDew [deg Celsius]
+	# (if TDew is not defined MV are generated)
+
+ EAct=cover(EAct, EActFromTDew);
+	# Fill up missing EAct data with figures calculated from dew point temperature
+
+ # Wind speed: can be fed into the script as either "regular" wind
+ # speed (default) or as separate U- and V- components
+ # Following will work:
+ # 1. Combination of wind speed and U/V components (in that case pixels where either variable
+ #    is missing should be indicated with MV)
+ # 2. Only wind speed (defined for every pixel) 
+ # 3. Only U/V components (defined for every pixel) 
+ #
+ # If both are missing output will contain missing values
+
+ WindFromUVComponents=sqrt(sqr(WindV)+sqr(WindU));
+	# Windspeed at 10 m, calculated from U- and V-components [m/s]
+	# (if U- and V-components are not defined MV are generated)
+
+ Wind=cover(Wind, WindFromUVComponents);
+	# Fill up missing wind speed data with figures calculated from components
+
+ </lfoption>
+ </dynamic>
+ </lfmodule>
+
+<lfmodule name="angotRadiation">
+<dynamic>
+
+# ************************************************************
+# ***** ANGOT RADIATION **************************************
+# ************************************************************
+
+Declin=-23.45*cos((360*(CalendarDay+10))/(365));
+	# solar declination [degrees]
+	
+SolarConstant=AvSolarConst*(1+(0.033*cos(360*CalendarDay/365)));
+	# solar constant at top of the atmosphere [J/m2/s]
+
+tmp1=((-sin(PD/Pi))+sin(Declin)*sin(Lat))/((cos(Declin)*cos(Lat))); 
+tmp2=if(tmp1 lt 0,scalar(asin(tmp1))-360,scalar(asin(tmp1)));
+DayLength=12+(24/180)*tmp2;
+	# daylength [hour]
+
+DayLength=cover(DayLength,0.0);
+	# Daylength equation can produce MV at high latitudes,
+	# this statements sets day length to 0 in that case  
+ 
+IntSolarHeight=3600*(DayLength*sin(Declin)*sin(Lat)+
+(24/Pi)*cos(Declin)*cos(Lat)*sqrt(1-sqr(tan(Declin)*tan(Lat))));
+	# integral of solar height [s] over the day
+
+IntSolarHeight=max(IntSolarHeight,0.0);
+	# Integral of solar height cannot be negative,
+	# so truncate at 0
+
+IntSolarHeight=cover(IntSolarHeight,0.0);
+	# Cover missing values at high latitudes by zeroes
+	
+RadiationAngot=IntSolarHeight*SolarConstant; 
+	# daily extra-terrestrial radiation (Angot radiation) [J/m2/d]
+
+</dynamic>
+</lfmodule>
+
+<lfmodule name="solarRadiation">>
+<dynamic>
+
+<lfoption name="useRgdMaps" choice="0" default="0" >
+
+# ************************************************************
+# ***** INCOMING SOLAR RADIATION******************************
+# ************************************************************
+
+# Angstrom formula: used if sunshine data are available
+
+RgdAngstrom=RadiationAngot*(Aa+Ba*(SunshineHour/DayLength));
+	# daily incoming solar radiation [J/m2/day]
+	# Aa,Ba: Angstrom regression coefficients
+	# (if SunshineHour is not defined MV are generated)
+
+# Supit formula: used if cloud cover (and no sunshine duration)data are available
+
+CloudTermSupit=sqrt(1-min(CloudCover,8)/8);
+	# Cloud cover term
+	# Note that CloudCover in octas can NEVER exceed 8, so minimize statement should
+	# never be needed!!
+	# (if CloudCover is not defined MV are generated)
+ 
+RgdSupit=RadiationAngot*(As*sqrt(DeltaT)+Bs*CloudTermSupit)+Cs;
+	# As,  Bs and Cs are Supit regression coefficients (but mind the units of especially Bs!)
+	# (if CloudCover is not defined MV are generated)
+
+# Hargreaves formula: used if neither sunshine nor cloud cover information are available   
+ 
+RgdHargreaves=Ah*RadiationAngot*sqrt(DeltaT)+Bh; 
+	# Estimate of Rgd based on Tmax and Tmin 
+
+# Final Rgd: take best-quality estimate
+Rgd=cover(RgdAngstrom, RgdSupit, RgdHargreaves);
+
+Rgd=max(Rgd,0.0);
+	# Apply minimum value of 0.0 (At high latitudes above equations can produce negative values
+	# if regression constants are negative and Angot radiation equals or approaches 0) 
+
+</lfoption>
+
+
+</dynamic>
+</lfmodule>
+
+<lfmodule name="longwaveRadiation">
+<dynamic>
+
+<lfoption name="useRNMaps" choice="0" default="1" >
+<lfoption name="usePenmanET" choice="1" default="1">
+# ************************************************************
+# ***** NET LONG-WAVE RADIATION *************************
+# ************************************************************
+<lfoption name="useBrunt" choice="0" default="1" >
+
+# equation Allen et al. 1994
+# using the digital elevation model
+# from:  An Update for the Definition of Reference Evapotranspiration  Allen et al. 1994
+
+Rso=RadiationAngot*(0.75+(2*10**-5*Dem));
+TransAtm_Allen=cover(Rgd/Rso,0);
+AdjCC=1.8*TransAtm_Allen-0.35;
+AdjCC=if(AdjCC lt 0, 0.05, AdjCC);
+AdjCC=if(AdjCC gt 1, 1, AdjCC);
+
+  </lfoption>
+
+<lfoption name="useBrunt" choice="1" default="0" >
+
+# Brunt (1932) equation
+
+  TransAtm=Rgd/RadiationAngot;
+	  # atmospheric transmission [-]
+	  # (Note that this can yield division by 0 if Angot radiation equals 0, this is dealt
+	  # with below)
+  RelSunDur=max((TransAtm-Aa)/Ba,0.0);
+	  # relative sunshine duration
+	  # Equation needed in case no measured sunshine duration data are available
+	  # If sunshine duration data ARE available equation will return 
+	  # measured values (equation simply is Angstrom formula rewritten for RelSunDur!!)
+	  # Note that if TransAtm lt Aa negative values can arise, hence maximize statement
+	  # (this again only happens if Rgd is near zero)
+  RelSunDur=cover(RelSunDur,ZeroMask);
+	  # Cover up missing values that were caused by zero division in atmospheric transmission
+	  # equation
+
+   AdjCC=(Brunt_e + Brunt_f*RelSunDur);
+	  # Cloud cover adjustment factor - Brunt (1932)
+
+</lfoption>
+
+# same for Allen or Brunt
+
+EmNet=(0.56-0.079*sqrt(EAct));
+	# Net emissivity
+RN=StefBolt*((TAvg+273)**4)*EmNet*AdjCC;
+	# net  longwave radiation [J/m2/day]
+
+
+</lfoption>
+</lfoption>
+</dynamic>
+</lfmodule>
+
+
+
+
+
+<lfmodule name="absorbedRadiation">
+<dynamic>
+<lfoption name="usePenmanET" choice="1" default="1">
+# ************************************************************
+# ***** NET ABSORBED RADIATION *******************************
+# ************************************************************
+
+LatHeatVap=2.501-0.002361*TAvg;
+	# latent heat of vaporization [MJ/kg]
+
+# Net absorbed radiation is calculated for three reference surfaces:
+#
+# 1. Reference vegetation canopy
+# 2. Bare soil surface
+# 3. Open water surface
+
+RNA=max(((1-AlbedoCanopy)*Rgd-RN)/(1E6*LatHeatVap),0.0);
+	# net absorbed radiation of reference vegetation canopy [mm/d]
+RNASoil=max(((1-AlbedoSoil)*Rgd-RN)/(1E6*LatHeatVap),0.0); 
+	# net absorbed radiation of bare soil surface
+RNAWater=max(((1-AlbedoWater)*Rgd-RN)/(1E6*LatHeatVap),0.0);
+	# net absorbed radiation of water surface
+
+</lfoption>
+</dynamic>
+</lfmodule>
+
+<lfmodule name="evaporativeDemand">
+<dynamic>
+<lfoption name="usePenmanET" choice="1" default="1">
+# ************************************************************
+# ***** EVAPORATIVE DEMAND OF THE ATMOSPHERE******************
+# ************************************************************
+
+Windspeed2=Wind*0.749;
+	# Adjust wind speed for measurement height: wind speed measured at
+	# 10 m, but needed at 2 m height
+	# Shuttleworth, W.J. (1993) in Maidment, D.R. (1993), p. 4.36
+ 
+BU=max(0.54+0.35*((DeltaT-12)/4),0.54);
+	# empirical constant in windspeed formula
+	# if DeltaT is less than 12 degrees, BU=0.54
+	
+ESat=6.10588*exp((17.32491*TAvg)/(TAvg+238.102));
+	# Goudriaan equation (1977)
+	# saturated vapour pressure [mbar]
+	# TAvg [deg Celsius]
+	# exp is correct (e-power) (Van Der Goot, pers. comm 1999)
+ 
+VapPressDef = max(ESat-EAct, 0.0);
+	# Vapour pressure deficit [mbar]
+
+# Evaporative demand is calculated for three reference surfaces:
+#
+# 1. Reference vegetation canopy
+# 2. Bare soil surface
+# 3. Open water surface
+
+EA=0.26*VapPressDef*(FactorCanopy+BU*Windspeed2);
+	# evaporative demand of reference vegetation canopy [mm/d]
+EASoil=0.26*VapPressDef*(FactorSoil+BU*Windspeed2);
+	# evaporative demand of bare soil surface [mm/d]
+EAWater=0.26*VapPressDef*(FactorWater+BU*Windspeed2);
+	# evaporative demand of water surface [mm/d]
+
+</lfoption>
+</dynamic>
+</lfmodule>
+
+<lfmodule name="psychrometricConstant">
+<dynamic>
+<lfoption name="usePenmanET" choice="1" default="1">
+# ************************************************************
+# ***** PSYCHROMETRIC CONSTANT AND SLOPE OF SATURATED ********
+# ***** VAPOUR PRESSURE CURVE ********************************
+# ************************************************************
+
+Psychro0=0.00163*(Press0/LatHeatVap);
+	# psychrometric constant at sea level [mbar/deg C]
+	# Corrected constant, was wrong originally
+	# Psychro0 should be around 0.67 mbar/ deg C
+
+Psychro=Psychro0*((293-0.0065*Dem)/293)**5.26;
+	# Correction for altitude (FAO, http://www.fao.org/docrep/X0490E/x0490e00.htm )
+	# Note that previously some equation from Supit et al was used,
+	# but this produced complete rubbish!
+
+Delta=((238.102*17.32491*ESat)/((TAvg+238.102)**2));
+	# slope of saturated vapour pressure curve [mbar/deg C]
+
+</lfoption>
+</dynamic>
+</lfmodule>
+
+<lfmodule name="potentialEvaporation">
+<dynamic>
+<lfoption name="usePenmanET" choice="1" default="1">
+# ************************************************************
+# ***** POTENTIAL REFERENCE EVAPO(TRANSPI)RATION ********
+# ************************************************************
+
+# Potential evapo(transpi)ration is calculated for three reference surfaces:
+#
+# 1. Reference vegetation canopy
+# 2. Bare soil surface
+# 3. Open water surface
+ 
+ETRef=((Delta*RNA)+(Psychro*EA))/(Delta+Psychro); 
+	# potential reference evapotranspiration rate [mm/day]
+ESRef=((Delta*RNASoil)+(Psychro*EASoil))/(Delta+Psychro);
+	# potential evaporation rate from a bare soil surface [mm/day] 
+EWRef=((Delta*RNAWater)+(Psychro*EAWater))/(Delta+Psychro);
+	# potential evaporation rate from water surface [mm/day] 
+
+</lfoption>
+</dynamic>
+</lfmodule>	
+
+
+
+<lfmodule name=" HargreavesEvapotranspiration">
+<dynamic>
+<lfoption name="usePenmanET" choice="0" default="0">
+# ************************************************************
+# ***** POTENTIAL REFERENCE EVAPO(TRANSPI)RATION ********
+# ***** using Hargreaves equation                ********
+# ************************************************************
+
+# Potential evapo(transpi)ration is the same for all 3 surfaces
+# Equation according to:
+# History and Evaluation of Hargreaves Evapotranspiration Equation
+# Hargreaves, G et al. 2003  equation 3
+
+ETRef=10**-6 * 0.408 * 0.0135 * Rgd * (TAvg + 17.8);
+    #equivalent evaporation [mm day-1] = 0.408 x Radiation [MJ m-2 day-1]
+    # 10**-6 to convert J to MJ 
+ETRef=max(ETRef,0);
+ESRef=ETRef;
+EWRef=ETRef;
+
+</lfoption>
+</dynamic>
+</lfmodule>
+
+
+<lfmodule name="writeResults">
+<dynamic>
+
+# *************************************************************
+# ***** WRITE RESULTS *****************************************
+# *************************************************************
+
+# Write maps of average temperature, potential reference evapotranspiration,
+# potential open water evaporation and potential soil evaporation
+
+<lfoption name="repTAvgMaps" choice="1" default="0">   
+report TAvgMaps=TAvg;
+</lfoption>
+
+<lfoption name="repET0Maps" choice="1" default="1">
+report ET0Maps=ETRef;
+</lfoption>
+
+<lfoption name="repE0Maps" choice="1" default="1">
+report E0Maps=EWRef;
+</lfoption>
+
+<lfoption name="repES0Maps" choice="1" default="1">
+report ES0Maps=ESRef;
+</lfoption>
+
+
+<lfoption name="repAvTimeseries" choice="1" default="1">
+
+# Report area-average values for each variable as
+# time series file (just for checking purposes) 
+
+report TAvgTS=timeoutput(1,TAvg);
+report ET0TS=timeoutput(1,ETRef);
+report E0TS=timeoutput(1,EWRef);
+report ES0TS=timeoutput(1,ESRef);
+
+</lfoption>
+
+</dynamic>
+</lfmodule>
+
+</lisflood>

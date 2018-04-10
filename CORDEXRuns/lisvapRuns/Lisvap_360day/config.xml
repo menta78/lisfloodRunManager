@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<!-- Example Lisflood configuration file, JvdK, 8 July 2004 -->
+<!-- !! This file MUST be in the same directory as lisflood.exe -->
+<!-- (or lisflood.py) !!! -->
+
+<lfconfig>
+
+<!-- location of pcrcalc application -->
+<pcrcalcapp>/software/PCRaster/bin/pcrcalc</pcrcalcapp>
+
+</lfconfig>
+

@@ -1,0 +1,106 @@
+<!-- add this to element that need exact formatting
+     if not all lines are collapsed to one line in XML editor
+  -->
+<!ENTITY % PreserveSpace "xml:space (preserve) #FIXED 'preserve'">
+
+<!-- lisflood the master file
+      - sealSpecification
+          required
+      - metadata?
+          optional(?) metadata
+      - lfmodule*
+          a series of 0 or more (*) lfmodule's
+          order of modules is exact as in generated script
+  -->
+<!ELEMENT lisflood (sealSpecification,metadata?,lfmodule*)>
+
+
+ <!ELEMENT metadata  (date,author, notes)>
+  <!ELEMENT date   (#PCDATA)>
+  <!ELEMENT author (#PCDATA)>
+  <!ELEMENT notes  (#PCDATA)>
+  <!ATTLIST notes   %PreserveSpace;>
+
+<!-- each element defined in sealValueOf/@pattern
+     should have this option (#IMPLIED) attribute
+  -->
+<!ENTITY % EncodedAttr "
+          encoding (pcrseal|text) #IMPLIED">
+
+<!-- module that may have an option initial and dynamic element
+     has an attribute name that is required and must be unique
+  -->
+<!ELEMENT lfmodule  (initial?,dynamic?)>
+<!ATTLIST lfmodule
+           name     ID #REQUIRED>
+
+<!-- element that can have plain text (#PCDATA) interchanged with
+     possible lfoption elements
+  -->
+<!ELEMENT initial   (#PCDATA|lfoption)*>
+<!ATTLIST initial
+           %PreserveSpace;
+           %EncodedAttr;
+          >
+<!-- like initial -->
+<!ELEMENT dynamic   (#PCDATA|lfoption)*>
+<!ATTLIST dynamic
+           %PreserveSpace;
+           %EncodedAttr;
+          >
+<!-- containing text (script code)
+      default
+        0 this is NOT the default choice
+        1 this is the default choice
+      choice
+        the identifier to select this option
+  -->
+<!ELEMENT lfoption  (#PCDATA)>
+<!ATTLIST lfoption
+             name    CDATA #REQUIRED
+             default (0|1) #REQUIRED
+             choice  CDATA #REQUIRED
+             %EncodedAttr;
+             >
+<!--
+    the "input" file that controls what is extracted from the master file
+     lfuser defines textvar's that can be used for substition in the
+     lfbinding sections.
+    lfbinding contains textvar's that generate pcrcalc binding after
+        substitution of the lfuser-textvar's
+  -->
+<!ELEMENT lfsettings  (lfuser?,lfoptions?,lfbinding?,prolog)>
+<!ELEMENT lfuser      (group|textvar)*>
+<!ELEMENT lfoptions   (setoption)*>
+<!ELEMENT lfbinding   (group|textvar)*>
+
+<!-- prolog MUST contain areamap and timer
+  -->
+<!ELEMENT prolog      (#PCDATA)>
+<!ATTLIST prolog       %PreserveSpace;>
+
+<!-- a group is just a logical grouping of textvar's that have a common
+     comment or name
+  -->
+<!ELEMENT group       (comment,(group|textvar)*)>
+<!ATTLIST group
+          name        CDATA #IMPLIED>
+<!ELEMENT comment     (#PCDATA)>
+<!ATTLIST comment     %PreserveSpace;>
+
+<!ELEMENT textvar     (comment?)>
+<!ATTLIST textvar
+          name        CDATA #REQUIRED
+          value       CDATA #REQUIRED>
+
+<!ELEMENT setoption   EMPTY>
+<!ATTLIST setoption
+          name        CDATA #REQUIRED
+          choice      CDATA #REQUIRED>
+
+<!-- PCRaster internals
+       such as sealSpecification and its sub-elements
+     not of importance to JRC
+  -->
+<!ENTITY % pcraster SYSTEM "pcraster.dtd">
+%pcraster;

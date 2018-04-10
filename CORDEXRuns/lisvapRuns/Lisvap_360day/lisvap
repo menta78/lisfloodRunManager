@@ -1,0 +1,452 @@
+#!/usr/bin/python
+#
+# Simple LISFLOOD/LISVAP wrapper version 12 July 2004
+# Author: JvdK
+# Requires Python v. 2.4 or better
+#
+# Purpose of this wrapper: provide LISFLOOD/LISVAP interface that is more
+# flexible than PCRaster binding file. This wrapper hides any PCRASTER-
+# specific stuff; all user input in one settings file (XML)
+#
+# Changed 4 August 2004: made LF_Path absolute path (otherwise goes wrong with
+# py2exe)
+#
+# Changed 7 September 2004: if no master code is specified in the configuration file, 
+# master code is assumed to be this: LF_Path/master.xml (makes setup easier)
+#
+#
+# Changed 14 September 2004: changed definition of LF_Path; would go
+# wrong with py2exe
+#
+# Changed 24 February 2005: Changed code for establishing LF_Path. Current
+# implementation looks whether "lisflood" is "frozen" or not (will work for
+# any OS, both if "lisflood" is a script or some "frozen" executable)
+#
+# Changed 25 February 2005: changed definition  of standard interpreter
+# (i.e. python); better yet would be to use an environment variable in
+# case multiple versions of Python are around...
+#
+# Changed 25 February 2005: added "-s" switch, which allows one to keep
+# the temporary PCRaster script after the simulation, e.g.:
+#
+#   lisflood goElbe.xml -s
+#
+#       or:
+#
+#   lisflood -s goElbe.xml
+#
+# This is for debugging only; will keep this out of regular documentation
+#
+# Cees Wesseling Mon Mar 21 20:55:45 CET 2005
+#  refactored all xml processing of script and more to validate module
+#  point of interest are marked with CW in code
+#  read top documentation of validate.py
+#
+# CW 30-Jun 2005:
+#
+# Bugfix in validate.py: when setting options like inflow hydrograph and
+# reservoirs to 1, "dummy" code was mistakenly included as well. Fixed now.  
+#
+# JvdK 17 April 2007: Re-structured Part 1; displayed model version/date now
+# read directly from 'date' field in master code (avoids confusion about
+# identifying which version is installed, also wrapper version is largely
+# irrelevant)
+#
+# JvdK, 27 August 2007: errorExit now used for all errors. Error message no
+# longer printed using separate print statement, but used as exit code
+# (by request of Simone)
+# 
+# JvdK, 27 August 2007: Renamed  master.xml to lisflood xml
+# (installation in same dir with LISVAP!)
+#
+# TO DO:
+#
+# - Test xml validation modules and add switch to enable (disable?) validation
+#   --> Not possible because PyXML library discontinued (last version not compatible
+#       with Python 2.5!)
+#
+
+import sys, os, string, random, imp
+import xml.dom.minidom
+import validate
+
+def main_is_frozen():
+    return (hasattr(sys, "frozen") or # new py2exe
+            hasattr(sys, "importers") # old py2exe
+            or imp.is_frozen("__main__")) # tools/freeze
+
+def get_main_dir():
+    if main_is_frozen():
+        return os.path.dirname(sys.executable)
+    return os.path.dirname(sys.argv[0])
+
+def errorExit(msg):
+    msg = "ERROR (LISVAP): "+msg
+    sys.exit(msg)
+
+def getMasterDate(MasterCode):
+    # Read date info in master code
+    # (Quick and dirty method using text search and some string manipulation,
+    # could be done more elegantly using xml functions but not really
+    # a problem here)
+       
+    # Open file
+    f=open(MasterCode,"r")
+
+    # Put contents into a list.
+    TextData=f.readlines()
+    f.close()
+
+    # Total number of lines
+    NumberOfLines=len(TextData)
+
+    for i in range(NumberOfLines):
+        ThisItem=string.strip(TextData[i])
+
+        if string.find(ThisItem, "<date>") <> -1:
+            DateStart=string.find(ThisItem,"<date>")+6
+            DateEnd=string.find(ThisItem,"</date>")
+            MasterDate=string.strip(ThisItem[DateStart:DateEnd])
+
+    return MasterDate
+    
+
+def genLFInfo(MasterDate):
+    # Generate and return LISFLOOD info string
+    LFInfo="\n"
+    LFInfo=LFInfo + "  LISVAP version " + MasterDate + "\n"
+    LFInfo=LFInfo + "  Potential evaporation pre-processor for LISFLOOD" + "\n" + "\n"
+    LFInfo=LFInfo + "     (C) Institute for Environment and Sustainability" + "\n"
+    LFInfo=LFInfo + "         Joint Research Centre of the European Commission" + "\n"
+    LFInfo=LFInfo + "         TP261, I-21020 Ispra (Va), Italy" + "\n"
+    return LFInfo
+
+def genLFUsage():
+    # Generate and return LISFLOOD usage string
+    LFUsage="\n"
+    LFUsage=LFUsage + "  usage (1): lisvap [switches] <InputFile>" + "\n"
+    LFUsage=LFUsage + "  usage (2): lisvap --listoptions (show options only)" + "\n"
+    LFUsage=LFUsage + "\n"
+    LFUsage=LFUsage + "   InputFile     : LISVAP input file (see documentation" + "\n"
+    LFUsage=LFUsage + "                   for description of format)" + "\n"
+    LFUsage=LFUsage + "\n"
+    LFUsage=LFUsage + "   switches:" + "\n"
+    LFUsage=LFUsage + "             -s  : keep temporary script after simulation" + "\n"
+    LFUsage=LFUsage + "\n"
+    return LFUsage
+
+def addPath(PathIn,FileIn):
+    # This function appends a file name (FileIn) to a path definition (PathIn)
+    # Result conforms to OS conventions (forward/backard slashes)
+    #
+    # Example:
+    #
+    # addpath("d:/whereever","whatever.doc")
+    #
+    # result: d:\whereever\whatever.doc (Win)
+    # result: d:/whereever/whatever.doc (Linux)
+    #
+    # Using forward slashes in input arguments is always the safest bet
+    # (backward slashes may give unpredictable results, so avoid them!)
+    #
+    result=os.path.normpath(PathIn+ "/" + FileIn)
+    return result
+
+
+def ReadConfig(domConfig,ConfigList):
+    # Extracts relevant info from LISFLOOD config DOM tree
+    NoChild_domConfig = len(domConfig.childNodes)
+
+    # Initially set config variables to dummy values, so we
+    # can easily check if either of them are missing
+    MasterCode="-9999"
+    PCRCalcApp="-9999"
+    MasterDefined=False
+    
+    for i in range(NoChild_domConfig):
+        domConfigChild=domConfig.childNodes[i]
+
+        if domConfigChild.nodeName == "lfconfig":   
+                # Search for 'config' node (other nodes are comment nodes!)
+                Config=domConfigChild
+
+    # Down one level
+    NoChild_Config=len(Config.childNodes)
+
+    for i in range(NoChild_Config):
+        
+        ConfigChild=Config.childNodes[i]
+
+        if ConfigChild.nodeName == "mastercode":   
+            NodeMaster=ConfigChild
+            MasterDefined=True
+
+        elif ConfigChild.nodeName == "pcrcalcapp":
+            NodePCRCalcApp=ConfigChild
+
+
+    # Down one more level: names of master code and pcrcalc app
+    # are text nodes in NodeMaster and NodePCRCalcApp respectively
+
+    if MasterDefined==True:
+
+        NoChild_NodeMaster=len(NodeMaster.childNodes)
+
+        for i in range(NoChild_NodeMaster):
+            NodeMasterChild=NodeMaster.childNodes[i]
+
+            if NodeMasterChild.nodeName == "#text":   
+                MasterCode=string.strip(NodeMasterChild.nodeValue)
+
+
+    NoChild_NodePCRCalcApp=len(NodePCRCalcApp.childNodes)
+    
+    for i in range(NoChild_NodePCRCalcApp):
+        NodePCRCalcAppChild=NodePCRCalcApp.childNodes[i]
+
+        if NodePCRCalcAppChild.nodeName == "#text":   
+            PCRCalcApp=string.strip(NodePCRCalcAppChild.nodeValue)
+          
+
+    # Return config variables in a list
+    ConfigList.append(MasterCode)
+    ConfigList.append(PCRCalcApp)
+
+
+def RandomText(NumberOfCharacters):
+    # Generates random text string (upper + lower case) of length NumberOfCharacters
+
+    TextOut=""
+
+    # Characters: all letters from ASCII set (both upper- and lowercase)
+    Chars=string.ascii_lowercase + string.ascii_uppercase
+    NoChars=len(Chars)
+
+    for i in range(NumberOfCharacters):
+        # Select random character
+        MyRandomNumber=int(NoChars*random.random())
+        MyCharacter=Chars[MyRandomNumber]
+
+        # Add character to name
+        TextOut=TextOut+MyCharacter
+
+    return TextOut
+
+
+# /// MAIN CODE STARTS HERE!!///
+
+#########################################################
+# PART 1: READ CONFIGURATION AND CHECK EXISTENCE OF ALL
+# INPUT FILES AND APPLICATIONS
+#########################################################
+
+# From where is this script executed (important, because configuration file
+# must be in same directory!)
+
+LF_Path=get_main_dir()
+
+LF_Path=os.path.abspath(LF_Path)
+
+# CW
+validate.dtdDirectory = LF_Path
+
+# Default values of command-line options
+
+# If this flag is 1, just print all options to screen and exit
+PrintOptionsOnly=0
+
+# If this flag is 1, don't delete temporary script after model run
+# (useful for debugging only, can remain hidden from user)
+KeepTemporaryScript=0
+
+# This flag tells lisflood whether any undefined switch is
+# used at the command line (typically a typo)
+ContainsUndefinedSwitch=0
+
+# Configuration file
+ConfigFile=addPath(LF_Path,"config.xml")
+
+# Check if config file exists
+if os.path.isfile(ConfigFile)==False:
+    errorExit("No configuration file found!")
+
+# Parse XML tree of config file
+domConfig=xml.dom.minidom.parse(ConfigFile)
+
+# Get config variables (master code, path to pcrcalc application)
+# and add them to a list
+ConfigList=[]
+ReadConfig(domConfig,ConfigList)
+
+# Master LISFLOOD code: if entry in settings file
+# is empty assume default location/name
+
+# Default: file 'lisvap.xml' in LF_Path
+MasterCodeDefault=os.path.normpath(LF_Path + "/lisvap.xml")
+
+# Value from config file: either "-9999" (missing) or real value 
+MasterCodeConfig=ConfigList[0]
+
+if MasterCodeConfig=="-9999":
+    # No master code specified in config file, so use default
+    MasterCode=MasterCodeDefault
+else:
+    # Overrule default with value in config file
+    MasterCode=os.path.normpath(MasterCodeConfig)
+
+# PCRCalc application (full path)
+PCRCalcApp=os.path.normpath(ConfigList[1])
+
+# Check if Master code and PCRCalc exist and exit if not
+
+if os.path.isfile(MasterCode)==False:
+    msg=MasterCode + " does not exist!"
+    errorExit(msg)
+
+if os.environ.has_key('PCRTREE'):
+  # CW for PCRaster team test
+  print "Warning grabbing pcrcalc from PCRTREE setting"
+  PCRCalcApp="runapp pcrcalc"
+
+else:
+ if os.path.isfile(PCRCalcApp)==False:
+    msg = PCRCalcApp +" does not exist!"
+    errorExit(msg)
+
+# Extract date info from master xml
+MasterDate=getMasterDate(MasterCode)
+
+# Construct some text strings that contain info on model
+# and command-line arguments
+LFInfo=genLFInfo(MasterDate)
+LFUsage=genLFUsage()
+
+# Command line arguments to string variable 'argv'
+argv=sys.argv
+
+# Count number of arguments (remember first argument -
+# which has index 0 - is the executable/script name!!
+argc=len(argv)
+
+# Wrong number of arguments: display syntax and exit..
+if argc < 2:
+    sys.exit(LFInfo + LFUsage)
+
+# Command-line arguments
+for i in range(1,argc):
+    ThisArg=argv[i]
+    if ThisArg=="--listoptions":
+        PrintOptionsOnly=1
+    elif ThisArg=="-s":
+        KeepTemporaryScript=1
+    elif ThisArg[0]=="-":
+        ContainsUndefinedSwitch=1
+        UndefinedSwitch=ThisArg
+    else:
+        LFSettingsFile=os.path.normpath(ThisArg)
+
+# Exit program if any undefined switches are given at command line
+if ContainsUndefinedSwitch==1:
+    msg = "Undefined switch "+ "'" + UndefinedSwitch + "'!"
+    errorExit(msg)
+    
+# Check if settings file exists
+if PrintOptionsOnly==0:
+    if os.path.isfile(LFSettingsFile)==False:
+        msg = LFSettingsFile + " does not exist!"
+        errorExit(msg)
+
+# Full path of current dir (or working directory)
+# This is the location where the script is generated
+WorkDir=os.path.abspath(os.path.curdir)
+
+#########################################################
+# PART 2: print options and stuff
+#########################################################
+
+# If user specified --listoptions then print options to screen and exit
+if PrintOptionsOnly==1:
+    try:
+      master = validate.MasterInfo(MasterCode,1)
+    except validate.Error, msg:
+      errorExit(msg)
+
+    for i in master.options().values():
+      print i.info()
+    sys.exit()
+
+# Print some info to the screen
+print LFInfo
+
+#########################################################
+# PART 3&4: generate script
+#########################################################
+
+try:
+ gen = validate.ScriptGenerator( LFSettingsFile,MasterCode)
+except validate.Error, msg:
+ errorExit(msg)
+
+# CW TODO in pcrcalc
+# todo=""" for i in range(NoReports):
+#    ThisReport=ReportsAll[i]
+#    IsDefined=ThisReport in ListVarNamesBinding
+# 
+#     if IsDefined<>1:
+#         # Variable not defined in input file; display error and quit
+#         print "ERROR (LISFLOOD): reported variable " + ThisReport + " not defined in input file!"
+#         sys.exit()
+
+print "Todo report checking within pcrcalc/newcalc"
+
+#########################################################
+# PART 5: GENERATE SCRIPT NAME, WRITE SCRIPT AND
+# LAUNCH IT!! 
+#########################################################
+
+# Generate random name for script (using fixed name will
+# lead to problems if multiple LISFLOOD instances are
+# launched from same work dir (e.g. on cluster)
+# because each instance will try to write a file under the
+# same name. Using a random name minimises the probability
+# of this.
+#
+# For extra security a check is made if a file with the generated
+# name already exists, and if this is the case another name is
+# generated
+
+ScriptNameAlreadyExists=True
+
+while ScriptNameAlreadyExists==True:
+    # Generate 10-character string that contains randomly
+    # chosen characters from upper/lowercase ASCII letters
+    ScriptName=RandomText(10)+".tmp"
+    # Full path name of generated script
+    ScriptOut=addPath(WorkDir,ScriptName)
+    # Extra check if filename already exists
+    if os.path.isfile(ScriptOut)==True:
+        ScriptNameAlreadyExists=True
+    else:
+        ScriptNameAlreadyExists=False        
+
+# Write generated code to temporary file (file is created in directory from which the program
+# is executed
+try:
+ gen.writeScript(ScriptOut)
+except validate.Error, msg:
+ errorExit(msg)
+print "Created: ", ScriptOut
+
+# SysString: run PCRCalcApp with missing value compression
+# and script ScriptOut
+SysString=PCRCalcApp + " -m -f " + ScriptOut
+
+# Execute SysString
+os.system(SysString)
+
+# Remove temporary file (unless -s switch is on)
+if KeepTemporaryScript==0:
+    os.remove(ScriptOut)
+
+print ""
+
