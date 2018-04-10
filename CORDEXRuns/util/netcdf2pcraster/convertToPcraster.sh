@@ -20,7 +20,7 @@ set -e
 
 #converting specific humidity to vapour pressure
 hussFl=huss_BCed_1981-2010_1981-2010.nc
-psFl=psl_BCed_1981-2010_1981-2010.nc
+psFl=ps_BCed_1981-2010_1981-2010.nc
 avpFl=avp_BCed_1981-2010_1981-2010.nc
 if [ ! -f $avpFl ]; then
   cdo mul $hussFl $psFl tmpPrs.nc
