@@ -37,7 +37,7 @@ def doLaunch():
   lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)
 
   wustr = 'wuChang' if wuChang else 'wuConst'
-  modelTag = mdl + '_' + scen + '_' wustr
+  modelTag = mdl + '_' + scen + '_' + wustr
   lfManager = lfrm.lisfloodRunManager( initDirMdl, runDirMdl, tmpOutDirMdl, outDirMdl,
                       rootConfDirMdl, wuChang,
                       calendarDayStart, calendarDayEnd, calendar, lisfloodcmd, miscVars,

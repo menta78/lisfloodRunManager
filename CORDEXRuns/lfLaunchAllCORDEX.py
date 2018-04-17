@@ -32,7 +32,7 @@ def launchAll(scenarios=scenarios, outDir=outDir, runDirRoot=runDirRoot, dtReWar
   tmpOutDir = os.path.join(runDirRoot, 'tmpout')
 
   models = """
-IPSL-INERIS-WRF331F
+IPSL-INERIS-WRF331F_BC
 SMHI-RCA4_BC_CNRM-CERFACS-CNRM-CM5
 SMHI-RCA4_BC_ICHEC-EC-EARTH
 SMHI-RCA4_BC_IPSL-IPSL-CM5A-MR
@@ -180,6 +180,14 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
         calendarDayStart = calendarDayStartByScen[scen]
         calendarDayEnd = calendarDayEndByScen[scen]
         meteoDataPath = os.path.join(meteoDataDirectory, mdl, scen)
+
+        # checking meteo input
+        e0FlPth = os.path.join(meteoDataPath, 'e0.nc')
+        etFlPth = os.path.join(meteoDataPath, 'et.nc')
+        if not (os.path.isfile(e0FlPth) and os.path.isfile(etFlPth)):
+          print('        METEO FILES NOT READY. SKIPPING')
+          continue
+
         calendar = getCalendar(meteoDataPath)
         curWaterDataPath = wuChangDataPath[(scen, currWuChang)]
         curLandUseDataPath = landUseDataPath[(scen, currWuChang)]
@@ -285,7 +293,7 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wuC
     miscVars['pathInitCold'] = coldInitDirMdl
 
     rootConfDirMdl = rootConfDir
-    logDir = '/eos/jeodpp/htcondor/processing_logs/CRITECH'
+    logDir = '/eos/jeodpp/htcondor/processing_logs/CRITECH/lisflood/'
 
     jobAlive, jobId = lfJeodppLogFileParser.jobIsAlive(mdl, scen, wUseStr, logDir)
     if jobAlive:

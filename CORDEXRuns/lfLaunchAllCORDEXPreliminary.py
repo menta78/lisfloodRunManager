@@ -6,5 +6,6 @@ if __name__ == '__main__':
   outDir = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/coldInit'
   runDirRoot = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/run_preliminary'
   preliminaryRun = True
+  import pdb; pdb.set_trace()
   lfLaunchAllCORDEX.launchAll(scenarios=scenarios, outDir=outDir, runDirRoot=runDirRoot, preliminaryRun=preliminaryRun)
 

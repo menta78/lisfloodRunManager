@@ -5,7 +5,7 @@ echo $logFile
 
 set -e
 
-source /eos/jeodpp/data/projects/CRITECH/miniconda3/envs/LISFLOOD/bin/activate LISFLOOD
+py=/eos/jeodpp/data/projects/CRITECH/ADAPTATION/usr/anaconda_LISFLOOD/bin/python
 
-python /eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisfloodRunManager/CORDEXRuns/lfLaunchOneCORDEX.py > $logFile 2>&1
+$py /eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisfloodRunManager/CORDEXRuns/lfLaunchOneCORDEX.py > $logFile 2>&1
 
