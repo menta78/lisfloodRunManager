@@ -7,7 +7,7 @@ import numpy as np
 
 """
 example of file path:
-/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/notWaterUse/disWin_IPSL-INERIS-WRF331F_historical_1981010100.tss
+/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/wuConst/disWin_IPSL-INERIS-WRF331F_historical_1981010100.tss
 which startDate is 19810101
 """
 def loadTssFile(filePath, startDate=datetime(1981, 01, 01), timeDelta = relativedelta(days=1), selectStatIds = None):

@@ -277,7 +277,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
   axmtxflt = np.array(axmtx).flatten()[1:]
   for mdl, axmdl in zip(models, axmtxflt):
-    mdlDir = os.path.join(rootDir, mdl, 'notWaterUse')
+    mdlDir = os.path.join(rootDir, mdl, 'wuConst')
     plotModelScatterLog(axmdl, mdl, mdlDir, getStat=getStat)
     plt.tight_layout()
     pass
@@ -319,7 +319,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
   axmtxflt = np.array(axmtx).flatten()[1:]
   for mdl, axmdl in zip(models, axmtxflt):
-    mdlDir = os.path.join(rootDir, mdl, 'notWaterUse')
+    mdlDir = os.path.join(rootDir, mdl, 'wuConst')
     plotModelScatterLog(axmdl, mdl, mdlDir, getStat=getStat)
     plt.tight_layout()
     pass
@@ -361,7 +361,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
   axmtxflt = np.array(axmtx).flatten()[1:]
   for mdl, axmdl in zip(models, axmtxflt):
-    mdlDir = os.path.join(rootDir, mdl, 'notWaterUse')
+    mdlDir = os.path.join(rootDir, mdl, 'wuConst')
     plotModelScatterLog(axmdl, mdl, mdlDir, getStat=getStat)
     plt.tight_layout()
     pass

@@ -13,7 +13,7 @@ def printMsrMdlsMaxima():
   msrsStartDate = datetime(1990, 01, 01)
   tmsMsrs, statIdsMsrs, disMsrs = loadTssFile.loadTssFile(msrsTssFl, startDate=msrsStartDate)
   
-  modelTssDir = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/CLMcom-CCLM4-8-17_BC_CNRM-CERFACS-CNRM-CM5/notWaterUse'
+  modelTssDir = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/CLMcom-CCLM4-8-17_BC_CNRM-CERFACS-CNRM-CM5/wuConst'
   modelStartDate = datetime(1981, 1, 1, 0, 0)
   tmsMdl, statIdsMdl, disMdl = loadTssFile.loadTssFromDir(modelTssDir, startDate=modelStartDate)
   

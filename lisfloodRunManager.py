@@ -17,7 +17,7 @@ class lisfloodRunManager:
 
 
   def __init__(self, initDir, runningDir, tmpOutDir, outDir, 
-      rootConfDir, waterUse,
+      rootConfDir, wuChang,
       calendarStart, calendarEnd, calendar, lisfloodcmd, miscVars,
       sttsColdFileTmpl='', sttsWarmFileTmpl='',
       dtRestart=relativedelta(years=1), dtReWarmUp=relativedelta(months=1), modelTag='lisflood', verbose=True):
@@ -25,8 +25,8 @@ class lisfloodRunManager:
     self.tmpOutDir = tmpOutDir
     self.runningDir = runningDir
     self.rootConfDir = rootConfDir
-    self.waterUse = 1 if waterUse else 0
-    self.transientLandUseChange = self.waterUse
+    self.wuChang = 1 if wuChang else 0
+    self.transientLandUseChange = self.wuChang
     self.outDir = outDir
     self.calendar = lfCalendar(calendarStart, calendar=calendar)
     self.calendarEnd = calendarEnd
@@ -120,10 +120,10 @@ class lisfloodRunManager:
     calendar = clndr.calendar
     startDate = self.currentRunStartDate - self.dtReWarmUp if not self.isColdStart() else clndr.calendarStart
     endDate = self.currentRunStartDate + self.dtRestart - self.calendar.timeStep
-    waterUse = self.waterUse
+    wuChang = self.wuChang
     transientLandUseChange = self.transientLandUseChange
 
-    waterUseDir = self.miscVars['waterUseDir']
+    waterUsDir = self.miscVars['waterUsDir']
     landUseDir = self.miscVars['landUseDir']
     meteoDir = self.miscVars['meteoDir']
     pathInitCold = self.miscVars['pathInitCold'] if self.miscVars.has_key('pathInitCold') else os.path.join(rootConfDir, 'init')
@@ -158,9 +158,9 @@ class lisfloodRunManager:
     cntnt = cntnt.replace('@PATH_INIT@', initDir)
     cntnt = cntnt.replace('@PATH_OUT@', outDir)
     cntnt = cntnt.replace('@PATH_CONF_ROOT@', rootConfDir)
-    cntnt = cntnt.replace('@WATER_USE@', str(waterUse))
+    cntnt = cntnt.replace('@WATER_USE@', str(wuChang))
     cntnt = cntnt.replace('@TRANSIENT_LAND_CHANGE@', str(transientLandUseChange))
-    cntnt = cntnt.replace('@PATH_WATER_USE@', waterUseDir)
+    cntnt = cntnt.replace('@PATH_WATER_USE@', waterUsDir)
     cntnt = cntnt.replace('@PATH_METEO@', meteoDir)
     cntnt = cntnt.replace('@PATH_LAND_USE@', landUseDir)
     cntnt = cntnt.replace('@PATH_INIT_COLD@', pathInitCold)

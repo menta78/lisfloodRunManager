@@ -1,8 +1,8 @@
 import os, re, subprocess
 
-def jobIsAlive(model, scenario, waterUseStr, logDir='/eos/jeodpp/htcondor/processing_logs/CRITECH'):
-  logFlPattern = 'job_lisflood_{waterUseStr}_{scen}_{mdl}_([0-9]*)_(.*).log'.format(
-                    waterUseStr=waterUseStr, scen=scenario, mdl=model)
+def jobIsAlive(model, scenario, wuChangStr, logDir='/eos/jeodpp/htcondor/processing_logs/CRITECH'):
+  logFlPattern = 'job_lisflood_{wuChangStr}_{scen}_{mdl}_([0-9]*)_(.*).log'.format(
+                    wuChangStr=wuChangStr, scen=scenario, mdl=model)
 
   fls = [f for f in os.listdir(logDir) if re.match(logFlPattern, f)]
   fls.sort()

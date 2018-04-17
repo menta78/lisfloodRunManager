@@ -17,8 +17,8 @@ def launchTestRun():
   tmpOutDir = os.path.join(runRootDir, "tmpout")
   outDir = os.path.join(runRootDir, "out")
   rootConfDir = "/ADAPTATION/mentalo/lisfloodRun/LisfloodEurope"
-  waterUseDir = "/ADAPTATION/mentalo/lisfloodRun/waterdemandEurope/static/hist"
-  waterUse = True
+  waterUsDir = "/ADAPTATION/mentalo/lisfloodRun/waterdemandEurope/static/hist"
+  wuChang = True
   meteoDir = "/ADAPTATION/mentalo/lisfloodRun/meteoEurope/CNRM-CERFACS-CNRM-CM5/historical"
   calendarStart = datetime(1981, 1, 1)
   calendarEnd = datetime(1982, 1, 1)
@@ -30,7 +30,7 @@ def launchTestRun():
  
   print('initializing the lisfloodRunManager')
   lfManager = lfrm.lisfloodRunManager( initDir, runningDir, tmpOutDir, outDir,
-                      meteoDir, rootConfDir, waterUse, waterUseDir,
+                      meteoDir, rootConfDir, wuChang, waterUsDir,
                       calendarStart, calendarEnd, lisfloodcmd,
                       dtRestart=dtRestart, dtReWarmUp=dtReWarmUp )
   print('starting the iterating run')

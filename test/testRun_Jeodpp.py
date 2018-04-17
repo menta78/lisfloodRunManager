@@ -18,7 +18,7 @@ def launchTestRun():
   tmpOutDir = os.path.join(runRootDir, "tmpout")
   outDir = os.path.join(runRootDir, "out")
   rootConfDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope"
-  waterUse = False
+  wuChang = False
   calendarStart = datetime(1981, 1, 1)
   calendarEnd = datetime(1982, 1, 1)
   calendar = 'proleptic_gregorian'
@@ -29,9 +29,9 @@ def launchTestRun():
   lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)
 
   landUseDir =  "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/landuse/cordex/hist/landuse2010"
-  waterUseDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/waterdemandEurope/static/hist"
+  waterUsDir = "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/waterdemandEurope/static/hist"
   miscVars = {
-    'waterUseDir': waterUseDir,
+    'waterUsDir': waterUsDir,
     "meteoDir": "/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/LAEAETRS89_BIAS_CORDEX/IPSL-INERIS-WRF331F/historical",
     "landUseDir": landUseDir,
     "directRunoffFractionMaps": os.path.join(landUseDir, 'fracsealed'),
@@ -41,7 +41,7 @@ def launchTestRun():
     "irrigationFractionMaps": os.path.join(landUseDir, 'fracirrigated'),
     "riceFractionMaps": os.path.join(landUseDir, 'fracrice'),
     "riceFractionMaps": os.path.join(landUseDir, 'fracrice'),
-    "populationMaps": os.path.join(waterUseDir, 'pop'),
+    "populationMaps": os.path.join(waterUsDir, 'pop'),
     "prefixWaterUseDomestic": 'dom',
     "prefixWaterUseLivestock": "liv",
     "prefixWaterUseEnergy": "ene",
@@ -50,7 +50,7 @@ def launchTestRun():
  
   print('initializing the lisfloodRunManager')
   lfManager = lfrm.lisfloodRunManager( initDir, runningDir, tmpOutDir, outDir,
-                      rootConfDir, waterUse,
+                      rootConfDir, wuChang,
                       calendarStart, calendarEnd, calendar, lisfloodcmd, miscVars,
                       modelTag="IPSL-INERIS-WRF331F",
                       dtRestart=dtRestart, dtReWarmUp=dtReWarmUp )

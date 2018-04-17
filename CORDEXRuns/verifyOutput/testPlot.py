@@ -13,11 +13,11 @@ def plotSingle(tms, dis):
 
 
 def testPlotMax():
-  flpth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/notWaterUse/disWin_IPSL-INERIS-WRF331F_historical_1982010100.tss'
+  flpth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/wuConst/disWin_IPSL-INERIS-WRF331F_historical_1982010100.tss'
 
-  fldirHist = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/notWaterUse/'
-  fldirRcp85 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp85/IPSL-INERIS-WRF331F/notWaterUse/'
-  fldirRcp45 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp45/IPSL-INERIS-WRF331F/notWaterUse/'
+  fldirHist = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/wuConst/'
+  fldirRcp85 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp85/IPSL-INERIS-WRF331F/wuConst/'
+  fldirRcp45 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp45/IPSL-INERIS-WRF331F/wuConst/'
   histStartDate = datetime(1981, 01, 01)
   rcpStartDate = datetime(2011, 01, 01)
 
@@ -34,9 +34,9 @@ def testPlotMax():
 
 
 def testPlotStat(statId = 210):
-  fldirHist = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/notWaterUse/'
-  fldirRcp85 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp85/IPSL-INERIS-WRF331F/notWaterUse/'
-  fldirRcp45 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp45/IPSL-INERIS-WRF331F/notWaterUse/'
+  fldirHist = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/wuConst/'
+  fldirRcp85 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp85/IPSL-INERIS-WRF331F/wuConst/'
+  fldirRcp45 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp45/IPSL-INERIS-WRF331F/wuConst/'
   msrsFl = '/STORAGE/src1/git/lisfloodRunManager/verifyOutput/testdata/disWin_measuresGauges.tss'
   histStartDate = datetime(1981, 01, 01)
   rcpStartDate = datetime(2011, 01, 01)
@@ -58,7 +58,7 @@ def testPlotStat(statId = 210):
 
 def testSalzburgScatters():
   statId = 210
-  fldirHist = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/notWaterUse/'
+  fldirHist = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F/wuConst/'
 
   
 

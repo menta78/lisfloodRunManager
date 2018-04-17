@@ -21,7 +21,7 @@ def doLaunch():
   tmpOutDirMdl = ii.tmpOutDirMdl
   outDirMdl = ii.outDirMdl
   rootConfDirMdl = ii.rootConfDirMdl
-  waterUse = ii.waterUse
+  wuChang = ii.wuChang
   scen = ii.scen
   mdl = ii.mdl
   calendarDayStart = ii.calendarDayStart
@@ -36,10 +36,10 @@ def doLaunch():
   lisfloodpy = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisflood/Lisflood/lisf1.py'
   lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)
 
-  wustr = 'waterUse' if waterUse else 'notWaterUse'
+  wustr = 'wuChang' if wuChang else 'wuConst'
   modelTag = mdl + '_' + scen + '_' wustr
   lfManager = lfrm.lisfloodRunManager( initDirMdl, runDirMdl, tmpOutDirMdl, outDirMdl,
-                      rootConfDirMdl, waterUse,
+                      rootConfDirMdl, wuChang,
                       calendarDayStart, calendarDayEnd, calendar, lisfloodcmd, miscVars,
                       modelTag=modelTag,
                       dtRestart=dtRestart, dtReWarmUp=dtReWarmUp )

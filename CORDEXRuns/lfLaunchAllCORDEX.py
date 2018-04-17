@@ -58,14 +58,14 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
     'rcp45': datetime(2099, 12, 31)
     }
 
-  waterUse = [True, False]
-  waterUseDataPathRoot = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/waterdemandCordex/cordex'
-  waterUseDataPath = {
-    ('historical', False): os.path.join(waterUseDataPathRoot, 'hist/waterdemand2010'),
-    ('rcp85', True): os.path.join(waterUseDataPathRoot, 'rcp/dynamic'),
-    ('rcp85', False): os.path.join(waterUseDataPathRoot, 'rcp/static/waterdemand2010'),
-    ('rcp45', True): os.path.join(waterUseDataPathRoot, 'rcp/dynamic'),
-    ('rcp45', False): os.path.join(waterUseDataPathRoot, 'rcp/static/waterdemand2010'),
+  wuChang = [True, False]
+  wuChangDataPathRoot = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/waterdemandCordex/cordex'
+  wuChangDataPath = {
+    ('historical', False): os.path.join(wuChangDataPathRoot, 'hist/waterdemand2010'),
+    ('rcp85', True): os.path.join(wuChangDataPathRoot, 'rcp/dynamic'),
+    ('rcp85', False): os.path.join(wuChangDataPathRoot, 'rcp/static/waterdemand2010'),
+    ('rcp45', True): os.path.join(wuChangDataPathRoot, 'rcp/dynamic'),
+    ('rcp45', False): os.path.join(wuChangDataPathRoot, 'rcp/static/waterdemand2010'),
     }
   landUseDataPathRoot = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/landuse/cordex'
   staticLandUseDir = os.path.join(landUseDataPathRoot, 'hist/landuse2010')
@@ -172,23 +172,23 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
  #import pdb; pdb.set_trace()
   for scen in scenarios:
-    for currUseWater in waterUse:
+    for currWuChang in wuChang:
       for mdl in models:
-        if scen == 'historical' and currUseWater:
+        if scen == 'historical' and currWuChang:
           print('')
           continue
         calendarDayStart = calendarDayStartByScen[scen]
         calendarDayEnd = calendarDayEndByScen[scen]
         meteoDataPath = os.path.join(meteoDataDirectory, mdl, scen)
         calendar = getCalendar(meteoDataPath)
-        curWaterDataPath = waterUseDataPath[(scen, currUseWater)]
-        curLandUseDataPath = landUseDataPath[(scen, currUseWater)]
-        cDirectRunoffFractionMaps = getMapPath(directRunoffFractionMaps, scen, currUseWater, calendar)
-        cForestFractionMaps = getMapPath(forestFractionMaps, scen, currUseWater, calendar)
-        cWaterFractionMaps = getMapPath(waterFractionMaps, scen, currUseWater, calendar)
-        cOtherFractionMaps = getMapPath(otherFractionMaps, scen, currUseWater, calendar)
-        cIrrigationFractionMaps = getMapPath(irrigationFractionMaps, scen, currUseWater, calendar)
-        cRiceFractionMaps = getMapPath(riceFractionMaps, scen, currUseWater, calendar)
+        curWaterDataPath = wuChangDataPath[(scen, currWuChang)]
+        curLandUseDataPath = landUseDataPath[(scen, currWuChang)]
+        cDirectRunoffFractionMaps = getMapPath(directRunoffFractionMaps, scen, currWuChang, calendar)
+        cForestFractionMaps = getMapPath(forestFractionMaps, scen, currWuChang, calendar)
+        cWaterFractionMaps = getMapPath(waterFractionMaps, scen, currWuChang, calendar)
+        cOtherFractionMaps = getMapPath(otherFractionMaps, scen, currWuChang, calendar)
+        cIrrigationFractionMaps = getMapPath(irrigationFractionMaps, scen, currWuChang, calendar)
+        cRiceFractionMaps = getMapPath(riceFractionMaps, scen, currWuChang, calendar)
         cPoulationMap = os.path.join(curWaterDataPath, 'pop')
         cPrefixWaterUseDomestic = prefixWaterUseDomestic[calendar]
         cPrefixWaterUseLivestock = prefixWaterUseLivestock[calendar]
@@ -199,7 +199,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
           'preliminaryRun': preliminaryRun,
           'dtReWarmUp': dtReWarmUp,
           'meteoDir': meteoDataPath,
-          'waterUseDir': curWaterDataPath,
+          'waterUsDir': curWaterDataPath,
           'landUseDir': curLandUseDataPath,
           'directRunoffFractionMaps': cDirectRunoffFractionMaps,
           'forestFractionMaps': cForestFractionMaps,
@@ -213,13 +213,13 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
           'prefixWaterUseEnergy': cPrefixWaterUseEnergy,
           'prefixWaterUseIndustry': cPrefixWaterUseIndustry
           }
-        launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, currUseWater, miscVars,
+        launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, currWuChang, miscVars,
                          outDir=outDir, runDirRoot=runDirRoot)
         pass
 
 
 
-def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, waterUse, miscVars, 
+def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wuChang, miscVars, 
                      outDir=outDir, runDirRoot=runDirRoot):
   runDir = os.path.join(runDirRoot, 'conf')
   initDir = os.path.join(runDirRoot, 'init')
@@ -232,8 +232,8 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
   stepEnd = int(stepEnd) + 1
 
   print('')
-  print('  preparing to launch model: {scen} - {mdl} - waterUse=={waterUse} - calendar=={cal}'.format(
-          scen=scen, mdl=mdl, waterUse=str(waterUse), cal=calendar))
+  print('  preparing to launch model: {scen} - {mdl} - wuChang=={wuChang} - calendar=={cal}'.format(
+          scen=scen, mdl=mdl, wuChang=str(wuChang), cal=calendar))
   print('  stepStart == ' + calendarDayStart.strftime('%Y-%m-%d'))
   print('  stepEnd == ' + str(stepEnd))
   print('  map miscVars:')
@@ -242,12 +242,12 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
   for m in ks:
     print('    ' + m + ': ' + str(miscVars[m]))
   
-  wUseStr = 'waterUse' if waterUse else 'notWaterUse'
+  wUseStr = 'wuChang' if wuChang else 'wuConst'
   if generateColdSettingsFileAndQuit:
     from lisfloodRunManager import lisfloodRunManager
     runDirDiag = os.path.join(runDir, 'diagnostics')
     mng = lisfloodRunManager(initDir, runDirDiag, tmpOutDir, outDir,
-            rootConfDir, waterUse, calendarDayStart, calendarDayEnd, calendar, lisfloodcmd, miscVars, verbose=False)
+            rootConfDir, wuChang, calendarDayStart, calendarDayEnd, calendar, lisfloodcmd, miscVars, verbose=False)
     flpath = mng.compileTemplate()
     nflpath = flpath + '_' + wUseStr + '_' + scen + '_' + mdl + '.xml'
     shutil.move(flpath, nflpath)
@@ -298,7 +298,7 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wat
     ii.tmpOutDirMdl = tmpOutDirMdl
     ii.outDirMdl = outDirMdl
     ii.rootConfDirMdl = rootConfDirMdl
-    ii.waterUse = waterUse
+    ii.wuChang = wuChang
     ii.scen = scen
     ii.mdl = mdl
     ii.calendarDayStart = calendarDayStart
