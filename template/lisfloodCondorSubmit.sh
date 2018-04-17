@@ -16,9 +16,9 @@ RequestMemory = 100Gb
 #Output = @CONF_DIR@/condor_job.$(Cluster)_$(Process).out
 #Error = @CONF_DIR@/condor_job.$(Cluster)_$(Process).err
 #Log = @CONF_DIR@/condor_job.$(Cluster)_$(Process).log
-Output =/eos/jeodpp/htcondor/processing_logs/CRITECH/job_@JOB_TAG@_$(Cluster)_$(Process).out
-Error = /eos/jeodpp/htcondor/processing_logs/CRITECH/job_@JOB_TAG@_$(Cluster)_$(Process).err
-Log = /eos/jeodpp/htcondor/processing_logs/CRITECH/job_@JOB_TAG@_$(Cluster)_$(Process).log
+Output =/eos/jeodpp/htcondor/processing_logs/CRITECH/lisflood/job_@JOB_TAG@_$(Cluster)_$(Process).out
+Error = /eos/jeodpp/htcondor/processing_logs/CRITECH/lisflood/job_@JOB_TAG@_$(Cluster)_$(Process).err
+Log = /eos/jeodpp/htcondor/processing_logs/CRITECH/lisflood/job_@JOB_TAG@_$(Cluster)_$(Process).log
 
 
 queue 

@@ -36,7 +36,8 @@ def doLaunch():
   lisfloodpy = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisflood/Lisflood/lisf1.py'
   lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)
 
-  modelTag = mdl + '_' + scen
+  wustr = 'waterUse' if waterUse else 'notWaterUse'
+  modelTag = mdl + '_' + scen + '_' wustr
   lfManager = lfrm.lisfloodRunManager( initDirMdl, runDirMdl, tmpOutDirMdl, outDirMdl,
                       rootConfDirMdl, waterUse,
                       calendarDayStart, calendarDayEnd, calendar, lisfloodcmd, miscVars,
