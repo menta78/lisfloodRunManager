@@ -84,7 +84,7 @@ def getTotMean(tms, dis, startDate, endDate):
 
 
 def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,01,01), 
-       msrsTssFl=defMsrsTssFile, msrsStartDate=datetime(1990, 01, 01), getStat=getYMax, scatterSize=10):
+       msrsTssFl=defMsrsTssFile, msrsStartDate=datetime(1990, 01, 01), getStat=getYMax, scatterSize=10, timeHorizon=None):
   if os.path.isfile(modelTssPath):
     tmsMdl, statIdsMdl, disMdl = loadTssFile.loadTssFile(modelTssPath, startDate=modelStartDate)
   else:
@@ -92,8 +92,12 @@ def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,0
   tmsMsrs, statIdsMsrs, disMsrs = loadTssFile.loadMeasurePseudoTss(msrsTssFl, selectStatIds=statIdsMdl)
   assert (statIdsMdl == statIdsMsrs).all()
   
-  startDate = max(min(tmsMdl), min(tmsMsrs))
-  endDate = min(max(tmsMdl), max(tmsMsrs))
+  if timeHorizon is None:
+    startDate = max(min(tmsMdl), min(tmsMsrs))
+    endDate = min(max(tmsMdl), max(tmsMsrs))
+  else:
+    startDate = min(timeHorizon)
+    endDate = max(timeHorizon)
 
   yrs, mdlStat = getStat(tmsMdl, disMdl, startDate, endDate)
   yrs, msrStat = getStat(tmsMsrs, disMsrs, startDate, endDate)
@@ -425,4 +429,31 @@ def plotModelScatter_testValerioSttsIPSLinput():
   plotModelScatter(ax, 'test hindcast stts\nIPSL input, min', modelTssFile, modelStartDate=modelStartDate, scatterSize=10, getStat=getYMinMean)
   f.savefig(outputfig, dpi=300)
   plt.cla()
+
+def plotModelScatter_testOldLisvap_CLMcom_ICHEC_EC_EARTH():
+  outputfig = 'testOldLisvap_max.png'
+  modelTssFile = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/src/git/lisfloodRunManager/CORDEXRuns/lisvapRuns/lisfloodTest/out/disWin.tss'
+  modelStartDate = datetime(1981, 1, 1, 0, 0)
+  endDate = datetime(2015, 1, 1)
+  timeHorizon = [modelStartDate, endDate]
+  f = plt.figure(figsize=(3, 3))
+  ax = f.gca()
+  plotModelScatter(ax, 'test old lisvap\nCLMcom ICHEC_ECEARTH\nmax', modelTssFile, modelStartDate=modelStartDate, scatterSize=10, getStat=getYMaxMean, timeHorizon=timeHorizon)
+  f.savefig(outputfig, dpi=300)
+  plt.cla()
+
+  outputfig = 'testOldLisvap_mean.png'
+  f = plt.figure(figsize=(3, 3))
+  ax = f.gca()
+  plotModelScatter(ax, 'test old lisvap\nCLMcom ICHEC_ECEARTH\nmean', modelTssFile, modelStartDate=modelStartDate, scatterSize=10, getStat=getTotMean, timeHorizon=timeHorizon)
+  f.savefig(outputfig, dpi=300)
+  plt.cla()
+
+  outputfig = 'testOldLisvap_min.png'
+  f = plt.figure(figsize=(3, 3))
+  ax = f.gca()
+  plotModelScatter(ax, 'test old lisvap\nCLMcom ICHEC_ECEARTH\nmin', modelTssFile, modelStartDate=modelStartDate, scatterSize=10, getStat=getYMinMean, timeHorizon=timeHorizon)
+  f.savefig(outputfig, dpi=300)
+  plt.cla()
+
 

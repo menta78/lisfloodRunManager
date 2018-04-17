@@ -169,90 +169,103 @@ def plotMeanETBerny():
   
 
 
-def plotAllAlfieri():
-  outputfig = 'crossComparisonInputMaps_Alfieri.png'
 
-  cordexMeteoDir = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/in'
-  hindcastMeteoDir = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/input/hindcast/'
 
-  fg, axmtx = plt.subplots(3, 4, figsize=(12, 9))
-  plt.tight_layout()
 
-  fls = [f for f in os.listdir(cordexMeteoDir) if re.match('(.*)\.nc$', f)]
-  firstFile = True
-  for f, i in zip(fls, range(len(fls))):
-    varName = re.sub('\.nc', '', f)
-
-    if varName == 'e0':
-      pVarName = 'e'
-    elif varName == 'ta':
-      pVarName = 'tas'
-    else:
-      pVarName = varName
-
-    print('loading ' + f)
-    print('  from hindcast:')
-    flpth = os.path.join(hindcastMeteoDir, f)
-    xx, yy, mnH, pctl95H, pctl99H = getMaps(flpth, varName, 'hindcast')
-    print('  from projection:')
-    flpth = os.path.join(cordexMeteoDir, f)
-    _, _, mnP, pctl95P, pctl99P = getMaps(flpth, pVarName, 'proj')
-
-    if varName != 'ta':
-      ratioM = (mnP/mnH - 1)*100.
-      ratioP95 = (pctl95P/pctl95H - 1)*100.
-      ratioP99 = (pctl99P/pctl99H - 1)*100.
-      mxM = int(np.ceil(np.nanpercentile(ratioM[:], 99.5)/10)*10)
-      mxP95 = int(np.ceil(np.nanpercentile(ratioP95[:], 99.5)/10)*10)
-      mxP99 = int(np.ceil(np.nanpercentile(ratioP99[:], 99.5)/10)*10)
-      mx = max([mxM, mxP95, mxP99])
-      dc = 10
-    else:
-      mnH = mnH + 273.15
-      pctl95H = pctl95H + 273.15
-      pctl99H = pctl99H + 273.15
-      ratioM = mnP - mnH
-      ratioP95 = pctl95P - pctl95H
-      ratioP99 = pctl99P - pctl99H
-      mx = 10
-      dc = 1
-
-    ax = axmtx[0, i]
-    ct = ax.contourf(xx, yy, ratioM, range(-mx, mx, dc), cmap='jet')
-    cbaxes = inset_axes(ax, width='3%', height='50%', loc=1)
-    cb = plt.colorbar(ct, cax=cbaxes, orientation='vertical')
-    if varName == 'ta':
-      cb.set_label('$\Delta T (K)$', labelpad=-40)
-    cbaxes.yaxis.set_ticks_position('left')
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.grid('on')
-    if firstFile:
-      ax.set_ylabel('Mean (% $\Delta$ proj. - hind.)', fontsize=11, labelpad=.2)
-    xlm = ax.get_xlim()
-    xt = np.mean(xlm)
-    ylm = ax.get_ylim()
-    yt = np.max(ylm) + (np.max(ylm) - np.min(ylm))/50.
-    ax.text(xt, yt, varName, fontsize=14)
-
-    ax = axmtx[1, i]
-    ct = ax.contourf(xx, yy, ratioP95, range(-mx, mx, 10), cmap='jet')
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.grid('on')
-    if firstFile:
-      ax.set_ylabel('95 perc. (% $\Delta$ proj. - hind.)', fontsize=11, labelpad=.2)
-
-    ax = axmtx[2, i]
-    ct = ax.contourf(xx, yy, ratioP99, range(-mx, mx, 10), cmap='jet')
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    ax.grid('on')
-    if firstFile:
-      ax.set_ylabel('99 perc. (% $\Delta$ proj. - hind.)', fontsize=11, labelpad=.2)
-    
-    firstFile = False
-  plt.tight_layout()
+def plotMeanETBerny_PBAD2():
+  outputfig = 'crossComparisonEtBerny_PBAD2.png'
+  hindcastMeteoFlPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/input/hindcast/et.nc'
+  cordexMeteoFlPth = '/H01_Fresh_Water/Europe/Lisvap/PBAD2/et_mean.nc'
+  fg = plt.figure(figsize=(4, 4))
+  ax = fg.gca()
+  xx, yy, mnH, pctl95H, pctl99H = getMaps(hindcastMeteoFlPth, 'et', 'hindcast')
+  
+  ds = xarray.open_dataset(cordexMeteoFlPth)
+  mnP = np.squeeze(np.array(ds.variables['et']))
+  ds.close()
+  
+  ratioM = (mnP/mnH - 1)*100.
+  dc = 10
+  mx = int(np.ceil(np.nanpercentile(ratioM[:], 99.5)/10)*10)
+  ct = ax.contourf(xx, yy, ratioM, range(-mx, mx, dc), cmap='jet')
+  plt.title('berny last')
+  cbaxes = inset_axes(ax, width='3%', height='50%', loc=1)
+  cb = plt.colorbar(ct, cax=cbaxes, orientation='vertical')
+  cb.set_label('$\Delta$ %', labelpad=-55, fontsize=10)
+  ax.set_xticklabels([])
+  ax.set_yticklabels([])
+  ax.grid('on')
+  #plt.tight_layout()
 
   fg.savefig(outputfig, dpi=300)
   
+  
+
+
+
+
+
+def plotMeanETBerny_CLMcom_ICHEC_EC_EARTH():
+  outputfig = 'crossComparisonEtBerny_CLMcom_ICHEC_EC_EARTH.png'
+  hindcastMeteoFlPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/input/hindcast/et.nc'
+  cordexMeteoFlPth = 'bernyTest_CLMcom-CCLM4-8-17_BC_ICHEC-EC-EARTH/et_mean.nc'
+  fg = plt.figure(figsize=(4, 4))
+  ax = fg.gca()
+  xx, yy, mnH, pctl95H, pctl99H = getMaps(hindcastMeteoFlPth, 'et', 'hindcast')
+  
+  ds = xarray.open_dataset(cordexMeteoFlPth)
+  mnP = np.squeeze(np.array(ds.variables['et']))
+  ds.close()
+  
+  ratioM = (mnP/mnH - 1)*100.
+  dc = 10
+  mx = int(np.ceil(np.nanpercentile(ratioM[:], 99.5)/10)*10)
+  ct = ax.contourf(xx, yy, ratioM, range(-mx, mx, dc), cmap='jet', vmin=-160, vmax=160)
+  plt.title('berny last')
+  cbaxes = inset_axes(ax, width='3%', height='50%', loc=1)
+  cb = plt.colorbar(ct, cax=cbaxes, orientation='vertical')
+  cb.set_label('$\Delta$ %', labelpad=-55, fontsize=10)
+  ax.set_xticklabels([])
+  ax.set_yticklabels([])
+  ax.grid('on')
+  #plt.tight_layout()
+
+  fg.savefig(outputfig, dpi=300)
+  
+  
+
+
+
+
+
+def plotMeanETmentaTest():
+  outputfig = 'crossComparisonEt_mentaTest.png'
+  hindcastMeteoFlPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/lisflood/input/hindcast/et.nc'
+  cordexMeteoFlPth = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/src/git/lisfloodRunManager/CORDEXRuns/lisvapRuns/LisvapLinux2013_test/out_10y_penman_nc/et.nc'
+  fg = plt.figure(figsize=(4, 4))
+  ax = fg.gca()
+  xx, yy, mnH, pctl95H, pctl99H = getMaps(hindcastMeteoFlPth, 'et', 'hindcast')
+  
+  xx, yy, mnP, pctl95P, pctl99P = getMaps(cordexMeteoFlPth, 'et', 'testmenta_CLMcom-CCLM4-8-17_BC_ICHEC-EC-EARTH')
+  
+  ratioM = (mnP/mnH - 1)*100.
+  dc = 10
+  mx = int(np.ceil(np.nanpercentile(ratioM[:], 99.5)/10)*10)
+  ct = ax.contourf(xx, yy, ratioM, range(-mx, mx, dc), cmap='jet', vmin=-160, vmax=160)
+  plt.title('old lisvap pcraster')
+  cbaxes = inset_axes(ax, width='3%', height='50%', loc=1)
+  cb = plt.colorbar(ct, cax=cbaxes, orientation='vertical')
+  cb.set_label('$\Delta$ %', labelpad=-55, fontsize=10)
+  ax.set_xticklabels([])
+  ax.set_yticklabels([])
+  ax.grid('on')
+  #plt.tight_layout()
+
+  fg.savefig(outputfig, dpi=300)
+
+
+
+
+
+
+
