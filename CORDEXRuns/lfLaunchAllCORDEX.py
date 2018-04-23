@@ -335,7 +335,9 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wuC
     os.system('chmod a+x ' + condorSubScrptFile)
     #CONDOR SUBMIT
     os.system('condor_submit -disable ' + condorSubScrptFile)
-    time.sleep(45)
+   #time.sleep(45)
+   #time.sleep(600)
+    time.sleep(120)
     
 
 
