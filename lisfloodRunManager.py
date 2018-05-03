@@ -282,15 +282,23 @@ class lisfloodRunManager:
 
 
   def iterateRun(self):
-    starttime = time.time()
-    while True:
-      print('""" RUN MANAGER STATE """')
-      self._printState()
-      print('"""')
-      if not self.executeNextRun():
-        return
-    endtime = time.time()
-    print('All done. Elapsed time = ' + str(int(round(endtime - starttime))) + ' s')
+    try:
+      try:
+        os.makedirs(self.tmpOutDir)
+      except:
+        pass
+  
+      starttime = time.time()
+      while True:
+        print('""" RUN MANAGER STATE """')
+        self._printState()
+        print('"""')
+        if not self.executeNextRun():
+          return
+      endtime = time.time()
+      print('All done. Elapsed time = ' + str(int(round(endtime - starttime))) + ' s')
+    finally:
+      os.rmtree(self.tmpOutDir, True)
   
     
     

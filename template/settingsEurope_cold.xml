@@ -1539,7 +1539,7 @@ TIMESTEP RELATED PARAMETERS
 </comment>
 
 <!-- menta -->
-<textvar name="numCPUs_parallelKinematicWave" value="10"/>
+<textvar name="numCPUs_parallelKinematicWave" value="20"/>
 
 <!-- menta -->
 <textvar name="CalendarConvention" value="@CALENDAR_CONVENTION@"/>
