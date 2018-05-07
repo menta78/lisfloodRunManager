@@ -13,7 +13,8 @@ from numpy import loadtxt
 
 
 __OUTPUT_FILE_EXT = '.nc'
-__MAP2ASC_CMD = '/software/PCRaster/pcraster4/bin/map2asc'
+#__MAP2ASC_CMD = '/software/PCRaster/pcraster4/bin/map2asc'
+__MAP2ASC_CMD = 'map2asc'
 __TEMP_FILE_SUFIX = '_temp.txt'
 
 __NETCDF_DATASET_FORMAT = 'NETCDF4_CLASSIC'
@@ -96,9 +97,10 @@ def openwritenetcdf(nf2, var_name):
     proj.EPSG_code = configFile.get('PROJECTION','EPSG_CODE')
 
     value = nf2.createVariable(var_name, __NETCDF_VALUE_DATA_TYPE, (netcdf_var_time, netcdf_var_y, netcdf_var_x), zlib=True, complevel=9, least_significant_digit=2)
-    value.standard_name = __meteo_vars_config[var_name][__KEY_STANDARD_NAME]
-    value.long_name = __meteo_vars_config[var_name][__KEY_LONG_NAME]
-    value.units = __meteo_vars_config[var_name][__KEY_UNIT]
+    if var_name in __meteo_vars_config:
+      value.standard_name = __meteo_vars_config[var_name][__KEY_STANDARD_NAME]
+      value.long_name = __meteo_vars_config[var_name][__KEY_LONG_NAME]
+      value.units = __meteo_vars_config[var_name][__KEY_UNIT]
     
     value.grid_mapping = configFile.get('PROJECTION','GRID_MAPPING')
     value.esri_pe_string = configFile.get('PROJECTION','STRING')
@@ -123,45 +125,46 @@ def main(argv):
         var_name = argv[0]
         configFile.read(argv[1])
         netcdf_var_time = configFile.get('VAR_TIME','NAME')
-        if var_name in __meteo_vars_config:
-            outbasedir = os.path.normpath(argv[2])
-            inbasedir = os.path.normpath(argv[3])
-            
-            outName=os.path.join(outbasedir, var_name+__OUTPUT_FILE_EXT)
-            
-            print 'Start generating netcdf file for variable: '+ var_name
-            print 'input folder: ' + inbasedir
-            print 'netcdf output file: ' + outName
-            
-            # ------- open netcdfs for writing
-            nf2 = Dataset(outName, 'w', format=__NETCDF_DATASET_FORMAT)
-            openwritenetcdf(nf2, var_name)
-            
-            inputWildcards = os.path.join(inbasedir,var_name+configFile.get('GENERIC','INPUT_WILDCARD'))
-            print 'Start loading files using the wildcard: ' + inputWildcards
-            
-            tempfilename = os.path.join(outbasedir, var_name+__TEMP_FILE_SUFIX)
-            time_frequency = int(configFile.get('VAR_TIME','FREQUENCY'))
-            k=0
-            for f in sorted(glob.glob(inputWildcards)):
-                basepath, filename = os.path.split(f)
-                print 'Loading file: '+ filename
-                # print 'Loading file: '+ f[-12:] # et000000.001
-                os.system( generate_map2asc_command(f, tempfilename) )
-                value = loadtxt(tempfilename)
-                value[value==1e31] = np.nan
-                nf2.variables[netcdf_var_time][k] = k * time_frequency
-                nf2.variables[var_name][k, :, :] = value
-                os.remove(tempfilename)
-                k += 1
-            
-            print 'Finished generating the netcdf file containing ' + str(k * time_frequency) + ' ' + configFile.get('VAR_TIME','UNIT') + '.'
-            
-            nf2.close()
-            
-            print 'Closed netcdf output file: ' + outName
-        else:
-            print 'ERROR: Unknown variable, script is expecting one of {'+vars_list+'}.\n' + help_str
+        if not var_name in __meteo_vars_config:
+            print 'WARNING: Unknown variable, script is expecting one of {'+vars_list+'}.\n' + help_str
+            print '         leaving all attributes blanc'
+
+        outbasedir = os.path.normpath(argv[2])
+        inbasedir = os.path.normpath(argv[3])
+        
+        outName=os.path.join(outbasedir, var_name+__OUTPUT_FILE_EXT)
+        
+        print 'Start generating netcdf file for variable: '+ var_name
+        print 'input folder: ' + inbasedir
+        print 'netcdf output file: ' + outName
+        
+        # ------- open netcdfs for writing
+        nf2 = Dataset(outName, 'w', format=__NETCDF_DATASET_FORMAT)
+        openwritenetcdf(nf2, var_name)
+        
+        inputWildcards = os.path.join(inbasedir,var_name+configFile.get('GENERIC','INPUT_WILDCARD'))
+        print 'Start loading files using the wildcard: ' + inputWildcards
+        
+        tempfilename = os.path.join(outbasedir, var_name+__TEMP_FILE_SUFIX)
+        time_frequency = int(configFile.get('VAR_TIME','FREQUENCY'))
+        k=0
+        for f in sorted(glob.glob(inputWildcards)):
+            basepath, filename = os.path.split(f)
+            print 'Loading file: '+ filename
+            # print 'Loading file: '+ f[-12:] # et000000.001
+            os.system( generate_map2asc_command(f, tempfilename) )
+            value = loadtxt(tempfilename)
+            value[value==1e31] = np.nan
+            nf2.variables[netcdf_var_time][k] = k * time_frequency
+            nf2.variables[var_name][k, :, :] = value
+            os.remove(tempfilename)
+            k += 1
+        
+        print 'Finished generating the netcdf file containing ' + str(k * time_frequency) + ' ' + configFile.get('VAR_TIME','UNIT') + '.'
+        
+        nf2.close()
+        
+        print 'Closed netcdf output file: ' + outName
     else:
         print help_str
         
