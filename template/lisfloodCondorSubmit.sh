@@ -10,7 +10,7 @@ executable   = @EXECUTABLE@
 +Owner="critechproc"
 
 RequestCpus = 8
-RequestMemory = 100Gb
+RequestMemory = 10Gb
 
 #Standar outputs
 #Output = @CONF_DIR@/condor_job.$(Cluster)_$(Process).out

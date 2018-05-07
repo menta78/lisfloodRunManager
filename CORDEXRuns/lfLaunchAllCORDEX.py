@@ -22,6 +22,7 @@ lisfloodpy = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisflood/Lisf
 lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)
 
 scenarios = ['historical', 'rcp85', 'rcp45']  
+scenarios = ['rcp85', 'rcp45']  
 
 dtReWarmUp = relativedelta(months = 1)
 
@@ -29,7 +30,6 @@ def launchAll(scenarios=scenarios, outDir=outDir, runDirRoot=runDirRoot, dtReWar
   meteoDataDirectory = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/input/LAEAETRS89_BIAS_CORDEX'
   runDir = os.path.join(runDirRoot, 'conf')
   initDir = os.path.join(runDirRoot, 'init')
-  tmpOutDir = os.path.join(runDirRoot, 'tmpout')
 
   models = """
 IPSL-INERIS-WRF331F_BC
@@ -231,7 +231,9 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wuC
                      outDir=outDir, runDirRoot=runDirRoot):
   runDir = os.path.join(runDirRoot, 'conf')
   initDir = os.path.join(runDirRoot, 'init')
-  tmpOutDir = os.path.join(runDirRoot, 'tmpout')
+ #tmpOutDir = os.path.join(runDirRoot, 'tmpout')
+  tmpOutDirPrefix = '/scratch2/critechproc/lisflood'
+
   calUnitStr = 'days since ' + calendarDayStart.strftime('%Y-%m-%d')
   try:
     stepEnd = netCDF4.date2num(calendarDayEnd, calUnitStr, calendar)
@@ -273,11 +275,11 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wuC
     except:
       pass
     
-    tmpOutDirMdl = os.path.join(tmpOutDir, scen, mdl, wUseStr)
-    try:
-      os.makedirs(tmpOutDirMdl)
-    except:
-      pass
+    tmpOutDirMdl = '_'.join([tmpOutDirPrefix, scen, mdl, wUseStr])
+   #try:
+   #  os.makedirs(tmpOutDirMdl)
+   #except:
+   #  pass
 
     outDirMdl = os.path.join(outDir, scen, mdl, wUseStr)
     try:
@@ -335,7 +337,9 @@ def launchSingleModel(scen, mdl, calendarDayStart, calendarDayEnd, calendar, wuC
     os.system('chmod a+x ' + condorSubScrptFile)
     #CONDOR SUBMIT
     os.system('condor_submit -disable ' + condorSubScrptFile)
-    time.sleep(45)
+   #time.sleep(45)
+   #time.sleep(600)
+    time.sleep(180)
     
 
 
