@@ -15,7 +15,7 @@ else
 end
 
 cachedir = 'cache';
-if ~exist(cachedir, 'dir')
+if cacheResults && ~exist(cachedir, 'dir')
   mkdir(cachedir);
 end
 
