@@ -1,6 +1,4 @@
 function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPeriodsInYears, channelMap, varargin)
-  minPeakDistanceInDays = 1.5;
-
   args.parObj = [];
   args.nWorker = 12;
   args = easyParseNamedArgs(varargin, args);
@@ -8,6 +6,7 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
   nWorker = args.nWorker;
   timeWindow = 365.25*30; % 30 years
   minPeakDistanceInDays = 30;
+  ciPercentile = 98.5;
   
   ownsParObj = isempty(parObj);
   if ownsParObj
@@ -15,21 +14,23 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
   end
   try
 
-    nlon = length(lon);
-    nlat = length(lat);
-    [lonMtx, latMtx] = meshgrid(lon, lat);
+    nlon = length(lonAll);
+    nlat = length(latAll);
+    [lonMtx, latMtx] = meshgrid(lonAll, latAll);
     [ilonMtx, ilatMtx] = meshgrid(1:nlon, 1:nlat);
-    lon = lonMtx(channelMap);
-    lat = latMtx(channelMap);
-    ilon = ilonMtx(channelMap);
-    ilat = ilatMtx(channelMap);
-    vls = vlsAll(channelMap);
+    cm2d = logical(channelMap);
+    cm3d = cm2d(:,:,ones(size(vlsAll, 3), 1));
+    lon = lonMtx(cm2d);
+    lat = latMtx(cm2d);
+    ilon = ilonMtx(cm2d);
+    ilat = ilatMtx(cm2d);
+    vls = reshape(vlsAll(cm3d), size(ilon, 1), size(vlsAll, 3));
     
     outDtVc = [outYears, ones(size(outYears)), ones(size(outYears))];
     outDt = datenum(outDtVc);
     outDtIndx = knnsearch(tmstmp, outDt);
     
-    npt = length(vls);
+    npt = size(vls, 1);
     nyr = length(outYears);
 
     nretper = length(returnPeriodsInYears);
@@ -45,28 +46,21 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
 
     tic;
     parfor ipt = 1:npt
-    %for ipt = 7270:7290
+   %for ipt = 1:npt
       try
         disp(ipt);
         disp(['  done ' num2str(ipt/npt*100) '%']);
 
-        ptlon = lon(ilon);
-        ptlat = lat(ilat);
+        ptlon = lon(ipt);
+        ptlat = lat(ipt);
 
-        vli = squeeze(vls(ipt, :));
+        vli = squeeze(vls(ipt, :))';
         if all(isnan(vli))
           % this point is in the sea
           continue;
         end
 
-        if isempty(evaTimeLimits)
-          timeAndSeries = [tmstmp vli];
-        else
-          cnd = tmstmp >= evaTimeLimits(1) & tmstmp < evaTimeLimits(2);
-          tmstmp0 = tmstmp(cnd);
-          vli0 = vli(cnd);
-          timeAndSeries = [tmstmp0 vli0];
-        end
+        timeAndSeries = [tmstmp vli];
 
         fracNan = sum(isnan(timeAndSeries(:,2)))/size(timeAndSeries, 1);
         if fracNan >= .5
@@ -82,7 +76,9 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
           continue;
         end
 
-        [ptReturnLevels, ptReturnLevelsErr, ~, ~] = tsEvaComputeReturnLevelsGPDFromAnalysisObj(nonStatEvaParams, returnPeriodsInYears, 'timeindex', outDtIndx);
+        [ nonStatEvaParams, statTransfData ] = tsEvaReduceOutputObjSize( nonStatEvaParams, statTransfData, outDt );
+
+        [ptReturnLevels, ptReturnLevelsErr, ~, ~] = tsEvaComputeReturnLevelsGPDFromAnalysisObj(nonStatEvaParams, returnPeriodsInYears);
 
         retLevGPD_(ipt, :, :) = ptReturnLevels;
         retLevErrGPD_(ipt, :, :) = ptReturnLevelsErr;

@@ -2,7 +2,7 @@ function lfEvaModel(scenario, model, wuChanging, outDir, varargin)
 
 returnPeriodsInYears = [5 10 20 50 100 250 500 1000 2000];
 channelMapFl = './maps/channels_5km.nc';
-nparworker = 1;
+nparworker = 12;
 
 if wuChanging
   wustr = 'wuChang';
@@ -16,18 +16,17 @@ channelMap(isnan(channelMap)) = false;
 retLevNcFlName = [strjoin({scenario, model, wustr, 'dis', 'statistics'}, '_') '.nc'];
 retLevNcOutFilePath = fullfile(outDir, retLevNcFlName);
 
-nx = 1000;
-ny = 950; 
+[nx ny] = size(channelMap);
 nretper = length(returnPeriodsInYears);
 nyrall = 120;
-nyrout = round(nyrall/5);
+nyrout = round(nyrall/5) + 1;
 
 % this procedure will analyze 120x60 windows, to avoid using too much
 % memory
-%dlon = 120;
-%dlat = 60;
-dx = 250;
-dy = 190;
+%dx = 250;
+%dy = 190;
+dx = 340;
+dy = 320;
 
 if nparworker > 1
   parObj = parpool(nparworker);
@@ -35,7 +34,7 @@ else
   parObj = -1;
 end
 
-%try
+try
   disp('allocating output ...');
   retLevGPD = ones(ny, nx, nyrout, nretper)*nan;
   retLevErrGPD = ones(ny, nx, nyrout, nretper)*nan;
@@ -50,20 +49,20 @@ end
   nsuby = ceil(ny/dy);
   
   outYears = (1985:5:2100)';
-  outYears = cat(1, [1981, outYears]);
+  outYears = cat(1, 1981, outYears);
   xx = ones(nx, 1)*nan;
   yy = ones(ny, 1)*nan;
   
   wholeTicToc = tic;
   
-  for isublon = 1:nsubx
-    for isublat = 1:nsuby
+  for isubx = 1:nsubx
+    for isuby = 1:nsuby
       fprintf('\n');
       disp(['elaborating sub area ' num2str(isubx) ', ' num2str(isuby)]);
-      iLonStart = (isublon - 1)*dx + 1;
-      iLonEnd = min(isublon*dx, nx);
-      iLatStart = (isublat - 1)*dy + 1;
-      iLatEnd = min(isublat*dy, ny);
+      iLonStart = (isubx - 1)*dx + 1;
+      iLonEnd = min(isubx*dx, nx);
+      iLatStart = (isuby - 1)*dy + 1;
+      iLatEnd = min(isuby*dy, ny);
       disp(['iLonStart, iLonEnd = ' num2str(iLonStart) ', ' num2str(iLonEnd)]);
       disp(['iLatStart, iLatEnd = ' num2str(iLatStart) ', ' num2str(iLatEnd)]);
       
@@ -142,11 +141,11 @@ end
 
   
   
-%catch exc
-%  disp(['Exception raised. Last processed isublon, isublat: ' num2str(isublon) ', ' num2str(isublat)]);
-%  delete(parObj);
-%  rethrow(exc);
-%end
+catch exc
+  disp(['Exception raised. Last processed isubx, isuby: ' num2str(isubx) ', ' num2str(isuby)]);
+  delete(parObj);
+  rethrow(exc);
+end
 delete(parObj);
 
 
