@@ -11,12 +11,13 @@ else
 end
 
 channelMap = ncread(channelMapFl, 'channels');
+%channelMap = channelMap';
 channelMap(isnan(channelMap)) = false;
 
 retLevNcFlName = [strjoin({scenario, model, wustr, 'dis', 'statistics'}, '_') '.nc'];
 retLevNcOutFilePath = fullfile(outDir, retLevNcFlName);
 
-[nx ny] = size(channelMap);
+[nx, ny] = size(channelMap);
 nretper = length(returnPeriodsInYears);
 nyrall = 120;
 nyrout = round(nyrall/5) + 1;
@@ -25,14 +26,16 @@ nyrout = round(nyrall/5) + 1;
 % memory
 %dx = 250;
 %dy = 190;
-dx = 340;
-dy = 320;
+%dx = 250;
+%dy = 320;
+dx = 250;
+dy = 249;
 
-if nparworker > 1
-  parObj = parpool(nparworker);
-else
-  parObj = -1;
-end
+% if nparworker > 1
+%   parObj = parpool(nparworker);
+% else
+%   parObj = -1;
+% end
 
 try
   disp('allocating output ...');
@@ -57,6 +60,8 @@ try
   
   for isubx = 1:nsubx
     for isuby = 1:nsuby
+% for isubx = 1:1
+%   for isuby = 1:1
       fprintf('\n');
       disp(['elaborating sub area ' num2str(isubx) ', ' num2str(isuby)]);
       iLonStart = (isubx - 1)*dx + 1;
@@ -67,9 +72,10 @@ try
       disp(['iLatStart, iLatEnd = ' num2str(iLatStart) ', ' num2str(iLatEnd)]);
       
       tic;
-      channelMap_ = channelMap(iLatStart:iLatEnd, iLonStart:iLonEnd);
+      channelMap_ = channelMap(iLonStart:iLonEnd, iLatStart:iLatEnd);
       [ tmstmp, xx_, yy_, vls ] = lfDisLoadFromNc( [iLonStart iLatStart], [iLonEnd iLatEnd], scenario, model, wuChanging, varargin{:} );
-      evaData = lfExecuteTsEva( tmstmp, xx_, yy_, vls, outYears, returnPeriodsInYears, channelMap_, 'parObj', parObj );
+     %evaData = lfExecuteTsEva( tmstmp, xx_, yy_, vls, outYears, returnPeriodsInYears, channelMap_, 'parObj', parObj );
+      evaData = lfExecuteTsEva( tmstmp, xx_, yy_, vls, outYears, returnPeriodsInYears, channelMap_, 'nWorker', nparworker );
       
       fprintf('\n');
       toc;
@@ -143,9 +149,9 @@ try
   
 catch exc
   disp(['Exception raised. Last processed isubx, isuby: ' num2str(isubx) ', ' num2str(isuby)]);
-  delete(parObj);
+%  delete(parObj);
   rethrow(exc);
 end
-delete(parObj);
+%delete(parObj);
 
 

@@ -1,48 +1,51 @@
 function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPeriodsInYears, channelMap, varargin)
   args.parObj = [];
   args.nWorker = 12;
-  args = easyParseNamedArgs(varargin, args);
+  args = lfEasyParseNamedArgs(varargin, args);
   parObj = args.parObj;
   nWorker = args.nWorker;
   timeWindow = 365.25*30; % 30 years
   minPeakDistanceInDays = 30;
   ciPercentile = 98.5;
+
+  nlon = length(lonAll);
+  nlat = length(latAll);
+ %[lonMtx, latMtx] = meshgrid(lonAll, latAll);
+ %[ilonMtx, ilatMtx] = meshgrid(1:nlon, 1:nlat);
+  [latMtx, lonMtx] = meshgrid(latAll, lonAll);
+  [ilatMtx, ilonMtx] = meshgrid(1:nlat, 1:nlon);
+  cm2d = logical(channelMap);
+  cm3d = cm2d(:,:,ones(size(vlsAll, 3), 1));
+  lon = lonMtx(cm2d);
+  lat = latMtx(cm2d);
+  ilon = ilonMtx(cm2d);
+  ilat = ilatMtx(cm2d);
+  vls = reshape(vlsAll(cm3d), size(ilon, 1), size(vlsAll, 3));
+  clear vlsAll cm3d;
+
+  outDtVc = [outYears, ones(size(outYears)), ones(size(outYears))];
+  outDt = datenum(outDtVc);
+  %outDtIndx = knnsearch(tmstmp, outDt);
+
+  npt = size(vls, 1);
+  nyr = length(outYears);
+
+  nretper = length(returnPeriodsInYears);
+
+  retLevGPD_ = ones(npt, nyr, nretper)*nan;
+  retLevErrGPD_ = ones(npt, nyr, nretper)*nan;
+  shapeGPD_ = ones(npt, 1)*nan;
+  shapeGPDErr_ = ones(npt, 1)*nan;
+  scaleGPD_ = ones(npt, nyr)*nan;
+  scaleGPDErr_ = ones(npt, nyr)*nan;
+  thresholdGPD_ = ones(npt, nyr)*nan;
+  thresholdGPDErr_ = ones(npt, nyr)*nan;
   
   ownsParObj = isempty(parObj);
   if ownsParObj
     parObj = parpool(nWorker);
   end
   try
-
-    nlon = length(lonAll);
-    nlat = length(latAll);
-    [lonMtx, latMtx] = meshgrid(lonAll, latAll);
-    [ilonMtx, ilatMtx] = meshgrid(1:nlon, 1:nlat);
-    cm2d = logical(channelMap);
-    cm3d = cm2d(:,:,ones(size(vlsAll, 3), 1));
-    lon = lonMtx(cm2d);
-    lat = latMtx(cm2d);
-    ilon = ilonMtx(cm2d);
-    ilat = ilatMtx(cm2d);
-    vls = reshape(vlsAll(cm3d), size(ilon, 1), size(vlsAll, 3));
-    
-    outDtVc = [outYears, ones(size(outYears)), ones(size(outYears))];
-    outDt = datenum(outDtVc);
-    outDtIndx = knnsearch(tmstmp, outDt);
-    
-    npt = size(vls, 1);
-    nyr = length(outYears);
-
-    nretper = length(returnPeriodsInYears);
-
-    retLevGPD_ = ones(npt, nyr, nretper)*nan;
-    retLevErrGPD_ = ones(npt, nyr, nretper)*nan;
-    shapeGPD_ = ones(npt, 1)*nan;
-    shapeGPDErr_ = ones(npt, 1)*nan;
-    scaleGPD_ = ones(npt, nyr)*nan;
-    scaleGPDErr_ = ones(npt, nyr)*nan;
-    thresholdGPD_ = ones(npt, nyr)*nan;
-    thresholdGPDErr_ = ones(npt, nyr)*nan;
 
     tic;
     parfor ipt = 1:npt

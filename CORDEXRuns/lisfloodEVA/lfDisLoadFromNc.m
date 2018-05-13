@@ -42,6 +42,8 @@ else
   
   tmstmp = cat(1, htmstp, rtmstp);
   vls = cat(3, hvls, rvls);
+ %tmstmp = htmstp;
+ %vls = hvls;
 
   if cacheResults
     disp('     serializing cache file');
