@@ -4,23 +4,33 @@ import xarray
 import scipy.interpolate as si
 
 
-defaultOutletNcFlPath = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/lisflood/lisfloodRun/LisfloodEurope/maps_netcdf/outlets.nc'
+defaultOutletNcFlPath = './outlets.nc'
 
 
-def plotMap(outledNcFlPath=defaultOutletNcFlPath):
-  ds = xarray.open_dataset(flpth)
+def plotMap(outletNcFlPath=defaultOutletNcFlPath):
+  ds = xarray.open_dataset(outletNcFlPath)
   x = ds.variables['x'][:]
+  dx = np.abs(x[1] - x[0])
   y = ds.variables['y'][:]
+  dy = np.abs(y[1] - y[0])
   outlets = ds.variables['outlets'][:]
 
   xmtx, ymtx = np.meshgrid(x, y)
-  plt.pcolor(xmtx, ymtx, outlets)
+  pc = plt.pcolor(xmtx, ymtx, outlets)
 
   def fmt(xloc, yloc):
-    z = np.take(si.interp2d(x, y, outlets)(xloc, yloc), 0)
-    return 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=x, y=y, z=z)
+    ix = np.where(np.abs(x - xloc) < dx)
+    iy = np.where(np.abs(y - yloc) < dy)
+    z = np.nanmax(outlets[iy, ix])
+    ss = 'x={x:.5f}  y={y:.5f}  z={z:.5f}'.format(x=xloc, y=yloc, z=z)
+    return ss
 
-  plt.gca().format_coord = fmt
+  def plotClick(event):
+    ss = fmt(event.xdata, event.ydata)
+    print(ss)
+
+  pc.axes.format_coord = fmt
+  plt.gcf().canvas.mpl_connect('button_press_event', plotClick)
   plt.show()
 
 
