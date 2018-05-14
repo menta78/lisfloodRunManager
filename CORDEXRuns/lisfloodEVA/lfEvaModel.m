@@ -134,7 +134,7 @@ try
   ncwrite(retLevNcOutFilePath, 'y', yy);
 
   nccreate(retLevNcOutFilePath, 'year', 'dimensions', {'iyear', nyrout});
-  ncwrite(retLevNcOutFilePath, 'y', outYears);
+  ncwrite(retLevNcOutFilePath, 'year', outYears);
 
   nccreate(retLevNcOutFilePath, 'return_period', 'dimensions', {'nretper', nretper});
   ncwrite(retLevNcOutFilePath, 'return_period', returnPeriodsInYears);

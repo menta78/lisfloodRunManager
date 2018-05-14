@@ -1,10 +1,12 @@
+import os
 import numpy as np
 from matplotlib import pyplot as plt
 import xarray
 import scipy.interpolate as si
 
 
-defaultOutletNcFlPath = './outlets.nc'
+mdldir = os.path.dirname(os.path.abspath(__file__))
+defaultOutletNcFlPath = os.path.join(mdldir, 'outlets.nc')
 
 
 def plotMap(outletNcFlPath=defaultOutletNcFlPath):
