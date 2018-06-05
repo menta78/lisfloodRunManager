@@ -1,0 +1,8 @@
+Hi Lorenzo,
+
+All the input maps are generated. In the .xls file I made an overview of the changes in the settingsfile between the runs with the paths to the input maps + an example settingfile.
+
+Hope this is clear otherwise let me know.
+Cheers Berny 
+
+

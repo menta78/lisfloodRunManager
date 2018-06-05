@@ -7,7 +7,7 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
   timeWindow = 365.25*30; % 30 years
   minPeakDistanceInDays = 30;
   ciPercentile = 98.5;
-
+  
   nlon = length(lonAll);
   nlat = length(latAll);
  %[lonMtx, latMtx] = meshgrid(lonAll, latAll);
@@ -71,7 +71,7 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
         end
 
         [nonStatEvaParams, statTransfData, isValid] = tsEvaNonStationary(timeAndSeries, timeWindow, 'transfType', 'trendCiPercentile',...
-  'ciPercentile', ciPercentile, 'minPeakDistanceInDays', minPeakDistanceInDays);
+  'ciPercentile', ciPercentile, 'minPeakDistanceInDays', minPeakDistanceInDays, 'potEventsPerYear', 2);
 
 
         if ~isValid

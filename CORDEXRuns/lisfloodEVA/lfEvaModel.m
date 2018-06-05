@@ -1,6 +1,9 @@
 function lfEvaModel(scenario, model, wuChanging, outDir, varargin)
 
-returnPeriodsInYears = [5 10 20 50 100 250 500 1000 2000];
+returnPeriodsInYears = [5 10 20 50 100 250 500 1000 2000];  
+outYears = (1985:5:2100)';
+outYears = cat(1, 1981, outYears);
+
 channelMapFl = './maps/channels_5km.nc';
 nparworker = 12;
 
@@ -14,13 +17,12 @@ channelMap = ncread(channelMapFl, 'channels');
 %channelMap = channelMap';
 channelMap(isnan(channelMap)) = false;
 
-retLevNcFlName = [strjoin({scenario, model, wustr, 'dis', 'statistics'}, '_') '.nc'];
+retLevNcFlName = [strjoin({'dis', scenario, model, wustr, 'statistics'}, '_') '.nc'];
 retLevNcOutFilePath = fullfile(outDir, retLevNcFlName);
 
 [nx, ny] = size(channelMap);
 nretper = length(returnPeriodsInYears);
-nyrall = 120;
-nyrout = round(nyrall/5) + 1;
+nyrout = size(outYears, 1);
 
 % this procedure will analyze 120x60 windows, to avoid using too much
 % memory
@@ -50,9 +52,6 @@ try
 
   nsubx = ceil(nx/dx);
   nsuby = ceil(ny/dy);
-  
-  outYears = (1985:5:2100)';
-  outYears = cat(1, 1981, outYears);
   xx = ones(nx, 1)*nan;
   yy = ones(ny, 1)*nan;
   

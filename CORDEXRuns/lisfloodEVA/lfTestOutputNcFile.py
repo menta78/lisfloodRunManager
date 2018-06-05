@@ -22,6 +22,7 @@ dftStid = 25 # close to duna
 dftStid = 136 # close to po
 
 dftEvaNcFile = 'test/rcp85_CLMcom-CCLM4-8-17_BC_ICHEC-EC-EARTH_wuConst_dis_statistics.nc'
+dftEvaNcFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/lisfloodEVA/test/rcp85_CLMcom-CCLM4-8-17_BC_ICHEC-EC-EARTH_wuConst_dis_statistics_5EvtPerYear.nc'
 
 def plotDiagnostics( baseDir=dftBaseDir, model=dftModel, scenH=dftScenH, scenR=dftScenR, wuStr=dftWuStr, stid=dftStid, evaNcFile=dftEvaNcFile ):
   outletNcFl = '../util/outlets.nc'
