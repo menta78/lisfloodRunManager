@@ -4201,7 +4201,7 @@ lake and reservoir water used, fraction of a pixel (0-1)
 </comment>
 </textvar>
 
-<textvar name="EFlowThreshold" value="1.0">
+<textvar name="EFlowThreshold" value="$(PathMaps)/dis_nat_10.nc">
 <comment>
 $(PathMaps)/eflow.map
 EFlowThreshold is map with m3/s discharge, e.g. the 10th percentile discharge of the baseline run
