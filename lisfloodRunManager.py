@@ -299,7 +299,7 @@ class lisfloodRunManager:
       endtime = time.time()
       print('All done. Elapsed time = ' + str(int(round(endtime - starttime))) + ' s')
     finally:
-      os.rmtree(self.tmpOutDir, True)
+      shutil.rmtree(self.tmpOutDir, True)
   
     
     

@@ -153,6 +153,7 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="1" name="simulateLakes"/>
 <setoption choice="1" name="simulateReservoirs"/> 
 <setoption choice="1" name="simulatePF"/>
+<setoption choice="1" name="simulateWaterLevels"/>
 
 <setoption choice="1" name="SplitRouting"/>
 <setoption choice="0" name="InitLisflood"/>
@@ -164,9 +165,10 @@ NEW 26/7/2005: includes reservoirs, inflow hydrographs
 <setoption choice="1" name="repTopSoilMoistureMaps"/>
 <setoption choice="1" name="repSurfaceSoilMoistureMaps"/>
 <setoption choice="1" name="repDischargeMaps"/>
-<setoption choice="0" name="repsimulateLakes"/>
-<setoption choice="0" name="repsimulateReservoirs"/>
+<setoption choice="1" name="repsimulateLakes"/>
+<setoption choice="1" name="repsimulateReservoirs"/>
 <setoption choice="1" name="repSurfaceRunoffMaps"/>
+<setoption choice="1" name="repWaterLevelMaps"/>
 
 <!-- menta -->
 <setoption choice="1" name="repSnowMaps"/>
