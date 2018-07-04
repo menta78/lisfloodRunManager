@@ -4,16 +4,26 @@ import os, glob, sys, netCDF4, time
 
 
 
-def generateMergedOutput(rootInDir, rootOutDir, measureName):
+def generateMergedOutput(rootInDir, rootOutDir, measureName, recoveryRun=True, firstModelForRecoveryRun=''):
   scenarios = ['historical', 'rcp85', 'rcp45']
   scen0dir = os.path.join(rootInDir, scenarios[0])
   models = [d for d in os.listdir(scen0dir) 
                  if os.path.isdir(os.path.join(scen0dir, d))]
   wuChangStrs = ['wuConst', 'wuChang']
   
+  recoveringGeneratedFiles = recoveryRun
   for scen in scenarios:
     for model in models:
       for wuChangStr in wuChangStrs:
+
+        if recoveringGeneratedFiles:
+          modelStr = '_'.join([scen, wuChangStr, model])
+          if modelStr == firstModelForRecoveryRun:
+            recoveringGeneratedFiles = False
+          else:
+            print('  model ' + modelStr + ' already generated. Skipping')
+            continue
+
         tmstart = time.time()
 
         print('Copy-merging ' + measureName + ' for [scenario, model, waterUse]=[' + scen + ', ' + model + ', ' + wuChangStr + ']')
@@ -60,13 +70,17 @@ def generateMergedOutput(rootInDir, rootOutDir, measureName):
 
 def main():
   args = sys.argv[1:]
-  if len(args) != 3:
+  if len(args) < 3:
     print('Sample call:')
-    print('python generateMergedOutput.py /inputRootDir /outputRootDir dis')
+    print('python generateMergedOutput.py /inputRootDir /outputRootDir dis <firstModelForRecoveryRun>')
+    print('  the 4th argument is supplementary, and specifies the first model to be considered, as a string')
+    print('  scenario_wuChangeStr_model')
     return
     
-  inDir, outDir, msrName = args
-  generateMergedOutput(inDir, outDir, msrName)
+  inDir, outDir, msrName = args[:3]
+  firstModelForRecoveryRun = args[3] if len(args) > 3 else ''
+  recoveryRun = firstModelForRecoveryRun != ''
+  generateMergedOutput(inDir, outDir, msrName, recoveryRun, firstModelForRecoveryRun)
 
 
 if __name__ == '__main__':
