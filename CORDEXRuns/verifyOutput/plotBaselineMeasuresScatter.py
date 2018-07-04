@@ -85,10 +85,14 @@ def getTotMean(tms, dis, startDate, endDate):
 
 def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,01,01), 
        msrsTssFl=defMsrsTssFile, msrsStartDate=datetime(1990, 01, 01), getStat=getYMax, scatterSize=10, timeHorizon=None):
-  if os.path.isfile(modelTssPath):
-    tmsMdl, statIdsMdl, disMdl = loadTssFile.loadTssFile(modelTssPath, startDate=modelStartDate)
-  else:
-    tmsMdl, statIdsMdl, disMdl = loadTssFile.loadTssFromDir(modelTssPath, startDate=modelStartDate)
+  try:
+    if os.path.isfile(modelTssPath):
+      tmsMdl, statIdsMdl, disMdl = loadTssFile.loadTssFile(modelTssPath, startDate=modelStartDate)
+    else:
+      tmsMdl, statIdsMdl, disMdl = loadTssFile.loadTssFromDir(modelTssPath, startDate=modelStartDate)
+  except:
+    print('cannot plot model ' + modelName + ': problems loading model output')
+    return
   tmsMsrs, statIdsMsrs, disMsrs = loadTssFile.loadMeasurePseudoTss(msrsTssFl, selectStatIds=statIdsMdl)
   assert (statIdsMdl == statIdsMsrs).all()
   
@@ -340,7 +344,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
 
 
-def plotAllMeanScatters(avgYearsByYear=False, modelRootDir='', logplt=False, outputfig='allMdlScatterYrMean.png'):
+def plotAllMeanScatters(avgYearsByYear=False, modelRootDir='', logplt=False, outputfig='allMdlScatterYrMean.png', wuStr='wuConst'):
   models = """
 IPSL-INERIS-WRF331F_BC
 SMHI-RCA4_BC_CNRM-CERFACS-CNRM-CM5
@@ -374,7 +378,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
   axmtxflt = np.array(axmtx).flatten()[1:]
   for mdl, axmdl in zip(models, axmtxflt):
-    mdlDir = os.path.join(rootDir, mdl, 'wuConst')
+    mdlDir = os.path.join(rootDir, mdl, wuStr)
     if logplt:
       plotModelScatterLog(axmdl, mdl, mdlDir, getStat=getStat)
     else:
