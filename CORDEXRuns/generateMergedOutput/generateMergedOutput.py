@@ -55,17 +55,38 @@ def generateMergedOutput(rootInDir, rootOutDir, measureName, recoveryRun=True, f
 
         outNcFileName = '_'.join([measureName, model, scen, wuChangStr]) + '.nc'
         outFlPath = os.path.join(outDir, outNcFileName) 
-        
-        flIterator = jrcNetcdfUtil.ncDataIterator(inDir, varName, flPattern, outNcDir=outDir, listFileMode='wildcard')
-        flIterator.generateSingleOutFile(outFlPath)
+        if (not os.path.isfile(outFlPath)) or (not checkExistingFile(outFlPath, testFls[0], testFls[-1])):
+          flIterator = jrcNetcdfUtil.ncDataIterator(inDir, varName, flPattern, outNcDir=outDir, listFileMode='wildcard')
+          flIterator.generateSingleOutFile(outFlPath)
 
-        tmend = time.time()
-        tmpassed = tmend - tmstart
-        print('model [' + scen + ', ' + model + ', ' + wuChangStr + '] successfully copied.')
-        print('  time elapsed: ' + str(tmpassed) + ' s')
+          tmend = time.time()
+          tmpassed = tmend - tmstart
+          print('model [' + scen + ', ' + model + ', ' + wuChangStr + '] successfully copied.')
+          print('  time elapsed: ' + str(tmpassed) + ' s')
+        else:
+          print('    file already generated: ' + outFlPath)
 
   print('All done!!')
 
+
+def checkExistingFile(mergedFile, firstUmFile, lastUmFile):
+  result = False
+  try:
+    ds = netCDF4.Dataset(mergedFile)
+    tmnc = ds.variables['time']
+    tmMerge = [tmnc[0], tmnc[-1]] 
+    ds.close()
+    ds = netCDF4.Dataset(firstUmFile)
+    tmIni = ds.variables['time'][0]
+    ds.close()
+    ds = netCDF4.Dataset(lastUmFile)
+    tmLas = ds.variables['time'][-1]
+    ds.close()
+    
+    result = (tmMerge[0] == tmIni) and (tmMerge[-1] == tmLas)
+  except:
+    pass
+  return result
 
 
 def main():

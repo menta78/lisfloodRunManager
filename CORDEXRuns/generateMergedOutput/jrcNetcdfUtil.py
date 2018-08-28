@@ -1,4 +1,4 @@
-import os, re, glob
+import os, re, glob, time
 
 try:
   import numpy as np
@@ -221,21 +221,39 @@ class ncDataIterator:
 
     print('  merging all the files')
     for f in fls:
-      flpth = os.path.join(ncDir, f)
-      print('    merging file ' + flpth)
-      ds = netCDF4.Dataset(flpth)
-      timenc = ds.variables[timeVarName]
-      try:
-        clndr = timenc.calendar
-      except:
-        clndr = 'standard'
-      dtm = netCDF4.num2date(timenc[:], timenc.units, clndr)
-      vrvals = ds.variables[varName][:]
-      ds.close()
+     #if not re.match('(.*)2005(.*)', f):
+     #  continue
+     #import pdb; pdb.set_trace()
+      succmerged1file = False
+      repeatCounter = 0
+      while (not succmerged1file) and (repeatCounter < 50):
+        try:
+          flpth = os.path.join(ncDir, f)
+          print('    merging file ' + flpth)
+          ds = netCDF4.Dataset(flpth)
+          timenc = ds.variables[timeVarName]
+          try:
+            clndr = timenc.calendar
+          except:
+            clndr = 'standard'
+          dtm = netCDF4.num2date(timenc[:], timenc.units, clndr)
+          vrvals = ds.variables[varName][:]
+          ds.close()
+  
+          if not os.path.isfile(outNcFile):
+            ncCloneFileStructure(flpth, outNcFile, varName, timeVarName, timeVarUnits, self.defaultMissingValue)
+          ncUpdateFile(outNcFile, varName, dtm, vrvals, timeVarName)
+          succmerged1file = True
+        except:
+          print('       failed to merge file ' + f + '. Sleeping a little and retrying')
+          try:
+            ds.close()
+          except:
+            pass
+          repeatCounter += 1
+          time.sleep(5)
+          
 
-      if not os.path.isfile(outNcFile):
-        ncCloneFileStructure(flpth, outNcFile, varName, timeVarName, timeVarUnits, self.defaultMissingValue)
-      ncUpdateFile(outNcFile, varName, dtm, vrvals, timeVarName)
     print('  ... done')
     
     
