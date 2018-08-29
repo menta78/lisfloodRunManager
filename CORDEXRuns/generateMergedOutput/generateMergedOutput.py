@@ -34,7 +34,7 @@ def generateMergedOutput(rootInDir, rootOutDir, measureName, recoveryRun=True, f
         print('Input dir: ' + inDir)
         outDir = os.path.join(rootOutDir, scen, model, wuChangStr)
         print('Output dir: ' + outDir)
-        flPattern = measureName + '*.nc'
+        flPattern = measureName + '_*.nc'
         print('Input file pattern: ' + flPattern)
 
         testFlPattern = os.path.join(inDir, flPattern)
