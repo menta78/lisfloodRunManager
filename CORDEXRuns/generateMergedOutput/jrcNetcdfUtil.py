@@ -261,7 +261,7 @@ class ncDataIterator:
   
           if not os.path.isfile(outNcFile):
             outDs = ncCloneFileStructure(flpth, outNcFile, varName, timeVarName, timeVarUnits, self.defaultMissingValue, returnDs=True)
-          else:
+          elif outDs is None:
             outDs = netCDF4.Dataset(outNcFile, 'r+')
           ncUpdateFile(outNcFile, varName, dtm, vrvals, timeVarName, ds=outDs)
           succmerged1file = True
@@ -269,10 +269,13 @@ class ncDataIterator:
           print('       failed to merge file ' + f + '. Sleeping a little and retrying')
           try:
             ds.close()
+            outDs.close()
+            outDs = None
           except:
             pass
           repeatCounter += 1
           time.sleep(5)
+        
     outDs.close()
 
     print('  ... done')
