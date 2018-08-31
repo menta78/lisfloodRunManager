@@ -223,11 +223,13 @@ class ncDataIterator:
         ds = netCDF4.Dataset(outNcFile)
         tmnc = ds.variables['time']
         maxSavedTime = netCDF4.num2date(tmnc[-2], tmnc.units, tmnc.calendar)
+        maxSavedTime = datetime(maxSavedTime.year, maxSavedTime.month, maxSavedTime.day)
         ds.close()
       except:
         os.remove(outNcFile)
 
     print('  merging all the files')
+    outDs = None
     for f in fls:
      #if not re.match('(.*)2005(.*)', f):
      #  continue
@@ -258,8 +260,10 @@ class ncDataIterator:
             ds.close()
   
           if not os.path.isfile(outNcFile):
-            ncCloneFileStructure(flpth, outNcFile, varName, timeVarName, timeVarUnits, self.defaultMissingValue)
-          ncUpdateFile(outNcFile, varName, dtm, vrvals, timeVarName)
+            outDs = ncCloneFileStructure(flpth, outNcFile, varName, timeVarName, timeVarUnits, self.defaultMissingValue, returnDs=True)
+          else:
+            outDs = netCDF4.Dataset(outNcFile, 'r+')
+          ncUpdateFile(outNcFile, varName, dtm, vrvals, timeVarName, ds=outDs)
           succmerged1file = True
         except:
           print('       failed to merge file ' + f + '. Sleeping a little and retrying')
@@ -269,7 +273,7 @@ class ncDataIterator:
             pass
           repeatCounter += 1
           time.sleep(5)
-          
+    outDs.close()
 
     print('  ... done')
     
@@ -280,7 +284,7 @@ class ncDataIterator:
   
       
 
-def ncCloneFileStructure(inputFilePath, outputFilePath, varName, timeVarName='time', timeVarUnits='', defaultMissingValue=1E20):
+def ncCloneFileStructure(inputFilePath, outputFilePath, varName, timeVarName='time', timeVarUnits='', defaultMissingValue=1E20, returnDs=False):
   ids = netCDF4.Dataset(inputFilePath)
   ods = netCDF4.Dataset(outputFilePath, 'w')
 
@@ -317,13 +321,20 @@ def ncCloneFileStructure(inputFilePath, outputFilePath, varName, timeVarName='ti
       ovrbl.setncattr('missing_value', fillValue)
   finally:
     ids.close()
-    ods.close()
+    if not returnDs:
+      ods.close()
+  if returnDs:
+    return ods
+  else:
+    return None
 
   
 
 
-def ncUpdateFile(flpth, varName, datetimes, values, timeVarName='time'):
-  ds = netCDF4.Dataset(flpth, 'r+')
+def ncUpdateFile(flpth, varName, datetimes, values, timeVarName='time', ds=None):
+  handleDs = ds is None
+  if handleDs:
+    ds = netCDF4.Dataset(flpth, 'r+')
   try:
     tmnc = ds.variables[timeVarName]
     try:
@@ -347,6 +358,7 @@ def ncUpdateFile(flpth, varName, datetimes, values, timeVarName='time'):
       indx.append(ss)
     vrnc[indx] = values
   finally:
-    ds.close()
+    if handleDs:
+      ds.close()
     
 
