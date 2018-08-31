@@ -11,6 +11,7 @@ except:
   print('netCDF4 should be installed in python in order for this util to work')
 
 from dateutil.relativedelta import relativedelta
+from datetime import datetime
 
 projFlPattern='ww3\.(.*)_bulk6h\.nc'
 histFlPattern='ww3\.([0-9]{6})\.nc'
@@ -216,8 +217,15 @@ class ncDataIterator:
    #fls.sort()
     fls = self._listFiles(ncDir, flPattern)
 
+    maxSavedTime = datetime.min
     if os.path.isfile(outNcFile):
-      os.remove(outNcFile)
+      try:
+        ds = netCDF4.Dataset(outNcFile)
+        tmnc = ds.variables['time']
+        maxSavedTime = netCDF4.num2date(tmnc[-2], tmnc.units, tmnc.calendar)
+        ds.close()
+      except:
+        os.remove(outNcFile)
 
     print('  merging all the files')
     for f in fls:
@@ -231,14 +239,23 @@ class ncDataIterator:
           flpth = os.path.join(ncDir, f)
           print('    merging file ' + flpth)
           ds = netCDF4.Dataset(flpth)
-          timenc = ds.variables[timeVarName]
           try:
-            clndr = timenc.calendar
-          except:
-            clndr = 'standard'
-          dtm = netCDF4.num2date(timenc[:], timenc.units, clndr)
-          vrvals = ds.variables[varName][:]
-          ds.close()
+            timenc = ds.variables[timeVarName]
+            try:
+              clndr = timenc.calendar
+            except:
+              clndr = 'standard'
+            dtm = netCDF4.num2date(timenc[:], timenc.units, clndr)
+            maxdtm = max(dtm)
+            
+            if datetime(maxdtm.year, maxdtm.month, maxdtm.day) <= maxSavedTime:
+              print('       time ' + str(max(dtm)) + ' already saved. Continuing')
+              succmerged1file = True
+              continue
+  
+            vrvals = ds.variables[varName][:]
+          finally:
+            ds.close()
   
           if not os.path.isfile(outNcFile):
             ncCloneFileStructure(flpth, outNcFile, varName, timeVarName, timeVarUnits, self.defaultMissingValue)
