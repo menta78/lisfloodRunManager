@@ -1,5 +1,9 @@
 function lfEvaModel(scenario, model, wuChanging, outDir, varargin)
 
+args.nparworker = 12;
+args = lfEasyParseNamedArgs(varargin, args);
+nparworker = args.nparworker;
+
 returnPeriodsInYears = [5 10 20 50 100 250 500 1000 2000];  
 outYears = (1985:5:2100)';
 outYears = cat(1, 1981, outYears);
