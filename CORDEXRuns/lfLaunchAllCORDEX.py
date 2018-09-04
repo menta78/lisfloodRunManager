@@ -21,7 +21,7 @@ py = '/eos/jeodpp/data/projects/CRITECH/miniconda3/envs/LISFLOOD/bin/python'
 lisfloodpy = '/eos/jeodpp/data/projects/CRITECH/ADAPTATION/src/git/lisflood/Lisflood/lisf1.py'
 lisfloodcmd = '{python} {lisflood}'.format(python=py, lisflood=lisfloodpy)
 
-scenarios = ['historical', 'rcp85', 'rcp45']  
+#scenarios = ['historical', 'rcp85', 'rcp45']  
 scenarios = ['rcp85', 'rcp45']  
 
 dtReWarmUp = relativedelta(months = 1)

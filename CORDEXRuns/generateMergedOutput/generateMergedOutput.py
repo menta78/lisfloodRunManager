@@ -65,6 +65,7 @@ def generateMergedOutput(rootInDir, rootOutDir, measureName, recoveryRun=True, f
           print('  time elapsed: ' + str(tmpassed) + ' s')
         else:
           print('    file already generated: ' + outFlPath)
+          time.sleep(2)
 
   print('All done!!')
 
