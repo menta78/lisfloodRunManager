@@ -1,4 +1,3 @@
-addpath('/STORAGE/src1/git/tsEva/');
 model = 'CLMcom-CCLM4-8-17_BC_ICHEC-EC-EARTH';
 scenario = 'rcp85';
 %scenario = 'rcp45';
