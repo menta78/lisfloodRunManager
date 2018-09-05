@@ -34,10 +34,11 @@ def testPlotMax():
 
 
 
-def testPlotStat(statId = 210):
+def testPlotStat(statId = 210, wuChang=True):
+  wuChangStr = 'wuChang' if wuChang else 'wuConst'
   fldirHist = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/historical/IPSL-INERIS-WRF331F_BC/wuConst/'
-  fldirRcp85 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp85/IPSL-INERIS-WRF331F_BC/wuChang/'
-  fldirRcp45 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp45/IPSL-INERIS-WRF331F_BC/wuChang/'
+  fldirRcp85 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp85/IPSL-INERIS-WRF331F_BC/' + wuChangStr + '/'
+  fldirRcp45 = '/DATA/JEODPP/eos/projects/CRITECH/ADAPTATION/ClimateRuns/LisfloodEuroCordex/rcp45/IPSL-INERIS-WRF331F_BC/' + wuChangStr + '/'
   msrsFl = '/STORAGE/src1/git/lisfloodRunManager/verifyOutput/testdata/disWin_measuresGauges.tss'
   histStartDate = datetime(1981, 01, 01)
   rcpStartDate = datetime(2011, 01, 01)
@@ -47,12 +48,11 @@ def testPlotStat(statId = 210):
   tmsHist, statIds, disHist = loadTssFile.loadTssFromDir(fldirHist, startDate=histStartDate, selectStatIds=selectStatIds)
   tmsRcp85, statIds, disRcp85 = loadTssFile.loadTssFromDir(fldirRcp85, startDate=rcpStartDate, selectStatIds=selectStatIds)
   tmsRcp45, statIds, disRcp45 = loadTssFile.loadTssFromDir(fldirRcp45, startDate=rcpStartDate, selectStatIds=selectStatIds)
-  tmsMsrs, statIds, disMsrs = loadTssFile.loadTssFile(msrsFl, startDate=msrsStartDate, selectStatIds=selectStatIds)
+ #tmsMsrs, statIds, disMsrs = loadTssFile.loadTssFile(msrsFl, startDate=msrsStartDate, selectStatIds=selectStatIds)
   plotSingle(tmsHist, disHist)
   plotSingle(tmsRcp85, disRcp85)
   plotSingle(tmsRcp45, disRcp45)
-  plotSingle(tmsMsrs, disMsrs)
-  plt.plot(tmsMsrs, disMsrs)
+ #plotSingle(tmsMsrs, disMsrs)
 
 
 

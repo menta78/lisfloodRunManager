@@ -57,7 +57,6 @@ def generateMergedOutput(rootInDir, rootOutDir, measureName, recoveryRun=True, f
         outFlPath = os.path.join(outDir, outNcFileName) 
         if (not os.path.isfile(outFlPath)) or (not checkExistingFile(outFlPath, testFls[0], testFls[-1])):
           flIterator = jrcNetcdfUtil.ncDataIterator(inDir, varName, flPattern, outNcDir=outDir, listFileMode='wildcard')
-          import pdb; pdb.set_trace()
           flIterator.generateSingleOutFile(outFlPath)
 
           tmend = time.time()
@@ -66,6 +65,7 @@ def generateMergedOutput(rootInDir, rootOutDir, measureName, recoveryRun=True, f
           print('  time elapsed: ' + str(tmpassed) + ' s')
         else:
           print('    file already generated: ' + outFlPath)
+          time.sleep(2)
 
   print('All done!!')
 
