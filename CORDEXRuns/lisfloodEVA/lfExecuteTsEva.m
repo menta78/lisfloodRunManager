@@ -29,6 +29,9 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
 
   npt = size(vls, 1);
   nyr = length(outYears);
+  
+  allYears = (min(outYears):max(outYears))';
+  nyrAll = length(allYears);
 
   nretper = length(returnPeriodsInYears);
 
@@ -40,8 +43,9 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
   scaleGPDErr_ = ones(npt, nyr)*nan;
   thresholdGPD_ = ones(npt, nyr)*nan;
   thresholdGPDErr_ = ones(npt, nyr)*nan;
+  yMax_ = ones(npt, nyrAll)*nan;
   
-  ownsParObj = isempty(parObj);
+  ownsParObj = isempty(parObj) & (nWorker > 1);
   if ownsParObj
     parObj = parpool(nWorker);
   end
@@ -49,7 +53,7 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
 
     tic;
     parfor ipt = 1:npt
-   %for ipt = 1:npt
+    %for ipt = 1:3
       try
         disp(ipt);
         disp(['  done ' num2str(ipt/npt*100) '%']);
@@ -83,6 +87,10 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
 
         [ptReturnLevels, ptReturnLevelsErr, ~, ~] = tsEvaComputeReturnLevelsGPDFromAnalysisObj(nonStatEvaParams, returnPeriodsInYears);
 
+        [ptYMax, ptDt, ~] = tsEvaComputeAnnualMaxima(timeAndSeries);
+        cndYmax = (ptDt >= datenum(min(outYears), 1, 1)) & (ptDt <= datenum(max(outYears) + 1, 1, 1));
+        ptYMax = ptYMax(cndYmax);
+        
         retLevGPD_(ipt, :, :) = ptReturnLevels;
         retLevErrGPD_(ipt, :, :) = ptReturnLevelsErr;
         shapeGPD_(ipt) = nonStatEvaParams(2).parameters.epsilon;
@@ -91,6 +99,8 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
         scaleGPDErr_(ipt, :) = nonStatEvaParams(2).paramErr.sigmaErr;
         thresholdGPD_(ipt, :) = nonStatEvaParams(2).parameters.threshold;
         thresholdGPDErr_(ipt, :) = 0;
+
+        yMax_(ipt, :) = ptYMax;
       catch exc
         disp(['exception raised processing point ' num2str(ipt)]);
         disp(exc);
@@ -119,6 +129,7 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
   dt.scaleGPDErr = ones(nlat, nlon, nyr)*nan;
   dt.thresholdGPD = ones(nlat, nlon, nyr)*nan;
   dt.thresholdGPDErr = ones(nlat, nlon, nyr)*nan;
+  dt.yMax = ones(nlat, nlon, nyrAll)*nan;
 
   for ipt = 1:npt
     if rem(ipt, 500) == 0
@@ -135,6 +146,7 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
     dt.scaleGPDErr(iilat, iilon, :) = scaleGPDErr_(ipt, :);
     dt.thresholdGPD(iilat, iilon, :) = thresholdGPD_(ipt, :);
     dt.thresholdGPDErr(iilat, iilon, :) = thresholdGPDErr_(ipt, :);
+    dt.yMax(iilat, iilon, :) = yMax_(ipt, :);
   end
   
   

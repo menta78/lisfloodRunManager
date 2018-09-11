@@ -7,9 +7,11 @@ nparworker = args.nparworker;
 skipExistingFiles = args.skipExistingFiles;
 
 returnPeriodsInYears = [1.5 2 3 4 5 7 10 15 20 30 50 70 100 150 250 350 500 700 1000 1500 2000];  
-outYears = (1985:5:2100)';
+outYears = (1985:5:2095)';
 outYears = cat(1, 1981, outYears);
+outYears = cat(1, outYears, 2099);
 % outYears = (1981:1:2100)';
+allYears = (min(outYears):max(outYears))';
 
 channelMapFl = './maps/channels_5km.nc';
 
@@ -25,19 +27,11 @@ channelMap(isnan(channelMap)) = false;
 
 retLevNcFlName = [strjoin({'dis', scenario, model, wustr, 'statistics'}, '_') '.nc'];
 retLevNcOutFilePath = fullfile(outDir, retLevNcFlName);
-  
-if exist(retLevNcOutFilePath, 'file')
-  if skipExistingFiles
-    disp(['          file ' retLevNcOutFilePath ' already exists. Skipping']);
-    return;
-  else
-    delete(retLevNcOutFilePath);
-  end
-end
 
 [nx, ny] = size(channelMap);
 nretper = length(returnPeriodsInYears);
 nyrout = size(outYears, 1);
+nyrall = size(allYears, 1);
 
 % this procedure will analyze 120x60 windows, to avoid using too much
 % memory
@@ -64,6 +58,7 @@ try
   scaleGPDErr = ones(ny, nx, nyrout)*nan;
   thresholdGPD = ones(ny, nx, nyrout)*nan;
   thresholdGPDErr = ones(ny, nx, nyrout)*nan;
+  yMax = ones(ny, nx, nyrall)*nan;
 
   nsubx = ceil(nx/dx);
   nsuby = ceil(ny/dy);
@@ -103,6 +98,7 @@ try
       scaleGPDErr(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.scaleGPDErr;
       thresholdGPD(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.thresholdGPD;
       thresholdGPDErr(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.thresholdGPDErr;
+      yMax(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.yMax;
       
       xx(iLonStart:iLonEnd) = xx_;
       yy(iLatStart:iLatEnd) = yy_;
@@ -112,7 +108,16 @@ try
   toc(wholeTicToc);
   fprintf('\n');
   disp('all done! Saving the output');
-  
+    
+  if exist(retLevNcOutFilePath, 'file')
+    if skipExistingFiles
+      disp(['          file ' retLevNcOutFilePath ' already exists. Skipping']);
+      return;
+    else
+      delete(retLevNcOutFilePath);
+    end
+  end
+
   nccreate(retLevNcOutFilePath, 'rl', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout, 'return_period', nretper});
   ncwrite(retLevNcOutFilePath, 'rl', retLevGPD);
 
@@ -136,6 +141,9 @@ try
 
   nccreate(retLevNcOutFilePath, 'se_threshold', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout});
   ncwrite(retLevNcOutFilePath, 'se_threshold', thresholdGPDErr);
+  
+  nccreate(retLevNcOutFilePath, 'year_max', 'dimensions', {'y', ny, 'x', nx, 'year_all', nyrall});
+  ncwrite(retLevNcOutFilePath, 'year_max', yMax);
 
   nccreate(retLevNcOutFilePath, 'x', 'dimensions', {'ix', nx});
   ncwrite(retLevNcOutFilePath, 'x', xx);
@@ -146,9 +154,11 @@ try
   nccreate(retLevNcOutFilePath, 'year', 'dimensions', {'iyear', nyrout});
   ncwrite(retLevNcOutFilePath, 'year', outYears);
 
+  nccreate(retLevNcOutFilePath, 'year_all', 'dimensions', {'iyear_all', nyrall});
+  ncwrite(retLevNcOutFilePath, 'year_all', allYears);
+
   nccreate(retLevNcOutFilePath, 'return_period', 'dimensions', {'nretper', nretper});
   ncwrite(retLevNcOutFilePath, 'return_period', returnPeriodsInYears);
-  
   
   
   nccreate(retLevNcOutFilePath, 'eva_type', 'datatype', 'char', 'dimensions', {'nchar', 10});
