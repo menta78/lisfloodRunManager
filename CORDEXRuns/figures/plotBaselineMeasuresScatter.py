@@ -130,9 +130,6 @@ def plotModelScatter(ax, modelName, modelTssPath, modelStartDate=datetime(1981,0
   ax.grid('on')
   
   xlim = ax.get_xlim()
-  if logplt:
-    xlimmax = xlim[0] + (xlim[1] - xlim[0])/2.
-    xlim = [xlim[0], xlimmax]
   ylim = ax.get_ylim()
 
   lm = [min(min(xlim), min(ylim)), max(max(xlim), max(ylim))]
@@ -212,8 +209,8 @@ def plotModelScatterLog(ax, modelName, modelTssPath, modelStartDate=datetime(198
  #ax.figure.canvas.draw()
  #xlim = ax.get_xlim()
  #ylim = ax.get_ylim()
-  xlim = [1, max(msrStatFlt)*2]
-  ylim = [1, max(mdlStatFlt)*2]
+  xlim = [1, max(msrStatFlt)*4]
+  ylim = [1, max(mdlStatFlt)*4]
 
   lm = [min(min(xlim), min(ylim)), max(max(xlim), max(ylim))]
   ax.set_xlim(lm)
@@ -231,7 +228,7 @@ def plotModelScatterLog(ax, modelName, modelTssPath, modelStartDate=datetime(198
   mdltxt = mdltxt.replace('_BC_', '\n', 1)
   mdltxt = mdltxt.replace('_BC', '', 1)
   txtx = .5
-  txty = 1./1.2
+  txty = 1./1.1
   ax.text(txtx, txty, mdltxt, fontsize=9, ha='center', va='center', transform=ax.transAxes)
   txty = 1/7.5
   ax.text(txtx, txty, 'observ.', fontsize=12, ha='center', va='center', transform=ax.transAxes)
@@ -496,4 +493,6 @@ def plotModelScatter_meanPreRun_CLMcom_ICHEC_EC_EARTH():
 
 
 if __name__ == '__main__':
-  plotAllMeanScatters(logplt=True)
+  plotAllMaxScatters(logplt=True)
+ #plotAllMeanScatters(logplt=True)
+  plotAllMinScatters(logplt=True)
