@@ -2,9 +2,11 @@ function lfEvaModel(scenario, model, wuChanging, outDir, varargin)
 
 args.nparworker = 12;
 args.skipExistingFiles = true;
+args.varname = 'dis';
 args = lfEasyParseNamedArgs(varargin, args);
 nparworker = args.nparworker;
 skipExistingFiles = args.skipExistingFiles;
+varname = args.varname;
 
 returnPeriodsInYears = [1.5 2 3 4 5 7 10 15 20 30 50 70 100 150 250 350 500 700 1000 1500 2000];  
 outYears = (1985:5:2095)';
@@ -25,7 +27,7 @@ channelMap = ncread(channelMapFl, 'channels');
 %channelMap = channelMap';
 channelMap(isnan(channelMap)) = false;
 
-retLevNcFlName = [strjoin({'dis', scenario, model, wustr, 'statistics'}, '_') '.nc'];
+retLevNcFlName = [strjoin({'projection', varname, scenario, model, wustr, 'statistics'}, '_') '.nc'];
 retLevNcOutFilePath = fullfile(outDir, retLevNcFlName);
 
 [nx, ny] = size(channelMap);

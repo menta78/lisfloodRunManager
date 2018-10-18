@@ -1,4 +1,8 @@
-function [ tmstmp, xx, yy, vls ] = lfDisLoadFromNcOneScen( ncFilePattern, xxyyStartIndx, xxyyEndIndx )
+function [ tmstmp, xx, yy, vls ] = lfDisLoadFromNcOneScen( ncFilePattern, xxyyStartIndx, xxyyEndIndx, varargin )
+  args.ncvarname = 'dis';
+  args = lfEasyParseNamedArgs(varargin, args);
+  ncvarname = args.ncvarname;
+  
   fls = strsplit(strtrim(ls(ncFilePattern)));
   fls = sort(fls);
 
@@ -34,7 +38,7 @@ function [ tmstmp, xx, yy, vls ] = lfDisLoadFromNcOneScen( ncFilePattern, xxyySt
 
     tmstmp(tmStrtIndx:tmEndIndx) = tmstmpii;
     
-    vlsii = lfEosNcRead(flnm, 'dis', [xxyyStartIndx(:); 1], [cnt(:); ntime]);
+    vlsii = lfEosNcRead(flnm, ncvarname, [xxyyStartIndx(:); 1], [cnt(:); ntime]);
     vls(:, :, tmStrtIndx:tmEndIndx) = vlsii;
   end
   
