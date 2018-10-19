@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import os
 import numpy as np
 import netCDF4
@@ -5,6 +6,8 @@ import matplotlib
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
 from mpl_toolkits import basemap as bm
+
+from getWarmingLevels import getWarmingLevels
 
 lonlatNcMapFile = 'lonlat.nc'
 
@@ -176,7 +179,64 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   fig.savefig(outputPngFile, dpi=300)
 
   
-  
 
+
+def plotAllModelsWarmingLevel(scenario, warmingLev, rootDir='/ClimateRun4/multi-hazard/eva/'):
+  models = """
+IPSL-INERIS-WRF331F_BC
+SMHI-RCA4_BC_CNRM-CERFACS-CNRM-CM5
+SMHI-RCA4_BC_ICHEC-EC-EARTH
+SMHI-RCA4_BC_IPSL-IPSL-CM5A-MR
+SMHI-RCA4_BC_MOHC-HadGEM2-ES
+SMHI-RCA4_BC_MPI-M-MPI-ESM-LR
+CLMcom-CCLM4-8-17_BC_CNRM-CERFACS-CNRM-CM5
+CLMcom-CCLM4-8-17_BC_ICHEC-EC-EARTH
+CLMcom-CCLM4-8-17_BC_MPI-M-MPI-ESM-LR
+DMI-HIRHAM5-ICHEC-EC-EARTH_BC
+KNMI-RACMO22E-ICHEC-EC-EARTH_BC
+"""
+  models = models.split()
+
+  wlYear = getWarmingLevels(scenario, warmingLev)
+
+  outputPngFile = '100yrlChange_' + scenario + '_wl' + str(warmingLev) + '.png'
+
+  nrow = 4
+  ncol = 3
+  fig = plt.figure(figsize=(8, 9))
+  gs = gridspec.GridSpec(nrow, ncol + 1, width_ratios=[1,1,1,.1])
+  lon, lat = [], []
+  bslnlist, projlist = [], []
+  mp = None
+  for mdl, imdl in zip(models, range(1, len(models) + 1)):
+    irow = imdl // ncol
+    icol = imdl % ncol
+    print('plotting model ' + mdl + ' at ' + str(irow) + ', ' + str(icol))
+    ax = plt.subplot(gs[irow, icol])
+    
+    wrmYear = wlYear[mdl]
+    wrmYear = int(round(wrmYear/5.)*5.)
+
+    ncFlNm = '_'.join(['projection_dis', scenario, mdl, 'wuChang', 'statistics.nc'])
+    ncFlPth = os.path.join(rootDir, ncFlNm)
+    mdlname = mdl.replace('BC_', '').replace('_BC', '')
+    lon, lat, bsln, proj, pcl, mp = plotSingleModel(ax, ncFlPth, mdlname, mp=mp, projYear=wrmYear)
+    bslnlist.append(bsln)
+    projlist.append(proj)
+
+  ax = plt.subplot(gs[0, 0])
+  bsln = np.nanmean(np.array(bslnlist), 0)
+  proj = np.nanmean(np.array(projlist), 0)
+  projVar = (proj - bsln)/bsln*100
+  plotSingleModelVar(ax, 'Ensemble ' + scenario + ', warming lev. ' + str(warmingLev) + '$^\circ$', lon, lat, projVar, mp, bold=True)
+
+  ax = plt.subplot(gs[:, 3])
+ #ax.get_xaxis().set_visible(False)
+ #ax.get_yaxis().set_visible(False)
+  cb = plt.colorbar(pcl, cax=ax)
+  cb.set_label(label='100-year event change (%)', fontsize=12)
+  plt.tight_layout()
+
+  fig.savefig(outputPngFile, dpi=300)
 
 
