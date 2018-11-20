@@ -262,9 +262,9 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   fig = plt.figure(figsize=(10, 4))
   gs = gridspec.GridSpec(1, 3, width_ratios=[1,1,.1])
   lon, lat = [], []
-  bslnlist, projlist = [], []
   mp = None
   for scenario, iscen in zip(scenarios, range(len(scenarios))):
+    bslnlist, projlist = [], []
     wlYear = getWarmingLevels(scenario, warmingLev)
     for mdl, imdl in zip(models, range(1, len(models) + 1)):
       print('getting model ' + mdl)

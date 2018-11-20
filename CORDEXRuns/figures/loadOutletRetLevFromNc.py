@@ -38,3 +38,13 @@ def loadOutletRetLevFromNc(ncEvaMapPth, returnPeriod, ncOutletPth=''):
   timeSrsFinal[outPtIndxs, :] = timeSrs
   return year, outPtIdsFinal, timeSrsFinal
 
+
+
+def loadAllRetLevFromNc(ncEvaMapPth, returnPeriod):
+  disDs = netCDF4.Dataset(ncEvaMapPth)
+  year = disDs.variables['year'][:]
+  retper = disDs.variables['return_period'][:]
+  rpIndx = np.where(retper == returnPeriod)[0][0]
+  rl = np.squeeze(disDs.variables['rl'][rpIndx, :, :, :])
+
+  return year, rl
