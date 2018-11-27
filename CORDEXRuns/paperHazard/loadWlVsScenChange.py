@@ -59,5 +59,5 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
 
   relChngDiff = np.nanmean(rl_r8-rl_r4, 0)
 
-  return relChngDiff
+  return relChngDiff, np.nanmean(rl_r8, 0), np.nanmean(rl_r4, 0)
 

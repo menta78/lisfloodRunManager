@@ -8,6 +8,9 @@ from scipy.interpolate import interp1d
 
 from getWarmingLevels import getWarmingLevels
 
+
+
+
 sigThreshold = .2
 
 def computeRlChngPValueMontecarlo(rlBsl, rlErrBsl, rlRcp, rlErrRcp):
@@ -80,6 +83,26 @@ def computeRlChngPValueMeansOnly(rlBsl, rlRcp):
   return pValueMap
 
 
+
+
+def countAgreeingModels(rlBsl, rlRcp):
+  rlBsl = np.array(rlBsl)
+  rlRcp = np.array(rlRcp)
+
+  rldiff = rlRcp - rlBsl
+  
+  rldiffMn = np.mean(rldiff, 0)
+  rldiffMn3d = np.tile(rldiffMn, [rlBsl.shape[0], 1, 1])
+
+  cnt = np.ones(rldiffMn.shape)*np.nan
+  cnt[rldiffMn > 0] = np.sum(rldiff > 0, 0)[rldiffMn > 0]
+  cnt[rldiffMn < 0] = np.sum(rldiff < 0, 0)[rldiffMn < 0]
+
+  return cnt
+  
+
+
+
 def getLonLat():
   lonLatFile = 'lonlat.nc'
   ds = netCDF4.Dataset(lonLatFile)
@@ -134,7 +157,9 @@ def computeRlChngPValueFromNcs(ncDir='/ClimateRun4/multi-hazard/eva',
   pvalue = computeRlChngPValueMontecarlo(rl_bsln, serl_bsln, rl_rcp, serl_rcp)
  #pvalue = computeRlChngPValueMeansOnly(rl_bsln, rl_rcp)
 
-  return pvalue
+  agrMdlCnt = countAgreeingModels(rl_bsln, rl_rcp)
+
+  return pvalue, agrMdlCnt
 
 
 def saveRlChngPValueToFile(outFilePath, **kwargs):
@@ -240,10 +265,12 @@ def computeRlChngPValueAtWarmingLevBtwScen(ncDir='/ClimateRun4/multi-hazard/eva'
   rl_r4[cnd] = np.nan
   serl_r4[cnd] = np.nan
 
-  pvalue = computeRlChngPValueMontecarlo(rl_r8, serl_r8, rl_r4, serl_r4)
- #pvalue = computeRlChngPValueMeansOnly(rl_r8, rl_r4)
+  pvalue = computeRlChngPValueMontecarlo(rl_r4, serl_r4, rl_r8, serl_r8)
+ #pvalue = computeRlChngPValueMeansOnly(rl_r4, rl_r8)
 
-  return pvalue
+  agrMdlCnt = countAgreeingModels(rl_r4, rl_r8)
+
+  return pvalue, agrMdlCnt
 
 
 def saveRlChngPValueAtWarmingLevBtwScen(outFilePath, **kwargs):
@@ -265,4 +292,82 @@ def saveRlChngPValueAtWarmingLevBtwScen_15deg(outFilePath='./pvalue_cfr_2deg.csv
   pvalue = saveRlChngPValueAtWarmingLevBtwScen(outFilePath, warmingLev=1.5, minThreshold=minThreshold)
   plotRlChngPvalue(pvalue)
   plt.show()
+#######################################################################
+
+
+
+
+
+######### significance of chng between baseline and warming level ##
+def computeRlChngPValueAtWarmingLev(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, scen='rcp85', warmingLev=2, retPer=100, minThreshold=0):
+  flpattern = 'projection_dis_{scen}_{mdl}_wuChang_statistics.nc'
+
+  wly = getWarmingLevels(scen, warmingLev)
+
+  models = wly.keys()
+
+  rl_bs = []
+  serl_bs = []
+  rl_rc = [] 
+  serl_rc = []
+  for mdl, imdl in zip(models, range(len(models))):
+    print('model ' + mdl)
+    flr = flpattern.format(scen=scen, mdl=mdl)
+    flrpth = os.path.join(ncDir, flr)
+
+    rcyear = wly[mdl]
+    rcyearInf = int(np.floor(rcyear/float(5))*5)
+    print('  ' + scen + ' w.l. year: ' + str(rcyear))
+
+    print('  loading file ' + flrpth)
+    ds = netCDF4.Dataset(flrpth)
+    retper_ = ds.variables['return_period'][:]
+    rpIndx = np.where(retper_==retPer)[0][0]
+    year_ = ds.variables['year'][:]
+    yIndx = np.where(year_==rcyearInf)[0][0]
+    rlR_ = ds.variables['rl'][rpIndx, yIndx:yIndx+2, :, :]
+    serlR_ = ds.variables['se_rl'][rpIndx, yIndx:yIndx+2, :, :]
+    yBslnIndx = np.where(year_==bslnYear)[0][0]
+    rlBsln = ds.variables['rl'][rpIndx, yBslnIndx, :, :]
+    serlBsln = ds.variables['se_rl'][rpIndx, yBslnIndx, :, :]
+    ds.close()
+    rlR = interp1d(year_[yIndx:yIndx+2], rlR_, axis=0)(rcyear)
+    serlR = interp1d(year_[yIndx:yIndx+2], serlR_, axis=0)(rcyear)
+
+    rl_rc.append(rlR)
+    serl_rc.append(serlR)
+    rl_bs.append(rlBsln)
+    serl_bs.append(serlBsln)
+
+  rl_rc = np.array(rl_rc)
+  rl_rc[rl_rc <= .1] = .1
+  serl_rc = np.array(serl_rc)
+  serl_rc[serl_rc <= .1] = .1
+
+  rl_bs = np.array(rl_bs)
+  rl_bs[rl_bs <= .1] = .1
+  serl_bs = np.array(rl_bs)
+  serl_bs[serl_bs <= .1] = .1
+
+  cnd = np.nanmean(rl_rc, 0) < minThreshold
+  cnd = np.tile(cnd, [len(models), 1, 1])
+  rl_rc[cnd] = np.nan
+  serl_rc[cnd] = np.nan
+  rl_bs[cnd] = np.nan
+  serl_bs[cnd] = np.nan
+
+  pvalue = computeRlChngPValueMontecarlo(rl_bs, serl_bs, rl_rc, serl_rc)
+ #pvalue = computeRlChngPValueMeansOnly(rl_bs, rl_rc)
+
+  agrMdlCnt = countAgreeingModels(rl_bs, rl_rc)
+
+  return pvalue, agrMdlCnt
+
+
+def plotRlChngPValueAtWarmingLev(**kwargs):
+  pvalue, agrMdlCnt = computeRlChngPValueAtWarmingLev(**kwargs)
+  lon, lat = getLonLat()
+  f = plt.figure(figsize=[3,3])
+  plt.pcolor(lon.transpose(), lat.transpose(), pvalue, cmap='bwr_r')
+  return f
 
