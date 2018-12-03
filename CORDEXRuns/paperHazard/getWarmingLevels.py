@@ -1,3 +1,4 @@
+import numpy as np
 
   
 def getWarmingLevels(scenario, warmingLev):
@@ -65,4 +66,41 @@ def getWarmingLevels(scenario, warmingLev):
   else:
     raise Exception('scenario not supported: ' + scenario)
   return wly
+
+
+
+def getWarmingLevelMixDistributionByScen(scenario, warmingLev, startYear=2000, endYear=2150):
+  yrs = np.arange(startYear, endYear)
+  
+  ndst = 10
+
+  wls = getWarmingLevels(scenario, warmingLev)
+  mdls = wls.keys()
+  dists = []
+  for mdl in mdls:
+    yr = wls[mdl]
+    iyr = np.where(yrs == yr)[0][0]
+    iminy = np.max([iyr-ndst, 0])
+    imaxy = np.min([iyr+ndst, len(yrs)-1])
+    
+    dist = np.zeros(yrs.shape)
+    dist[iminy:iyr] = np.array([i+1 for i in range(ndst)])
+    dist[iyr:imaxy+1] = np.array([ndst+1-i for i in range(ndst+1)])
+
+    dists.append(dist)
+
+  dists = np.array(dists)
+  mixDist = np.sum(dists, 0)
+  mixDist = mixDist/np.sum(mixDist)
+
+  return yrs, mixDist
+
+
+
+def getWarmingLevelMixDistribution(warmingLev, startYear=2000, endYear=2150):
+  yrs, mixDistR8 = getWarmingLevelMixDistributionByScen('rcp85', warmingLev, startYear=startYear, endYear=endYear)  
+  _, mixDistR4 = getWarmingLevelMixDistributionByScen('rcp45', warmingLev, startYear=startYear, endYear=endYear)  
+  mixDist = (mixDistR8 + mixDistR4)/2.
+  return yrs, mixDist
+
 
