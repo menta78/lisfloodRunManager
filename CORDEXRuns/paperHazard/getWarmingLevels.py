@@ -1,6 +1,8 @@
 import numpy as np
+import scipy.stats as st
 
   
+
 def getWarmingLevels(scenario, warmingLev):
   wly = {}
   if scenario == 'rcp85':
@@ -93,14 +95,20 @@ def getWarmingLevelMixDistributionByScen(scenario, warmingLev, startYear=2000, e
   mixDist = np.sum(dists, 0)
   mixDist = mixDist/np.sum(mixDist)
 
-  return yrs, mixDist
+  pdf = st.rv_discrete(values=(yrs, mixDist))
+
+  return pdf
 
 
 
-def getWarmingLevelMixDistribution(warmingLev, startYear=2000, endYear=2150):
-  yrs, mixDistR8 = getWarmingLevelMixDistributionByScen('rcp85', warmingLev, startYear=startYear, endYear=endYear)  
-  _, mixDistR4 = getWarmingLevelMixDistributionByScen('rcp45', warmingLev, startYear=startYear, endYear=endYear)  
-  mixDist = (mixDistR8 + mixDistR4)/2.
-  return yrs, mixDist
+def getWarmingLevelMixDistributions(warmingLev, startYear=2000, endYear=2150):
+  pdfR8 = getWarmingLevelMixDistributionByScen('rcp85', warmingLev, startYear=startYear, endYear=endYear)  
+  pdfR4 = getWarmingLevelMixDistributionByScen('rcp45', warmingLev, startYear=startYear, endYear=endYear)  
+  yrs = pdfR8.xk
+  mixDist = (pdfR8.pk + pdfR4.pk)/2.
+  pdf = st.rv_discrete(values=(yrs, mixDist))
+  return pdf, pdfR8, pdfR4
+
+
 
 
