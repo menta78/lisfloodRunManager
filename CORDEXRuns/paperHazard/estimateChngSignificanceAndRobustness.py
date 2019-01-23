@@ -85,7 +85,7 @@ def computeRlChngPValueMeansOnly(rlBsl, rlRcp):
 
 
 
-def countAgreeingModels(rlBsl, rlRcp):
+def countAgreeingModelsAndGetStdDev(rlBsl, rlRcp):
   rlBsl = np.array(rlBsl)
   rlRcp = np.array(rlRcp)
 
@@ -98,7 +98,11 @@ def countAgreeingModels(rlBsl, rlRcp):
   cnt[rldiffMn > 0] = np.sum(rldiff > 0, 0)[rldiffMn > 0]
   cnt[rldiffMn < 0] = np.sum(rldiff < 0, 0)[rldiffMn < 0]
 
-  return cnt
+  dff = rlRcp - rlBsl
+  stddff = np.std(dff, 0)
+  std = stddff/np.nanmean(rlBsl, 0)
+
+  return cnt, std
   
 
 
@@ -154,12 +158,12 @@ def computeRlChngPValueFromNcs(ncDir='/ClimateRun4/multi-hazard/eva',
   serl_rcp = np.array(rl_rcp)
   serl_rcp[serl_rcp <= .1] = .1
 
-  pvalue = computeRlChngPValueMontecarlo(rl_bsln, serl_bsln, rl_rcp, serl_rcp)
- #pvalue = computeRlChngPValueMeansOnly(rl_bsln, rl_rcp)
+ #pvalue = computeRlChngPValueMontecarlo(rl_bsln, serl_bsln, rl_rcp, serl_rcp)
+  pvalue = computeRlChngPValueMeansOnly(rl_bsln, rl_rcp)
 
-  agrMdlCnt = countAgreeingModels(rl_bsln, rl_rcp)
+  agrMdlCnt, std = countAgreeingModelsAndGetStdDev(rl_bsln, rl_rcp)
 
-  return pvalue, agrMdlCnt
+  return pvalue, agrMdlCnt, std
 
 
 def saveRlChngPValueToFile(outFilePath, **kwargs):
@@ -268,7 +272,7 @@ def computeRlChngPValueAtWarmingLevBtwScen(ncDir='/ClimateRun4/multi-hazard/eva'
   pvalue = computeRlChngPValueMontecarlo(rl_r4, serl_r4, rl_r8, serl_r8)
  #pvalue = computeRlChngPValueMeansOnly(rl_r4, rl_r8)
 
-  agrMdlCnt = countAgreeingModels(rl_r4, rl_r8)
+  agrMdlCnt, _ = countAgreeingModelsAndGetStdDev(rl_r4, rl_r8)
 
   return pvalue, agrMdlCnt
 
@@ -359,9 +363,9 @@ def computeRlChngPValueAtWarmingLev(ncDir='/ClimateRun4/multi-hazard/eva', bslnY
   pvalue = computeRlChngPValueMontecarlo(rl_bs, serl_bs, rl_rc, serl_rc)
  #pvalue = computeRlChngPValueMeansOnly(rl_bs, rl_rc)
 
-  agrMdlCnt = countAgreeingModels(rl_bs, rl_rc)
+  agrMdlCnt, std = countAgreeingModelsAndGetStdDev(rl_bs, rl_rc)
 
-  return pvalue, agrMdlCnt
+  return pvalue, agrMdlCnt, std
 
 
 def plotRlChngPValueAtWarmingLev(**kwargs):
