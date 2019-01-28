@@ -4,7 +4,8 @@ from matplotlib import gridspec
 from mpl_toolkits import basemap as bm
 
 import estimateChngSignificanceAndRobustness
-from loadWlVsScenChange import loadWlVsScenChange
+import loadWlVsScenChange as ldEnsmbl
+import getWarmingLevels as gwl
 
 
 def plotRelChngDiff(ax, relChngDiff, mp, txt, cmap='RdBu', vmax=20, vmin=None):
@@ -63,7 +64,7 @@ def plotPvalue(ax, pValue, relChngDiff, mp, txt):
   return pcl, mp
   
 
-def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThreshold=1, printSignTxt=True):
+def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThreshold1=1, signSigmaThreshold2=2, prcTxtTmpl='', printSignTxt=True):
   if mp == None:
     llcrnrlon = -11.5
     llcrnrlat = 23
@@ -84,15 +85,25 @@ def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThreshold=1,
  #pcl = mp.pcolor(lon, lat, sigma, cmap='coolwarm', vmin=0, vmax=sigmamax)
  #pcl = mp.pcolor(lon, lat, np.abs(sigma), cmap='RdBu_r', vmin=0, vmax=sigmamax)
   pcl = mp.pcolor(lon, lat, absSigma, cmap='PuBu_r', vmin=0, vmax=sigmamax)
-  percSign = float(np.nansum(absSigma <= signSigmaThreshold))/np.nansum(np.logical_not(np.isnan(absSigma)))
-  prcTxt = '% of pixel where $\Delta d_{{100-wl}} > \sigma$: {p:2.2f}%'.format(p=percSign*100)
-  print(prcTxt)
+  prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma_{{im}}$: {p:2.2f}%' if prcTxtTmpl == '' else prcTxtTmpl
 
-  txtpos = mp(-7, 25)
+  percSign = float(np.nansum(absSigma <= signSigmaThreshold1))/np.nansum(np.logical_not(np.isnan(absSigma)))
+  thrstr = '{thr:1.0f}'.format(thr=signSigmaThreshold1) if signSigmaThreshold1 != 1 else ''
+  prcTxt1 = prcTxtTmpl.format(p=percSign*100, thr=thrstr)
+  print(prcTxt1)
+
+  percSign = float(np.nansum(absSigma <= signSigmaThreshold2))/np.nansum(np.logical_not(np.isnan(absSigma)))
+  thrstr = '{thr:1.0f}\cdot'.format(thr=signSigmaThreshold2) if signSigmaThreshold2 != 1 else ''
+  prcTxt2 = prcTxtTmpl.format(p=percSign*100, thr=thrstr)
+  print(prcTxt2)
+
+  txtpos = mp(-7, 71)
   plt.annotate(txt, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=13)
   if printSignTxt:
-    txtpos = mp(-7, 72)
-    plt.annotate(prcTxt, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=10)
+    txtpos = mp(-8, 27)
+    plt.annotate(prcTxt1, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=10)
+    txtpos = mp(-8, 24)
+    plt.annotate(prcTxt2, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=10)
 
   return pcl, mp
   
@@ -129,11 +140,11 @@ def plotFigureWlVsScenChange():
   mp = None
 
   ax0 = plt.subplot(gs[0,0])
-  relChngDiff, _ = loadWlVsScenChange(warmingLev=1.5)
+  relChngDiff, _ = ldEnsmbl.loadWlVsScenChange(warmingLev=1.5)
   pcl, mp = plotRelChngDiff(ax0, relChngDiff, mp, 'a: $\Delta rcp85 - \Delta rcp45$, w.l. $1.5^\circ$')
 
   ax = plt.subplot(gs[0,1])
-  relChngDiff, _ = loadWlVsScenChange(warmingLev=2)
+  relChngDiff, _ = ldEnsmbl.loadWlVsScenChange(warmingLev=2)
   pcl, mp = plotRelChngDiff(ax, relChngDiff, mp, 'b: $\Delta rcp85 - \Delta rcp45$, w.l. $2.0^\circ$')
 
   cax = plt.subplot(gs[0,2])
@@ -182,6 +193,27 @@ def plotFigureWlVsScenChange():
 
 
 def plotScenVsScen(warmingLev=2.0):
+
+  def getTimeSigma(warmingLev, scen):
+    _, pdfR8, pdfR4 = gwl.getWarmingLevelMixDistributions(warmingLev)
+    pdf = None
+    if scen == 'rcp85':
+      pdf = pdfR8
+    elif scen == 'rcp45':
+      pdf = pdfR4
+    
+    
+    stdev = pdf.std()
+    mn = pd.mean()
+    sdvmin = int(np.round(mn - stdev))
+    sdvmax = int(np.round(mn + stdev))
+
+    rlChngInf = ldEnsmbl.getRcpEnsembleAtYear(sdvmin, scen=scen)
+    rlChngSup = ldEnsmbl.getRcpEnsembleAtYear(sdvmax, scen=scen)
+
+    sigmaT = np.abs(rlChngSup-rlChngInf)
+    return sigmaT
+
   outPng = 'wlRelChngScenVsScen_wl' + str(warmingLev) + '.png'
 
   f = plt.figure(figsize=(13, 8))
@@ -189,7 +221,7 @@ def plotScenVsScen(warmingLev=2.0):
 
   mp = None
 
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = loadWlVsScenChange(warmingLev=warmingLev)
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[0,0])
   pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: rcp85 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=40)
   ax1 = plt.subplot(gs[0,1])
@@ -208,22 +240,22 @@ def plotScenVsScen(warmingLev=2.0):
   pValue, _, std = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp85', warmingLev=warmingLev)
   std = std/rc_r8
  #pcl, mp = plotPvalue(ax0, pValue, None, mp, 'd: p-value, $\Delta rcp85$')
-  pcl, mp = plotSigma(ax0, std, None, mp, 'd: $\sigma$, ratio of $\Delta rcp85$', sigmamax=2)
+  pcl, mp = plotSigma(ax0, std, None, mp, 'd: $\sigma_{im}$, ratio of $\Delta rcp85$', sigmamax=2)
   ax1 = plt.subplot(gs[1,1])
   pValue, _, std = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp45', warmingLev=warmingLev)
   std = std/rc_r4
  #pcl, mp = plotPvalue(ax1, pValue, None, mp, 'e: p-value, $\Delta rcp45$')
-  pcl, mp = plotSigma(ax1, std, None, mp, 'e: $\sigma$, ratio of $\Delta rcp45$', sigmamax=2)
+  pcl, mp = plotSigma(ax1, std, None, mp, 'e: $\sigma_{im}$, ratio of $\Delta rcp45$', sigmamax=2)
   ax2 = plt.subplot(gs[1,2])  
  #pValue, _, _ = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLevBtwScen(warmingLev=warmingLev)
  #pcl, mp = plotPvalue(ax2, pValue, relChngDiff, mp, 'f: p-value, $\Delta rcp85 - \Delta rcp45$')
   std = np.std(rc_r8all-rc_r4all, 0)
   std = std/rc_r8
-  pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'f: $\sigma$, $\Delta rcp85 - \Delta rcp45$', sigmamax=2, printSignTxt=False)
+  pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'f: $\sigma_{im}$, $\Delta rcp85 - \Delta rcp45$', sigmamax=2, printSignTxt=False)
   cax = plt.subplot(gs[1,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
  #cb.set_label('p-value')
-  cb.set_label('$\sigma$ (fraction of relative change)')
+  cb.set_label('$\sigma_{im}$ (fraction of relative change)')
   ax0.set_aspect('auto')
   ax1.set_aspect('auto')
   ax2.set_aspect('auto')
@@ -233,6 +265,82 @@ def plotScenVsScen(warmingLev=2.0):
 
   f.savefig(outPng, dpi=300)
   
+
+
+def plotMegaEnsembles():
+
+  def getTimeSigma(warmingLev):
+    pdfTot, pdfR8, pdfR4 = gwl.getWarmingLevelMixDistributions(warmingLev)
+    
+    stdev = pdfTot.std()
+    mn = pdfTot.mean()
+    sdvmin = int(np.round(mn - stdev))
+    sdvmax = int(np.round(mn + stdev))
+
+    rlChngInf = ldEnsmbl.getGrossEnsembleAtYear(sdvmin)
+    rlChngSup = ldEnsmbl.getGrossEnsembleAtYear(sdvmax)
+
+    sigmaT = np.abs(rlChngSup-rlChngInf)
+    return sigmaT
+    
+
+  outPng = 'wlRelChngMegaEnsembles.png'
+  
+  f = plt.figure(figsize=(9,8))
+  gs = gridspec.GridSpec(2, 3, width_ratios=[1,1,.05])
+
+  mp = None
+
+  warmingLev = 1.5
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax0 = plt.subplot(gs[0,0])
+  pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=40)
+  
+  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  sigmaT = getTimeSigma(warmingLev)
+  sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+  sigma_ratio = sigma/rc_mega
+  ax1 = plt.subplot(gs[1,0])
+  pcl, mp = plotSigma(ax1, sigma_ratio, None, mp, 'c: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma$: {p:2.2f}%')
+
+  warmingLev = 2.0
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax2 = plt.subplot(gs[0,1])
+  pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=40)
+  
+  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  sigmaT = getTimeSigma(warmingLev)
+  sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+  sigma_ratio = sigma/rc_mega
+  ax3 = plt.subplot(gs[1,1])
+  pclSigma, mp = plotSigma(ax3, sigma_ratio, None, mp, 'd: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma$: {p:2.2f}%')
+  
+  cax1 = plt.subplot(gs[0,2])
+  cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
+  cb.set_label('$\Delta$ 100-y discharge (%)')
+  
+  cax2 = plt.subplot(gs[1,2])
+  cb = plt.colorbar(pclSigma, ax=ax3, cax=cax2)
+  cb.set_label('$\sigma$ (fraction of relative change)')
+
+  ax0.set_aspect('auto')
+  ax1.set_aspect('auto')
+  ax2.set_aspect('auto')
+  ax3.set_aspect('auto')
+  cax1.set_aspect('auto')
+  cax2.set_aspect('auto')
+
+  plt.tight_layout()
+
+  f.savefig(outPng, dpi=300)
+  
+
   
 
 
@@ -247,7 +355,7 @@ def plotScenVsScenAll():
 
   warmingLev = 1.5
 
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = loadWlVsScenChange(warmingLev=warmingLev)
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[0,0])
   pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: rel. chng. rcp85 at $' + str(warmingLev) +'^\circ$', vmax=40)
   ax1 = plt.subplot(gs[0,1])
@@ -287,10 +395,9 @@ def plotScenVsScenAll():
   ax2.set_aspect('auto')
   cax.set_aspect('auto')
 
-
   warmingLev = 2.0
 
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = loadWlVsScenChange(warmingLev=warmingLev)
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[3,0])
   pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'g: rel. chng. rcp85 $' + str(warmingLev) +'^\circ$', vmax=40)
   ax1 = plt.subplot(gs[3,1])
@@ -330,7 +437,6 @@ def plotScenVsScenAll():
   ax2.set_aspect('auto')
   cax.set_aspect('auto')
 
-
   plt.tight_layout()
 
   f.savefig(outPng, dpi=300)
@@ -338,4 +444,5 @@ def plotScenVsScenAll():
 
 if __name__ == '__main__':
   plotScenVsScen(1.5)
+ #plotMegaEnsembles()
   plt.show()
