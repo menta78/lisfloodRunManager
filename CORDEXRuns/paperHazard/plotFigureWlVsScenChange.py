@@ -141,15 +141,15 @@ def plotFigureWlVsScenChange():
 
   ax0 = plt.subplot(gs[0,0])
   relChngDiff, _ = ldEnsmbl.loadWlVsScenChange(warmingLev=1.5)
-  pcl, mp = plotRelChngDiff(ax0, relChngDiff, mp, 'a: $\Delta rcp85 - \Delta rcp45$, w.l. $1.5^\circ$')
+  pcl, mp = plotRelChngDiff(ax0, relChngDiff, mp, 'a: $\Delta RCP85 - \Delta RCP45$, w.l. $1.5^\circ$')
 
   ax = plt.subplot(gs[0,1])
   relChngDiff, _ = ldEnsmbl.loadWlVsScenChange(warmingLev=2)
-  pcl, mp = plotRelChngDiff(ax, relChngDiff, mp, 'b: $\Delta rcp85 - \Delta rcp45$, w.l. $2.0^\circ$')
+  pcl, mp = plotRelChngDiff(ax, relChngDiff, mp, 'b: $\Delta RCP85 - \Delta RCP45$, w.l. $2.0^\circ$')
 
   cax = plt.subplot(gs[0,2])
   cb = plt.colorbar(pcl, ax=ax, cax=cax)
-  cb.set_label('$\Delta rcp85 - \Delta rcp45$ (%)')
+  cb.set_label('$\Delta RCP85 - \Delta RCP45$ (%)')
   ax0.set_aspect('auto')
   ax.set_aspect('auto')
   cax.set_aspect('auto')
@@ -314,6 +314,7 @@ def plotGrossEnsembles():
   f.savefig(outPng, dpi=300)
 
 
+
 def plotScenVsScen(warmingLev=2.0, sigmaTot=False):
 
   outPng = 'wlRelChngScenVsScen_wl' + str(warmingLev) + '.png'
@@ -325,11 +326,11 @@ def plotScenVsScen(warmingLev=2.0, sigmaTot=False):
 
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[0,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: rcp85 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: RCP85 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=40)
   ax1 = plt.subplot(gs[0,1])
-  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: rcp45 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: RCP45 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=40)
   ax2 = plt.subplot(gs[0,2])
-  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'c: $\Delta rcp85 - \Delta rcp45$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'c: $\Delta RCP85 - \Delta RCP45$', vmax=40)
   cax = plt.subplot(gs[0,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
   cb.set_label('$\Delta$ 100-y discharge (%)')
@@ -347,7 +348,7 @@ def plotScenVsScen(warmingLev=2.0, sigmaTot=False):
   else:
     std = sigma_im/rc_r8
  #pcl, mp = plotPvalue(ax0, pValue, None, mp, 'd: p-value, $\Delta rcp85$')
-  pcl, mp = plotSigma(ax0, std, None, mp, 'd: $\sigma_{im}$, ratio of $\Delta rcp85$', sigmamax=2)
+  pcl, mp = plotSigma(ax0, std, None, mp, 'd: $\sigma_{im}$, ratio of $\Delta RCP85$', sigmamax=2)
   ax1 = plt.subplot(gs[1,1])
   pValue, _, sigma_im = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp45', warmingLev=warmingLev)
   if sigmaTot:
@@ -357,13 +358,13 @@ def plotScenVsScen(warmingLev=2.0, sigmaTot=False):
   else:
     std = sigma_im/rc_r4
  #pcl, mp = plotPvalue(ax1, pValue, None, mp, 'e: p-value, $\Delta rcp45$')
-  pcl, mp = plotSigma(ax1, std, None, mp, 'e: $\sigma_{im}$, ratio of $\Delta rcp45$', sigmamax=2)
+  pcl, mp = plotSigma(ax1, std, None, mp, 'e: $\sigma_{im}$, ratio of $\Delta RCP45$', sigmamax=2)
   ax2 = plt.subplot(gs[1,2])  
  #pValue, _, _ = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLevBtwScen(warmingLev=warmingLev)
- #pcl, mp = plotPvalue(ax2, pValue, relChngDiff, mp, 'f: p-value, $\Delta rcp85 - \Delta rcp45$')
+ #pcl, mp = plotPvalue(ax2, pValue, relChngDiff, mp, 'f: p-value, $\Delta RCP85 - \Delta RCP45$')
   std = np.std(rc_r8all-rc_r4all, 0)
   std = std/rc_r8
-  pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'f: $\sigma_{im}$, $\Delta rcp85 - \Delta rcp45$', sigmamax=2, printSignTxt=False)
+  pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'f: $\sigma_{im}$, $\Delta RCP85 - \Delta RCP45$', sigmamax=2, printSignTxt=False)
   cax = plt.subplot(gs[1,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
  #cb.set_label('p-value')
@@ -394,11 +395,11 @@ def plotScenVsScenAll():
 
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[0,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: rel. chng. rcp85 at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: rel. chng. RCP85 at $' + str(warmingLev) +'^\circ$', vmax=40)
   ax1 = plt.subplot(gs[0,1])
-  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: rel. chng. rcp45 at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: rel. chng. RCP45 at $' + str(warmingLev) +'^\circ$', vmax=40)
   ax2 = plt.subplot(gs[0,2])
-  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'c: difference rcp85-rcp45 at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'c: difference RCP85-RCP45 at $' + str(warmingLev) +'^\circ$', vmax=40)
   cax = plt.subplot(gs[0,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
   cb.set_label('$\Delta$ 100-y discharge (%)')
@@ -411,18 +412,18 @@ def plotScenVsScenAll():
   pValue, _, std = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp85', warmingLev=warmingLev)
   std = std/rc_r8
  #pcl, mp = plotPvalue(ax0, pValue, None, mp, 'd: p-value, $\Delta rcp85$')
-  pcl, mp = plotSigma(ax0, std, None, mp, 'd: $\sigma$, % of rel. chng. of rcp85', sigmamax=2)
+  pcl, mp = plotSigma(ax0, std, None, mp, 'd: $\sigma_{im}$, ratio of $\Delta$ RCP85', sigmamax=2)
   ax1 = plt.subplot(gs[1,1])
   pValue, _, std = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp45', warmingLev=warmingLev)
   std = std/rc_r4
- #pcl, mp = plotPvalue(ax1, pValue, None, mp, 'e: p-value, $\Delta rcp45$')
-  pcl, mp = plotSigma(ax1, std, None, mp, 'e: $\sigma$, % of rel. chng. of rcp45', sigmamax=2)
+ #pcl, mp = plotPvalue(ax1, pValue, None, mp, 'e: p-value, $\Delta RCP45$')
+  pcl, mp = plotSigma(ax1, std, None, mp, 'e: $\sigma_{im}$, ratio of $\Delta$ RCP45', sigmamax=2)
   ax2 = plt.subplot(gs[1,2])  
  #pValue, _, _ = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLevBtwScen(warmingLev=warmingLev)
- #pcl, mp = plotPvalue(ax2, pValue, relChngDiff, mp, 'f: p-value, $\Delta rcp85 - \Delta rcp45$')
+ #pcl, mp = plotPvalue(ax2, pValue, relChngDiff, mp, 'f: p-value, $\Delta RCP85 - \Delta RCP45$')
   std = np.std(rc_r8all-rc_r4all, 0)
   std = std/rc_r8
-  pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'f: $\sigma$, difference rcp85-rcp45', sigmamax=2)
+  pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'f: $\sigma$, difference RCP85-RCP45', sigmamax=2, printSignTxt=False)
   cax = plt.subplot(gs[1,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
  #cb.set_label('p-value')
@@ -436,11 +437,11 @@ def plotScenVsScenAll():
 
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[3,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'g: rel. chng. rcp85 $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'g: rel. chng. RCP85 $' + str(warmingLev) +'^\circ$', vmax=40)
   ax1 = plt.subplot(gs[3,1])
-  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'h: rel. chng. rcp45 $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'h: rel. chng. RCP45 $' + str(warmingLev) +'^\circ$', vmax=40)
   ax2 = plt.subplot(gs[3,2])
-  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'i: difference rcp85-rcp45 at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'i: difference RCP85-RCP45 at $' + str(warmingLev) +'^\circ$', vmax=40)
   cax = plt.subplot(gs[3,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
   cb.set_label('$\Delta$ 100-y discharge (%)')
@@ -452,19 +453,19 @@ def plotScenVsScenAll():
   ax0 = plt.subplot(gs[4,0])
   pValue, _, std = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp85', warmingLev=warmingLev)
   std = std/np.abs(rc_r8)
- #pcl, mp = plotPvalue(ax0, pValue, None, mp, 'd: p-value, $\Delta rcp85$')
-  pcl, mp = plotSigma(ax0, std, None, mp, 'j: $\sigma$, % of rel. chng. of rcp85', sigmamax=2)
+ #pcl, mp = plotPvalue(ax0, pValue, None, mp, 'd: p-value, $\Delta RCP85$')
+  pcl, mp = plotSigma(ax0, std, None, mp, 'j: $\sigma_{im}$, ratio of $\Delta$ RCP85', sigmamax=2)
   ax1 = plt.subplot(gs[4,1])
   pValue, _, std = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp45', warmingLev=warmingLev)
   std = std/np.abs(rc_r4)
- #pcl, mp = plotPvalue(ax1, pValue, None, mp, 'e: p-value, $\Delta rcp45$')
-  pcl, mp = plotSigma(ax1, std, None, mp, 'k: $\sigma$, % of rel. chng. of rcp45', sigmamax=2)
+ #pcl, mp = plotPvalue(ax1, pValue, None, mp, 'e: p-value, $\Delta RCP45$')
+  pcl, mp = plotSigma(ax1, std, None, mp, 'k: $\sigma_{im}$, ratio of $\Delta$ RCP45', sigmamax=2)
   ax2 = plt.subplot(gs[4,2])  
  #pValue, _, _ = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLevBtwScen(warmingLev=warmingLev)
- #pcl, mp = plotPvalue(ax2, pValue, relChngDiff, mp, 'f: p-value, $\Delta rcp85 - \Delta rcp45$')
+ #pcl, mp = plotPvalue(ax2, pValue, relChngDiff, mp, 'f: p-value, $\Delta RCP85 - \Delta RCP45$')
   std = np.std(rc_r8all-rc_r4all, 0)
   std = std/rc_r8
-  pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'l: $\sigma$, difference rcp85-rcp45', sigmamax=2)
+  pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'l: $\sigma$, difference RCP85-RCP45', sigmamax=2, printSignTxt=False)
   cax = plt.subplot(gs[4,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
  #cb.set_label('p-value')
@@ -481,7 +482,8 @@ def plotScenVsScenAll():
 
 if __name__ == '__main__':
  #plotScenVsScen(1.5)
+  plotScenVsScenAll()
  #plotGrossEnsembles()
  #printStatsByScenEnsemble('rcp85', 1.5)
-  printStatsByGrossEnsemble(2.0)
+ #printStatsByGrossEnsemble(2.0)
   plt.show()
