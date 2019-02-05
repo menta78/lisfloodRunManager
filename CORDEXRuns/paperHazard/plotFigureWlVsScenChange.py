@@ -22,7 +22,7 @@ def plotRelChngDiff(ax, relChngDiff, mp, txt, cmap='RdBu', vmax=20, vmin=None):
 
   plt.axes(ax)
   mp.drawcoastlines(linewidth=.25)
- #mp.fillcontinents(color=[.8, .8, .8], lake_color=[.7, .95, .7])
+  mp.fillcontinents(color=[.95, .95, .95], lake_color=[.95, .95, .95], zorder=0)
  #mp.drawparallels(np.arange(-180, 180, 10), labels=[1,1])
  #mp.drawmeridians(np.arange(-90, 90, 10), labels=[1,1])
   pcl = mp.pcolor(lon, lat, relChngDiff*100, cmap=cmap)
@@ -78,6 +78,7 @@ def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThreshold1=1
 
   plt.axes(ax)
   mp.drawcoastlines(linewidth=.25)
+  mp.fillcontinents(color=[.8, .8, .8], lake_color=[.8, .8, .8], zorder=0)
 
   absSigma = np.abs(sigma)
  #pcl = mp.pcolor(lon, lat, sigma, cmap='hot_r', vmin=0, vmax=sigmamax)
@@ -122,6 +123,7 @@ def plotAgreeingMdlCnt(ax, agrMdlCnt, mp, txt):
 
   plt.axes(ax)
   mp.drawcoastlines(linewidth=.25)
+  mp.fillcontinents(color=[.8, .8, .8], lake_color=[.7, .95, .7])
 
   pcl = mp.pcolor(lon, lat, agrMdlCnt, cmap='hot_r', vmin=6, vmax=11)
 
@@ -269,7 +271,7 @@ def plotGrossEnsembles():
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax0 = plt.subplot(gs[0,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=30)
   
   sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
   sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
@@ -284,7 +286,7 @@ def plotGrossEnsembles():
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax2 = plt.subplot(gs[0,1])
-  pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=30)
   
   sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
   sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
@@ -326,11 +328,11 @@ def plotScenVsScen(warmingLev=2.0, sigmaTot=False):
 
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[0,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: RCP85 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: RCP85 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=30)
   ax1 = plt.subplot(gs[0,1])
-  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: RCP45 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: RCP45 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=30)
   ax2 = plt.subplot(gs[0,2])
-  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'c: $\Delta RCP85 - \Delta RCP45$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'c: $\Delta RCP85 - \Delta RCP45$', vmax=30)
   cax = plt.subplot(gs[0,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
   cb.set_label('$\Delta$ 100-y discharge (%)')
@@ -395,11 +397,11 @@ def plotScenVsScenAll():
 
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[0,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: rel. chng. RCP85 at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: rel. chng. RCP85 at $' + str(warmingLev) +'^\circ$', vmax=30)
   ax1 = plt.subplot(gs[0,1])
-  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: rel. chng. RCP45 at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: rel. chng. RCP45 at $' + str(warmingLev) +'^\circ$', vmax=30)
   ax2 = plt.subplot(gs[0,2])
-  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'c: difference RCP85-RCP45 at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'c: difference RCP85-RCP45 at $' + str(warmingLev) +'^\circ$', vmax=30)
   cax = plt.subplot(gs[0,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
   cb.set_label('$\Delta$ 100-y discharge (%)')
@@ -437,11 +439,11 @@ def plotScenVsScenAll():
 
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[3,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'g: rel. chng. RCP85 $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'g: rel. chng. RCP85 $' + str(warmingLev) +'^\circ$', vmax=30)
   ax1 = plt.subplot(gs[3,1])
-  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'h: rel. chng. RCP45 $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'h: rel. chng. RCP45 $' + str(warmingLev) +'^\circ$', vmax=30)
   ax2 = plt.subplot(gs[3,2])
-  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'i: difference RCP85-RCP45 at $' + str(warmingLev) +'^\circ$', vmax=40)
+  pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'i: difference RCP85-RCP45 at $' + str(warmingLev) +'^\circ$', vmax=30)
   cax = plt.subplot(gs[3,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
   cb.set_label('$\Delta$ 100-y discharge (%)')
