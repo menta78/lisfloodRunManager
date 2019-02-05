@@ -137,7 +137,7 @@ def getRcpEnsembleAtYear(ryear, ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=
   for mdl, imdl in zip(models, range(len(models))):
     print('model ' + mdl)
     flr = flpattern.format(scen=scen, mdl=mdl)
-    flrpth = os.path.join(ncDir, flr8)
+    flrpth = os.path.join(ncDir, flr)
     
     ryearInf = int(np.floor(ryear/float(5))*5)
 
@@ -154,8 +154,7 @@ def getRcpEnsembleAtYear(ryear, ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=
    #rlR8 = interp1d(year_[yIndx:yIndx+2], rlR8_, axis=0)(r8year)
     rlR = interp1d(year_[yIndx:yIndx+2], rlR_, axis=0)(ryear)
     rRelChng = (rlR-rlBslnR)/rlBslnR
-    rl.append(r8RelChng)
-    rl.append(r4RelChng)
+    rl.append(rRelChng)
     
   rl = np.array(rl)
 

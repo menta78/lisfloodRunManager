@@ -191,28 +191,130 @@ def plotFigureWlVsScenChange():
   
   
 
+def getTimeSigmaByScen(warmingLev, scen):
+  _, pdfR8, pdfR4 = gwl.getWarmingLevelMixDistributions(warmingLev)
+  pdf = None
+  if scen == 'rcp85':
+    pdf = pdfR8
+  elif scen == 'rcp45':
+    pdf = pdfR4
+  
+  
+  stdev = pdf.std()
+  mn = pdf.mean()
+  sdvmin = int(np.round(mn - stdev))
+  sdvmax = int(np.round(mn + stdev))
 
-def plotScenVsScen(warmingLev=2.0):
+  rlChngInf = ldEnsmbl.getRcpEnsembleAtYear(sdvmin, scen=scen)
+  rlChngSup = ldEnsmbl.getRcpEnsembleAtYear(sdvmax, scen=scen)
 
-  def getTimeSigma(warmingLev, scen):
-    _, pdfR8, pdfR4 = gwl.getWarmingLevelMixDistributions(warmingLev)
-    pdf = None
-    if scen == 'rcp85':
-      pdf = pdfR8
-    elif scen == 'rcp45':
-      pdf = pdfR4
+  sigmaT = np.abs(rlChngSup-rlChngInf)
+  return sigmaT
+
+
+def getTimeSigmaGrossEnsemble(warmingLev):
+  pdfTot, pdfR8, pdfR4 = gwl.getWarmingLevelMixDistributions(warmingLev)
+  
+  stdev = pdfTot.std()
+  mn = pdfTot.mean()
+  sdvmin = int(np.round(mn - stdev))
+  sdvmax = int(np.round(mn + stdev))
+
+  rlChngInf = ldEnsmbl.getGrossEnsembleAtYear(sdvmin)
+  rlChngSup = ldEnsmbl.getGrossEnsembleAtYear(sdvmax)
+
+  sigmaT = np.abs(rlChngSup-rlChngInf)
+  return sigmaT
+  
+
+def printStatsByScenEnsemble(scen='rcp85', warmingLev=2.0):
+  _, _, sigma_im = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen=scen, warmingLev=warmingLev)
+  sigmaT = getTimeSigmaByScen(warmingLev, scen)
+  sigma2 = sigma_im**2. + sigmaT**2.
+  sigma_im_ratio = sigma_im**2./sigma2
+  sigmaT_ratio = sigmaT**2./sigma2
+  print('% sigma_im**2: ' + str(np.nanmean(sigma_im_ratio)*100))
+  print('% sigma_t**2: ' + str(np.nanmean(sigmaT_ratio)*100))
+  
+
+def printStatsByGrossEnsemble(warmingLev=2.0):
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
+  sigma_rcpdiff = np.abs(relChngDiff)/2.
+  sigma_im0 = np.sqrt(sigma_im**2. - sigma_rcpdiff**2.)
+  sigma2 = sigma_im**2. + sigmaT**2.
+  sigma_im0_ratio = sigma_im0**2./sigma2
+  sigmaT_ratio = sigmaT**2./sigma2
+  sigma_rcpdiff_ratio = sigma_rcpdiff**2./sigma2
+  print('% sigma_im0**2: ' + str(np.nanmean(sigma_im0_ratio)*100))
+  print('% sigma_t**2: ' + str(np.nanmean(sigmaT_ratio)*100))
+  print('% sigma_rcpdiff**2: ' + str(np.nanmean(sigma_rcpdiff_ratio)*100))
+  
+
+
+def plotGrossEnsembles():
     
-    
-    stdev = pdf.std()
-    mn = pd.mean()
-    sdvmin = int(np.round(mn - stdev))
-    sdvmax = int(np.round(mn + stdev))
 
-    rlChngInf = ldEnsmbl.getRcpEnsembleAtYear(sdvmin, scen=scen)
-    rlChngSup = ldEnsmbl.getRcpEnsembleAtYear(sdvmax, scen=scen)
+  outPng = 'wlRelChngGrossEnsembles.png'
+  
+  f = plt.figure(figsize=(9,8))
+  gs = gridspec.GridSpec(2, 3, width_ratios=[1,1,.05])
 
-    sigmaT = np.abs(rlChngSup-rlChngInf)
-    return sigmaT
+  mp = None
+
+  warmingLev = 1.5
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax0 = plt.subplot(gs[0,0])
+  pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=40)
+  
+  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
+  sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+  sigma_ratio = sigma/rc_mega
+  ax1 = plt.subplot(gs[1,0])
+  pcl, mp = plotSigma(ax1, sigma_ratio, None, mp, 'c: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma$: {p:2.2f}%')
+
+  warmingLev = 2.0
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax2 = plt.subplot(gs[0,1])
+  pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=40)
+  
+  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
+  sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+  sigma_ratio = sigma/rc_mega
+  ax3 = plt.subplot(gs[1,1])
+  pclSigma, mp = plotSigma(ax3, sigma_ratio, None, mp, 'd: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma$: {p:2.2f}%')
+  
+  cax1 = plt.subplot(gs[0,2])
+  cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
+  cb.set_label('$\Delta$ 100-y discharge (%)')
+  
+  cax2 = plt.subplot(gs[1,2])
+  cb = plt.colorbar(pclSigma, ax=ax3, cax=cax2)
+  cb.set_label('$\sigma$ (fraction of relative change)')
+
+  ax0.set_aspect('auto')
+  ax1.set_aspect('auto')
+  ax2.set_aspect('auto')
+  ax3.set_aspect('auto')
+  cax1.set_aspect('auto')
+  cax2.set_aspect('auto')
+
+  plt.tight_layout()
+
+  f.savefig(outPng, dpi=300)
+
+
+def plotScenVsScen(warmingLev=2.0, sigmaTot=False):
 
   outPng = 'wlRelChngScenVsScen_wl' + str(warmingLev) + '.png'
 
@@ -237,13 +339,23 @@ def plotScenVsScen(warmingLev=2.0):
   cax.set_aspect('auto')
 
   ax0 = plt.subplot(gs[1,0])
-  pValue, _, std = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp85', warmingLev=warmingLev)
-  std = std/rc_r8
+  pValue, _, sigma_im = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp85', warmingLev=warmingLev)
+  if sigmaTot:
+    sigmaT = getTimeSigmaByScen(warmingLev, 'rcp85')
+    sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+    std = sigma/rc_r8
+  else:
+    std = sigma_im/rc_r8
  #pcl, mp = plotPvalue(ax0, pValue, None, mp, 'd: p-value, $\Delta rcp85$')
   pcl, mp = plotSigma(ax0, std, None, mp, 'd: $\sigma_{im}$, ratio of $\Delta rcp85$', sigmamax=2)
   ax1 = plt.subplot(gs[1,1])
-  pValue, _, std = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp45', warmingLev=warmingLev)
-  std = std/rc_r4
+  pValue, _, sigma_im = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp45', warmingLev=warmingLev)
+  if sigmaTot:
+    sigmaT = getTimeSigmaByScen(warmingLev, 'rcp45')
+    sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+    std = sigma/rc_r4
+  else:
+    std = sigma_im/rc_r4
  #pcl, mp = plotPvalue(ax1, pValue, None, mp, 'e: p-value, $\Delta rcp45$')
   pcl, mp = plotSigma(ax1, std, None, mp, 'e: $\sigma_{im}$, ratio of $\Delta rcp45$', sigmamax=2)
   ax2 = plt.subplot(gs[1,2])  
@@ -260,81 +372,6 @@ def plotScenVsScen(warmingLev=2.0):
   ax1.set_aspect('auto')
   ax2.set_aspect('auto')
   cax.set_aspect('auto')
-
-  plt.tight_layout()
-
-  f.savefig(outPng, dpi=300)
-  
-
-
-def plotMegaEnsembles():
-
-  def getTimeSigma(warmingLev):
-    pdfTot, pdfR8, pdfR4 = gwl.getWarmingLevelMixDistributions(warmingLev)
-    
-    stdev = pdfTot.std()
-    mn = pdfTot.mean()
-    sdvmin = int(np.round(mn - stdev))
-    sdvmax = int(np.round(mn + stdev))
-
-    rlChngInf = ldEnsmbl.getGrossEnsembleAtYear(sdvmin)
-    rlChngSup = ldEnsmbl.getGrossEnsembleAtYear(sdvmax)
-
-    sigmaT = np.abs(rlChngSup-rlChngInf)
-    return sigmaT
-    
-
-  outPng = 'wlRelChngMegaEnsembles.png'
-  
-  f = plt.figure(figsize=(9,8))
-  gs = gridspec.GridSpec(2, 3, width_ratios=[1,1,.05])
-
-  mp = None
-
-  warmingLev = 1.5
-
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
-  rc_mega = (rc_r8 + rc_r4)/2.
-  ax0 = plt.subplot(gs[0,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=40)
-  
-  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
-  sigmaT = getTimeSigma(warmingLev)
-  sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
-  sigma_ratio = sigma/rc_mega
-  ax1 = plt.subplot(gs[1,0])
-  pcl, mp = plotSigma(ax1, sigma_ratio, None, mp, 'c: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
-    prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma$: {p:2.2f}%')
-
-  warmingLev = 2.0
-
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
-  rc_mega = (rc_r8 + rc_r4)/2.
-  ax2 = plt.subplot(gs[0,1])
-  pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=40)
-  
-  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
-  sigmaT = getTimeSigma(warmingLev)
-  sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
-  sigma_ratio = sigma/rc_mega
-  ax3 = plt.subplot(gs[1,1])
-  pclSigma, mp = plotSigma(ax3, sigma_ratio, None, mp, 'd: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
-    prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma$: {p:2.2f}%')
-  
-  cax1 = plt.subplot(gs[0,2])
-  cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
-  cb.set_label('$\Delta$ 100-y discharge (%)')
-  
-  cax2 = plt.subplot(gs[1,2])
-  cb = plt.colorbar(pclSigma, ax=ax3, cax=cax2)
-  cb.set_label('$\sigma$ (fraction of relative change)')
-
-  ax0.set_aspect('auto')
-  ax1.set_aspect('auto')
-  ax2.set_aspect('auto')
-  ax3.set_aspect('auto')
-  cax1.set_aspect('auto')
-  cax2.set_aspect('auto')
 
   plt.tight_layout()
 
@@ -443,6 +480,8 @@ def plotScenVsScenAll():
 
 
 if __name__ == '__main__':
-  plotScenVsScen(1.5)
- #plotMegaEnsembles()
+ #plotScenVsScen(1.5)
+ #plotGrossEnsembles()
+ #printStatsByScenEnsemble('rcp85', 1.5)
+  printStatsByGrossEnsemble(2.0)
   plt.show()
