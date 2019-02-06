@@ -27,7 +27,7 @@ def plotSingleModel(ax, relChngR8, relChngR4, modelName, plotRegression=False, s
   plt.ylim(lim)
   plt.grid('on')
 
-  ax.plot(lim, lim, 'k')
+  ax.plot(lim, lim, 'k', label='1-1 fit')
   if plotRegression:
     pc = np.polyfit(rc4, rc8, 1)
     fitLn0 = pc[0]*lim[0] + pc[1]
@@ -60,29 +60,37 @@ def plotSingleModel(ax, relChngR8, relChngR4, modelName, plotRegression=False, s
   xlim = plt.xlim()
   ylim = plt.ylim()
 
+  prcn = np.linspace(1,99)
   nnchng = relChngR8[np.logical_not(np.isnan(relChngR8))]*100
-  r8median = np.percentile(nnchng, 50)
-  r8p01 = np.percentile(nnchng, 1)
-  r8p99 = np.percentile(nnchng, 99)
-  r8p05 = np.percentile(nnchng, 5)
-  r8p95 = np.percentile(nnchng, 95)
-  mdnplt, = plt.plot(xlim, [r8median, r8median], 'firebrick', linewidth=.8, label='Median')
-  p05plt, = plt.plot(xlim, [r8p05, r8p05], 'forestgreen', linewidth=.8, label='$5^{th}$ prcnt.')
-  p95plt, = plt.plot(xlim, [r8p95, r8p95], 'fuchsia', linewidth=.8, label='$95^{th}$ prcnt.')
-  print('rcp85, 1st perc: ' + str(r8p01))
-  print('rcp85, 99th perc: ' + str(r8p99))
-
+  prcntl8 = np.percentile(nnchng, prcn)
   nnchng = relChngR4[np.logical_not(np.isnan(relChngR4))]*100
-  r4median = np.percentile(nnchng, 50)
-  r4p01 = np.percentile(nnchng, 1)
-  r4p99 = np.percentile(nnchng, 99)
-  r4p05 = np.percentile(nnchng, 5)
-  r4p95 = np.percentile(nnchng, 95)
-  plt.plot([r4median, r4median], ylim, 'firebrick', linewidth=.8)
-  plt.plot([r4p05, r4p05], ylim, 'forestgreen', linewidth=.8)
-  plt.plot([r4p95, r4p95], ylim, 'fuchsia', linewidth=.8)
-  print('rcp45, 1st perc: ' + str(r4p01))
-  print('rcp45, 99th perc: ' + str(r4p99))
+  prcntl4 = np.percentile(nnchng, prcn)
+  prcntPlt = plt.plot(prcntl4, prcntl8, 'red', linewidth=2, label='p-p line')
+  
+
+# nnchng = relChngR8[np.logical_not(np.isnan(relChngR8))]*100
+# r8median = np.percentile(nnchng, 50)
+# r8p01 = np.percentile(nnchng, 1)
+# r8p99 = np.percentile(nnchng, 99)
+# r8p05 = np.percentile(nnchng, 5)
+# r8p95 = np.percentile(nnchng, 95)
+# mdnplt, = plt.plot(xlim, [r8median, r8median], 'firebrick', linewidth=.8, label='Median')
+# p05plt, = plt.plot(xlim, [r8p05, r8p05], 'forestgreen', linewidth=.8, label='$5^{th}$ prcnt.')
+# p95plt, = plt.plot(xlim, [r8p95, r8p95], 'fuchsia', linewidth=.8, label='$95^{th}$ prcnt.')
+# print('rcp85, 1st perc: ' + str(r8p01))
+# print('rcp85, 99th perc: ' + str(r8p99))
+
+# nnchng = relChngR4[np.logical_not(np.isnan(relChngR4))]*100
+# r4median = np.percentile(nnchng, 50)
+# r4p01 = np.percentile(nnchng, 1)
+# r4p99 = np.percentile(nnchng, 99)
+# r4p05 = np.percentile(nnchng, 5)
+# r4p95 = np.percentile(nnchng, 95)
+# plt.plot([r4median, r4median], ylim, 'firebrick', linewidth=.8)
+# plt.plot([r4p05, r4p05], ylim, 'forestgreen', linewidth=.8)
+# plt.plot([r4p95, r4p95], ylim, 'fuchsia', linewidth=.8)
+# print('rcp45, 1st perc: ' + str(r4p01))
+# print('rcp45, 99th perc: ' + str(r4p99))
 
   if showLegend:
     ax.legend(loc='lower right', fontsize=12)

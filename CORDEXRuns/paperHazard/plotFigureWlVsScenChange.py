@@ -278,8 +278,8 @@ def plotGrossEnsembles():
   sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
   sigma_ratio = sigma/rc_mega
   ax1 = plt.subplot(gs[1,0])
-  pcl, mp = plotSigma(ax1, sigma_ratio, None, mp, 'c: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
-    prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.2f}%')
+  pcl, mp = plotSigma(ax1, sigma_ratio, None, mp, 'c: $\sigma$, ratio of $\Delta$ at $' + str(warmingLev) +'^\circ$', sigmamax=2,
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.0f}%')
 
   warmingLev = 2.0
 
@@ -293,8 +293,8 @@ def plotGrossEnsembles():
   sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
   sigma_ratio = sigma/rc_mega
   ax3 = plt.subplot(gs[1,1])
-  pclSigma, mp = plotSigma(ax3, sigma_ratio, None, mp, 'd: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
-    prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.2f}%')
+  pclSigma, mp = plotSigma(ax3, sigma_ratio, None, mp, 'd: $\sigma$, ratio of $\Delta$ at $' + str(warmingLev) +'^\circ$', sigmamax=2,
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.0f}%')
   
   cax1 = plt.subplot(gs[0,2])
   cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
