@@ -75,7 +75,7 @@ def plotUncertaintyMap(ax, pdfTot, mp, text, scen=None):
   print('p99.9 time sigma: ' + str(np.percentile(sgm_, 99.9)))
   print('p1 time sigma: ' + str(np.percentile(sgm_, 1)))
 
-  return plotRelChngDiff(ax, sigma/100., mp, text, vmin=0, vmax=2., cmap='PuBu_r')
+  return plotRelChngDiff(ax, sigma/100., mp, text, vmin=0, vmax=.5, cmap='PuBu_r')
 
 
 def plotTimeSigmaVsDifference(ax, pdf, mp, relChngDiff, text):
@@ -269,7 +269,8 @@ def plotTimeUncertaintyAndSigmaDiffRatio():
 
 
 if __name__ == '__main__':
-  plotTimeUncertaintyAndSigmaDiffRatio()
+  plotTimeUncertainty()
+ #plotTimeUncertaintyAndSigmaDiffRatio()
  #plotTimeUncertaintyOfWl()
   plt.show()
 
