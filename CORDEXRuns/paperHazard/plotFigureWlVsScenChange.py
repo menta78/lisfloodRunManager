@@ -78,7 +78,7 @@ def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThreshold1=1
 
   plt.axes(ax)
   mp.drawcoastlines(linewidth=.25)
-  mp.fillcontinents(color=[.8, .8, .8], lake_color=[.8, .8, .8], zorder=0)
+  mp.fillcontinents(color=[.95, .95, .95], lake_color=[.95, .95, .95], zorder=0)
 
   absSigma = np.abs(sigma)
  #pcl = mp.pcolor(lon, lat, sigma, cmap='hot_r', vmin=0, vmax=sigmamax)
@@ -86,7 +86,7 @@ def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThreshold1=1
  #pcl = mp.pcolor(lon, lat, sigma, cmap='coolwarm', vmin=0, vmax=sigmamax)
  #pcl = mp.pcolor(lon, lat, np.abs(sigma), cmap='RdBu_r', vmin=0, vmax=sigmamax)
   pcl = mp.pcolor(lon, lat, absSigma, cmap='PuBu_r', vmin=0, vmax=sigmamax)
-  prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma_{{im}}$: {p:2.2f}%' if prcTxtTmpl == '' else prcTxtTmpl
+  prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma_{{im}}$: {p:2.0f}%' if prcTxtTmpl == '' else prcTxtTmpl
 
   percSign = float(np.nansum(absSigma <= signSigmaThreshold1))/np.nansum(np.logical_not(np.isnan(absSigma)))
   thrstr = '{thr:1.0f}'.format(thr=signSigmaThreshold1) if signSigmaThreshold1 != 1 else ''
@@ -271,7 +271,7 @@ def plotGrossEnsembles():
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax0 = plt.subplot(gs[0,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=30)
+  pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=30)
   
   sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
   sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
@@ -279,14 +279,14 @@ def plotGrossEnsembles():
   sigma_ratio = sigma/rc_mega
   ax1 = plt.subplot(gs[1,0])
   pcl, mp = plotSigma(ax1, sigma_ratio, None, mp, 'c: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
-    prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma$: {p:2.2f}%')
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.2f}%')
 
   warmingLev = 2.0
 
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax2 = plt.subplot(gs[0,1])
-  pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: rcp all, rel. chng. at $' + str(warmingLev) +'^\circ$', vmax=30)
+  pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=30)
   
   sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
   sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
@@ -294,7 +294,7 @@ def plotGrossEnsembles():
   sigma_ratio = sigma/rc_mega
   ax3 = plt.subplot(gs[1,1])
   pclSigma, mp = plotSigma(ax3, sigma_ratio, None, mp, 'd: $\sigma$, % of rel. chng. at $' + str(warmingLev) +'^\circ$', sigmamax=2,
-    prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma$: {p:2.2f}%')
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.2f}%')
   
   cax1 = plt.subplot(gs[0,2])
   cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
@@ -321,27 +321,32 @@ def plotScenVsScen(warmingLev=2.0, sigmaTot=False):
 
   outPng = 'wlRelChngScenVsScen_wl' + str(warmingLev) + '.png'
 
-  f = plt.figure(figsize=(13, 8))
-  gs = gridspec.GridSpec(2, 4, width_ratios=[1,1,1,1./12.])
+  f = plt.figure(figsize=(11, 14))
+  gs = gridspec.GridSpec(3, 6, width_ratios=[1,1./20.,1/10.,1,1./20.,1./40.], height_ratios=[1,1,1])
+  gs.update(hspace=0.05, wspace=0.14)
 
   mp = None
 
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
   ax0 = plt.subplot(gs[0,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: RCP85 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=30)
-  ax1 = plt.subplot(gs[0,1])
-  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: RCP45 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=30)
-  ax2 = plt.subplot(gs[0,2])
+  pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: $\Delta RCP85$, w.l. $' + str(warmingLev) +'^\circ$', vmax=30)
+  ax1 = plt.subplot(gs[1,0])
+  pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: $\Delta RCP45$, w.l. $' + str(warmingLev) +'^\circ$', vmax=30)
+  ax2 = plt.subplot(gs[2,0])
   pcl, mp = plotRelChngDiff(ax2, relChngDiff, mp, 'c: $\Delta RCP85 - \Delta RCP45$', vmax=30)
-  cax = plt.subplot(gs[0,3])
+  cax = plt.subplot(gs[0,1])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
   cb.set_label('$\Delta$ 100-y discharge (%)')
   ax0.set_aspect('auto')
   ax1.set_aspect('auto')
   ax2.set_aspect('auto')
   cax.set_aspect('auto')
+  ax00 = ax0
+  ax10 = ax1
+  ax20 = ax2
+  cax0 = cax
 
-  ax0 = plt.subplot(gs[1,0])
+  ax0 = plt.subplot(gs[0,3])
   pValue, _, sigma_im = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp85', warmingLev=warmingLev)
   if sigmaTot:
     sigmaT = getTimeSigmaByScen(warmingLev, 'rcp85')
@@ -351,7 +356,7 @@ def plotScenVsScen(warmingLev=2.0, sigmaTot=False):
     std = sigma_im/rc_r8
  #pcl, mp = plotPvalue(ax0, pValue, None, mp, 'd: p-value, $\Delta rcp85$')
   pcl, mp = plotSigma(ax0, std, None, mp, 'd: $\sigma_{im}$, ratio of $\Delta RCP85$', sigmamax=2)
-  ax1 = plt.subplot(gs[1,1])
+  ax1 = plt.subplot(gs[1,3])
   pValue, _, sigma_im = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp45', warmingLev=warmingLev)
   if sigmaTot:
     sigmaT = getTimeSigmaByScen(warmingLev, 'rcp45')
@@ -361,16 +366,19 @@ def plotScenVsScen(warmingLev=2.0, sigmaTot=False):
     std = sigma_im/rc_r4
  #pcl, mp = plotPvalue(ax1, pValue, None, mp, 'e: p-value, $\Delta rcp45$')
   pcl, mp = plotSigma(ax1, std, None, mp, 'e: $\sigma_{im}$, ratio of $\Delta RCP45$', sigmamax=2)
-  ax2 = plt.subplot(gs[1,2])  
+  ax2 = plt.subplot(gs[2,3])  
  #pValue, _, _ = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLevBtwScen(warmingLev=warmingLev)
  #pcl, mp = plotPvalue(ax2, pValue, relChngDiff, mp, 'f: p-value, $\Delta RCP85 - \Delta RCP45$')
   std = np.std(rc_r8all-rc_r4all, 0)
   std = std/rc_r8
   pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'f: $\sigma_{im}$, $\Delta RCP85 - \Delta RCP45$', sigmamax=2, printSignTxt=False)
-  cax = plt.subplot(gs[1,3])
+  cax = plt.subplot(gs[0,4])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
- #cb.set_label('p-value')
   cb.set_label('$\sigma_{im}$ (fraction of relative change)')
+  ax00.set_aspect('auto')
+  ax10.set_aspect('auto')
+  ax20.set_aspect('auto')
+  cax0.set_aspect('auto')
   ax0.set_aspect('auto')
   ax1.set_aspect('auto')
   ax2.set_aspect('auto')
@@ -483,9 +491,9 @@ def plotScenVsScenAll():
 
 
 if __name__ == '__main__':
- #plotScenVsScen(1.5)
-  plotScenVsScenAll()
- #plotGrossEnsembles()
+ #plotScenVsScen(2.0)
+ #plotScenVsScenAll()
+  plotGrossEnsembles()
  #printStatsByScenEnsemble('rcp85', 1.5)
  #printStatsByGrossEnsemble(2.0)
-  plt.show()
+ #plt.show()
