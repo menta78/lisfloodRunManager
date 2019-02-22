@@ -51,6 +51,16 @@ dy = 249;
 % end
 
 try
+    
+  if exist(retLevNcOutFilePath, 'file')
+    if skipExistingFiles
+      disp(['          file ' retLevNcOutFilePath ' already exists. Skipping']);
+      return;
+    else
+      delete(retLevNcOutFilePath);
+    end
+  end
+
   disp('allocating output ...');
   retLevGPD = ones(ny, nx, nyrout, nretper)*nan;
   retLevErrGPD = ones(ny, nx, nyrout, nretper)*nan;
@@ -86,7 +96,7 @@ try
       channelMap_ = channelMap(iLonStart:iLonEnd, iLatStart:iLatEnd);
       [ tmstmp, xx_, yy_, vls ] = lfDisLoadFromNc( [iLonStart iLatStart], [iLonEnd iLatEnd], scenario, model, wuChanging, varargin{:} );
      %evaData = lfExecuteTsEva( tmstmp, xx_, yy_, vls, outYears, returnPeriodsInYears, channelMap_, 'parObj', parObj );
-      evaData = lfExecuteTsEva( tmstmp, xx_, yy_, vls, outYears, returnPeriodsInYears, channelMap_, 'nWorker', nparworker );
+      evaData = lfExecuteTsEva( tmstmp, xx_, yy_, vls, outYears, returnPeriodsInYears, channelMap_, 'nWorker', nparworker, varargin{:} );
       
       fprintf('\n');
       toc;
@@ -110,15 +120,6 @@ try
   toc(wholeTicToc);
   fprintf('\n');
   disp('all done! Saving the output');
-    
-  if exist(retLevNcOutFilePath, 'file')
-    if skipExistingFiles
-      disp(['          file ' retLevNcOutFilePath ' already exists. Skipping']);
-      return;
-    else
-      delete(retLevNcOutFilePath);
-    end
-  end
 
   nccreate(retLevNcOutFilePath, 'rl', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout, 'return_period', nretper});
   ncwrite(retLevNcOutFilePath, 'rl', retLevGPD);

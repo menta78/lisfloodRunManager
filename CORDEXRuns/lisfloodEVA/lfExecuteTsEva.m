@@ -1,10 +1,11 @@
 function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPeriodsInYears, channelMap, varargin)
   args.parObj = [];
   args.nWorker = 12;
+  args.tsEvaTimeWindow = 365.25*30; % 30 years
   args = lfEasyParseNamedArgs(varargin, args);
   parObj = args.parObj;
   nWorker = args.nWorker;
-  timeWindow = 365.25*30; % 30 years
+  timeWindow = args.tsEvaTimeWindow;
   minPeakDistanceInDays = 30;
   ciPercentile = 98.5;
   

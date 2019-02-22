@@ -1,11 +1,15 @@
 function lfEvaRunHpc(models, nParWorker)
 
+distcomp.feature( 'LocalUseMpiexec', false );
+
 models = strsplit(models, ':');
 if ischar(nParWorker)
   nParWorker = str2double(nParWorker);
 end
 scenarios = {'rcp85', 'rcp45'};
 wuChangingSet = {true, false};
+
+tsEvaTimeWindow = 50*365.25; % 50 years
 
 ncRootDir = fullfile('/ADAPTATION/mentalo/ClimateRuns/LisfloodEuroCordex/');
 
@@ -25,7 +29,7 @@ for iwuchng = 1:nwuchng
       disp('#####################################');
       disp(['PROCESSING MODEL, SCENARIO, WUCHANG ' model ', ' scenario ', ' num2str(wuChanging)]);
       outDir = './output';
-      lfEvaModel(scenario, model, wuChanging, outDir, 'ncRootDir', ncRootDir, 'nParWorker', nParWorker);
+      lfEvaModel(scenario, model, wuChanging, outDir, 'ncRootDir', ncRootDir, 'nParWorker', nParWorker, 'tsEvaTimeWindow', tsEvaTimeWindow);
       disp('#####################################');
       disp('#####################################');
       disp('#####################################');
