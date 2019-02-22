@@ -87,7 +87,7 @@ def plotRelativeSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThre
   print(prcTxt2)
 
  #txtpos = mp(-7, 71)
-  txtpos = mp(-24, 32)
+  txtpos = mp(-24, 32) if printSignTxt else mp(-24, 69.5)
   plt.annotate(txt, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=13)
   if printSignTxt:
    #txtpos = mp(-8, 27)
@@ -145,7 +145,7 @@ def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=30, signSigmaThreshold1=
   print(prcTxt2)
 
  #txtpos = mp(-7, 71)
-  txtpos = mp(-24, 32)
+  txtpos = mp(-24, 32) if printSignTxt else mp(-21, 69.5)
   plt.annotate(txt, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=13)
   if printSignTxt:
    #txtpos = mp(-8, 27)
@@ -247,7 +247,7 @@ def plotGrossEnsembles():
  #sigma_ratio = sigma/rc_mega
  #sigma_ratio[np.abs(rc_mega)<=.05] = np.nan
   ax1 = plt.subplot(gs[1,0])
-  pcl, mp = plotSigma(ax1, sigma*100, rc_mega*100, mp, 'c: $\sigma$, ratio of $\Delta$ at $' + str(warmingLev) +'^\circ$',
+  pcl, mp = plotSigma(ax1, sigma*100, rc_mega*100, mp, 'c: $\sigma$ (%) at $' + str(warmingLev) +'^\circ$',
     prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.0f}%')
 
   warmingLev = 2.0
@@ -263,7 +263,7 @@ def plotGrossEnsembles():
  #sigma_ratio = sigma/rc_mega
  #sigma_ratio[np.abs(rc_mega)<=.05] = np.nan
   ax3 = plt.subplot(gs[1,1])
-  pclSigma, mp = plotSigma(ax3, sigma*100, rc_mega*100, mp, 'd: $\sigma$, ratio of $\Delta$ at $' + str(warmingLev) +'^\circ$',
+  pclSigma, mp = plotSigma(ax3, sigma*100, rc_mega*100, mp, 'd: $\sigma$ (%) at $' + str(warmingLev) +'^\circ$',
     prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.0f}%')
   
   cax1 = plt.subplot(gs[0,2])
@@ -287,8 +287,88 @@ def plotGrossEnsembles():
 
 
 
+
+
+
+def plotErrorDecomposition():
+
+  outPng = 'errorDecomposition.png'
+
+  f = plt.figure(figsize=(9, 11))
+  gs = gridspec.GridSpec(3, 3, width_ratios=[1,1,1./20.], height_ratios=[1,1,1])
+ #gs.update(hspace=0.05, wspace=0.14)
+
+  mp = None
+
+  warmingLev = 1.5
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  ax00 = plt.subplot(gs[0,0])
+  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  pcl, mp = plotSigma(ax00, sigma_im*100, (rc_r8 + rc_r4)/2.*100., mp, 'a: $\sigma_{\Delta Q0}$ (%) at $' + str(warmingLev) + '^\circ$',
+    sigmamax=30, printSignTxt=False)
+ #cax00 = plt.subplot(gs[0,1])
+ #cb = plt.colorbar(pcl, ax=ax00, cax=cax00)
+
+  ax10 = plt.subplot(gs[1,0])
+  sigma_r8r4 = relChngDiff/2.
+  pcl, mp = plotSigma(ax10, sigma_r8r4*100, (rc_r8 + rc_r4)/2.*100., mp, 'c: $\sigma_{r8-r4}$ (%) at $' + str(warmingLev) + '^\circ$',
+    sigmamax=30, printSignTxt=False)
+ #cax10 = plt.subplot(gs[1,1])
+ #cb = plt.colorbar(pcl, ax=ax10, cax=cax10)
+
+  ax20 = plt.subplot(gs[2,0]) 
+  sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
+  pcl, mp = plotSigma(ax20, sigmaT*100, (rc_r8 + rc_r4)/2.*100., mp, 'e: $\sigma_{t}$ (%) at $' + str(warmingLev) + '^\circ$',
+    sigmamax=30, printSignTxt=False)
+ #cax20 = plt.subplot(gs[2,1])
+ #cb = plt.colorbar(pcl, ax=ax20, cax=cax20)
+
+  warmingLev = 2.0
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  ax01 = plt.subplot(gs[0,1])
+  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  pcl, mp = plotSigma(ax01, sigma_im*100, (rc_r8 + rc_r4)/2.*100., mp, 'b: $\sigma_{\Delta Q0}$ (%) at $' + str(warmingLev) + '^\circ$',
+    sigmamax=30, printSignTxt=False)
+  cax00 = plt.subplot(gs[0,2])
+  cb = plt.colorbar(pcl, ax=ax00, cax=cax00)
+  cb.set_label('%', fontsize=13)
+  cb.ax.tick_params(labelsize=11)
+
+  ax11 = plt.subplot(gs[1,1])
+  sigma_r8r4 = relChngDiff/2.
+  pcl, mp = plotSigma(ax11, sigma_r8r4*100, (rc_r8 + rc_r4)/2.*100., mp, 'd: $\sigma_{r8-r4}$ (%) at $' + str(warmingLev) + '^\circ$',
+    sigmamax=30, printSignTxt=False)
+ #cax10 = plt.subplot(gs[1,1])
+ #cb = plt.colorbar(pcl, ax=ax10, cax=cax10)
+
+  ax21 = plt.subplot(gs[2,1]) 
+  sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
+  pcl, mp = plotSigma(ax21, sigmaT*100, (rc_r8 + rc_r4)/2.*100., mp, 'f: $\sigma_{t}$ (%) at $' + str(warmingLev) + '^\circ$',
+    sigmamax=30, printSignTxt=False)
+ #cax20 = plt.subplot(gs[2,1])
+ #cb = plt.colorbar(pcl, ax=ax20, cax=cax20)
+
+  ax00.set_aspect('auto')
+  ax10.set_aspect('auto')
+  ax20.set_aspect('auto')
+  ax01.set_aspect('auto')
+  ax11.set_aspect('auto')
+  ax21.set_aspect('auto')
+  cax00.set_aspect('auto')
+
+  plt.tight_layout()
+
+  f.savefig(outPng, dpi=300)
+
+
+
+
+
 if __name__ == '__main__':
-  plotGrossEnsembles()
- #printStatsByScenEnsemble('rcp85', 2.0)
- #printStatsByGrossEnsemble(2.0)
-  plt.show()
+ #plotGrossEnsembles()
+  printStatsByScenEnsemble('rcp85', 1.5)
+ #printStatsByGrossEnsemble(1.5)
+ #plotErrorDecomposition()
+ #plt.show()

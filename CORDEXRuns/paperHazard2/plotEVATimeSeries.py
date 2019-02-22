@@ -32,24 +32,24 @@ def plotTimeSeries(ncfilepath, ix, iy, txt, outpng, rp1=10, rp2=50, rp3=100, leg
 
 
 def plotLoire():
-  ncfilepath = '/DATA/multi-hazard/discharge/projection_dis_rcp85_IPSL-INERIS-WRF331F_BC_wuChang_statistics.nc'
- #ncfilepath = '/DATA/multi-hazard/discharge/projection_dis_rcp45_DMI-HIRHAM5-ICHEC-EC-EARTH_BC_wuChang_statistics.nc'
+ #ncfilepath = '/DATA/multi-hazard/discharge/projection_dis_rcp85_IPSL-INERIS-WRF331F_BC_wuChang_statistics.nc'
+  ncfilepath = '/DATA/multi-hazard/discharge/tseva_50y/projection_dis_rcp45_DMI-HIRHAM5-ICHEC-EC-EARTH_BC_wuChang_statistics.nc'
   ix = 204
   iy = 401
   plotTimeSeries(ncfilepath, ix, iy, 'Loire', 'evaLoire.png')
   plt.show()
 
 def plotDanube():
-  ncfilepath = '/DATA/multi-hazard/discharge/projection_dis_rcp85_IPSL-INERIS-WRF331F_BC_wuChang_statistics.nc'
- #ncfilepath = '/DATA/multi-hazard/discharge/projection_dis_rcp45_DMI-HIRHAM5-ICHEC-EC-EARTH_BC_wuChang_statistics.nc'
+ #ncfilepath = '/DATA/multi-hazard/discharge/projection_dis_rcp85_IPSL-INERIS-WRF331F_BC_wuChang_statistics.nc'
+  ncfilepath = '/DATA/multi-hazard/discharge/tseva_50y/projection_dis_rcp45_DMI-HIRHAM5-ICHEC-EC-EARTH_BC_wuChang_statistics.nc'
   ix = 492
   iy = 406
   plotTimeSeries(ncfilepath, ix, iy, 'Danube', 'evaDanube.png', legendloc='lower right')
   plt.show()
 
 def plotRhine():
-  ncfilepath = '/DATA/multi-hazard/discharge/projection_dis_rcp85_IPSL-INERIS-WRF331F_BC_wuChang_statistics.nc'
- #ncfilepath = '/DATA/multi-hazard/discharge/projection_dis_rcp45_DMI-HIRHAM5-ICHEC-EC-EARTH_BC_wuChang_statistics.nc'
+ #ncfilepath = '/DATA/multi-hazard/discharge/tseva_50y/projection_dis_rcp85_IPSL-INERIS-WRF331F_BC_wuChang_statistics.nc'
+  ncfilepath = '/DATA/multi-hazard/discharge/tseva_50y/projection_dis_rcp45_DMI-HIRHAM5-ICHEC-EC-EARTH_BC_wuChang_statistics.nc'
   ix = 311
   iy = 490
   plotTimeSeries(ncfilepath, ix, iy, 'Rhine', 'evaRhine.png')

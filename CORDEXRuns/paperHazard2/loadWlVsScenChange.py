@@ -84,6 +84,8 @@ def getGrossEnsembleAtYear(ryear, ncDir='/ClimateRun4/multi-hazard/eva', bslnYea
  #wlyR4 = getWarmingLevels('rcp45', warmingLev)
 
   models = wlyR8.keys()
+  tamask, _, _ = getAfricaAndTurkeyMask()
+  tamask = tamask.transpose()
 
   rl_all = []
   for mdl, imdl in zip(models, range(len(models))):
@@ -133,6 +135,9 @@ def getGrossEnsembleAtYear(ryear, ncDir='/ClimateRun4/multi-hazard/eva', bslnYea
     if threshold > 0:
       cnd = rlBslnR4 < threshold
       r4RelChng[cnd] = np.nan
+
+    r8RelChng[~tamask] = np.nan
+    r4RelChng[~tamask] = np.nan
 
     rl_all.append(r8RelChng)
     rl_all.append(r4RelChng)
