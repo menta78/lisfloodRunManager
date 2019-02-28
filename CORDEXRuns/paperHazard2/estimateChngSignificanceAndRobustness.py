@@ -269,8 +269,8 @@ def computeRlChngPValueAtWarmingLevBtwScen(ncDir='/ClimateRun4/multi-hazard/eva'
   rl_r4[cnd] = np.nan
   serl_r4[cnd] = np.nan
 
-  pvalue = computeRlChngPValueMontecarlo(rl_r4, serl_r4, rl_r8, serl_r8)
- #pvalue = computeRlChngPValueMeansOnly(rl_r4, rl_r8)
+ #pvalue = computeRlChngPValueMontecarlo(rl_r4, serl_r4, rl_r8, serl_r8)
+  pvalue = computeRlChngPValueMeansOnly(rl_r4, rl_r8)
 
   agrMdlCnt, _ = countAgreeingModelsAndGetStdDev(rl_r4, rl_r8)
 
@@ -360,8 +360,8 @@ def computeRlChngPValueAtWarmingLev(ncDir='/ClimateRun4/multi-hazard/eva', bslnY
   rl_bs[cnd] = np.nan
   serl_bs[cnd] = np.nan
 
-  pvalue = computeRlChngPValueMontecarlo(rl_bs, serl_bs, rl_rc, serl_rc)
- #pvalue = computeRlChngPValueMeansOnly(rl_bs, rl_rc)
+ #pvalue = computeRlChngPValueMontecarlo(rl_bs, serl_bs, rl_rc, serl_rc)
+  pvalue = computeRlChngPValueMeansOnly(rl_bs, rl_rc)
 
   agrMdlCnt, std = countAgreeingModelsAndGetStdDev(rl_bs, rl_rc)
 

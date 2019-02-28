@@ -160,7 +160,7 @@ def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=30, signSigmaThreshold1=
   
   
 
-def getTimeSigmaByScen(warmingLev, scen):
+def getTimeSigmaByScen(warmingLev, scen, ncDir):
   _, pdfR8, pdfR4 = gwl.getWarmingLevelMixDistributions(warmingLev)
   pdf = None
   if scen == 'rcp85':
@@ -174,15 +174,15 @@ def getTimeSigmaByScen(warmingLev, scen):
   sdvmin = int(np.round(mn - stdev))
   sdvmax = int(np.round(mn + stdev))
 
-  rlChngInf = ldEnsmbl.getRcpEnsembleAtYear(sdvmin, scen=scen)
-  rlChngSup = ldEnsmbl.getRcpEnsembleAtYear(sdvmax, scen=scen)
+  rlChngInf = ldEnsmbl.getRcpEnsembleAtYear(sdvmin, scen=scen, ncDir=ncDir)
+  rlChngSup = ldEnsmbl.getRcpEnsembleAtYear(sdvmax, scen=scen, ncDir=ncDir)
 
   sigmaT = np.abs(rlChngSup-rlChngInf)
   return sigmaT
 
 
 
-def getTimeSigmaGrossEnsemble(warmingLev):
+def getTimeSigmaGrossEnsemble(warmingLev, ncDir):
   pdfTot, pdfR8, pdfR4 = gwl.getWarmingLevelMixDistributions(warmingLev)
   
   stdev = pdfTot.std()
@@ -190,17 +190,17 @@ def getTimeSigmaGrossEnsemble(warmingLev):
   sdvmin = int(np.round(mn - stdev))
   sdvmax = int(np.round(mn + stdev))
 
-  rlChngInf = ldEnsmbl.getGrossEnsembleAtYear(sdvmin)
-  rlChngSup = ldEnsmbl.getGrossEnsembleAtYear(sdvmax)
+  rlChngInf = ldEnsmbl.getGrossEnsembleAtYear(sdvmin, ncDir=ncDir)
+  rlChngSup = ldEnsmbl.getGrossEnsembleAtYear(sdvmax, ncDir=ncDir)
 
   sigmaT = np.abs(rlChngSup-rlChngInf)
   return sigmaT
   
 
 
-def printStatsByScenEnsemble(scen='rcp85', warmingLev=2.0):
-  _, _, sigma_im = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen=scen, warmingLev=warmingLev)
-  sigmaT = getTimeSigmaByScen(warmingLev, scen)
+def printStatsByScenEnsemble(scen='rcp85', warmingLev=2.0, ncDir='/ClimateRun4/multi-hazard/eva'):
+  _, _, sigma_im = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen=scen, warmingLev=warmingLev, ncDir=ncDir)
+  sigmaT = getTimeSigmaByScen(warmingLev, scen, ncDir)
   sigma2 = sigma_im**2. + sigmaT**2.
   sigma_im_ratio = sigma_im**2./sigma2
   sigmaT_ratio = sigmaT**2./sigma2
@@ -209,8 +209,8 @@ def printStatsByScenEnsemble(scen='rcp85', warmingLev=2.0):
   
 
 
-def printStatsByGrossEnsemble(warmingLev=2.0):
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+def printStatsByGrossEnsemble(warmingLev=2.0, ncDir='/ClimateRun4/multi-hazard/eva'):
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev, ncDir=ncDir)
   rc_mega = (rc_r8 + rc_r4)/2.
   sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
   sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
@@ -226,7 +226,7 @@ def printStatsByGrossEnsemble(warmingLev=2.0):
   
 
 
-def plotGrossEnsembles():
+def plotGrossEnsembles(ncDir='/ClimateRun4/multi-hazard/eva'):
   outPng = 'wlRelChngGrossEnsembles.png'
   
   f = plt.figure(figsize=(9,8))
@@ -236,13 +236,13 @@ def plotGrossEnsembles():
 
   warmingLev = 1.5
 
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax0 = plt.subplot(gs[0,0])
   pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=30)
   
   sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
-  sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
+  sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
   sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
  #sigma_ratio = sigma/rc_mega
  #sigma_ratio[np.abs(rc_mega)<=.05] = np.nan
@@ -252,13 +252,13 @@ def plotGrossEnsembles():
 
   warmingLev = 2.0
 
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax2 = plt.subplot(gs[0,1])
   pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=30)
   
   sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
-  sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
+  sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
   sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
  #sigma_ratio = sigma/rc_mega
  #sigma_ratio[np.abs(rc_mega)<=.05] = np.nan
@@ -290,7 +290,7 @@ def plotGrossEnsembles():
 
 
 
-def plotErrorDecomposition():
+def plotErrorDecomposition(ncDir='/ClimateRun4/multi-hazard/eva'):
 
   outPng = 'errorDecomposition.png'
 
@@ -302,7 +302,7 @@ def plotErrorDecomposition():
 
   warmingLev = 1.5
 
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev)
   ax00 = plt.subplot(gs[0,0])
   sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
   pcl, mp = plotSigma(ax00, sigma_im*100, (rc_r8 + rc_r4)/2.*100., mp, 'a: $\sigma_{\Delta Q0}$ (%) at $' + str(warmingLev) + '^\circ$',
@@ -318,7 +318,7 @@ def plotErrorDecomposition():
  #cb = plt.colorbar(pcl, ax=ax10, cax=cax10)
 
   ax20 = plt.subplot(gs[2,0]) 
-  sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
+  sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
   pcl, mp = plotSigma(ax20, sigmaT*100, (rc_r8 + rc_r4)/2.*100., mp, 'e: $\sigma_{t}$ (%) at $' + str(warmingLev) + '^\circ$',
     sigmamax=30, printSignTxt=False)
  #cax20 = plt.subplot(gs[2,1])
@@ -326,7 +326,7 @@ def plotErrorDecomposition():
 
   warmingLev = 2.0
 
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev)
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev)
   ax01 = plt.subplot(gs[0,1])
   sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
   pcl, mp = plotSigma(ax01, sigma_im*100, (rc_r8 + rc_r4)/2.*100., mp, 'b: $\sigma_{\Delta Q0}$ (%) at $' + str(warmingLev) + '^\circ$',
@@ -344,7 +344,7 @@ def plotErrorDecomposition():
  #cb = plt.colorbar(pcl, ax=ax10, cax=cax10)
 
   ax21 = plt.subplot(gs[2,1]) 
-  sigmaT = getTimeSigmaGrossEnsemble(warmingLev)
+  sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
   pcl, mp = plotSigma(ax21, sigmaT*100, (rc_r8 + rc_r4)/2.*100., mp, 'f: $\sigma_{t}$ (%) at $' + str(warmingLev) + '^\circ$',
     sigmamax=30, printSignTxt=False)
  #cax20 = plt.subplot(gs[2,1])
@@ -368,7 +368,11 @@ def plotErrorDecomposition():
 
 if __name__ == '__main__':
  #plotGrossEnsembles()
-  printStatsByScenEnsemble('rcp85', 1.5)
+  plotGrossEnsembles(ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
+ #printStatsByScenEnsemble('rcp85', 1.5)
+ #printStatsByScenEnsemble('rcp85', 1.5, ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #printStatsByGrossEnsemble(1.5)
+ #printStatsByGrossEnsemble(1.5, ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #plotErrorDecomposition()
+ #plotErrorDecomposition(ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #plt.show()

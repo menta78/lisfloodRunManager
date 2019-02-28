@@ -252,6 +252,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
 
 if __name__ == '__main__':
-  plotEnsembles()
+ #plotEnsembles()
+  plotEnsembles(rootDir='/ClimateRun/menta/eva_50y_timeWindow/')
   plt.show()
 
