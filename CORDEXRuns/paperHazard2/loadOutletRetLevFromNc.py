@@ -2,6 +2,7 @@ import netCDF4
 import numpy as np
 import os
 from matplotlib import path
+import re
 
 
 def loadOutletRetLevFromNc(ncEvaMapPth, returnPeriod, ncOutletPth=''):
@@ -10,6 +11,7 @@ def loadOutletRetLevFromNc(ncEvaMapPth, returnPeriod, ncOutletPth=''):
 
   outletDs = netCDF4.Dataset(ncOutletPth)
   outlets = outletDs.variables['outlets'][:]
+  outletDs.close()
   oirow, oicol = np.where(np.logical_not(outlets.mask))
 
   disDs = netCDF4.Dataset(ncEvaMapPth)
@@ -38,6 +40,21 @@ def loadOutletRetLevFromNc(ncEvaMapPth, returnPeriod, ncOutletPth=''):
   outPtIndxs = outPtIds - 1
   timeSrsFinal[outPtIndxs, :] = timeSrs
   return year, outPtIdsFinal, timeSrsFinal
+
+
+def loadOutletRetLevsFromDir(ncDir, ncFilePattern, returnPeriod, ncOutletPth=''):
+# ncDir = '/ClimateRun4/multi-hazard/eva/'
+# ncFilePattern = 'projection_dis_rcp85_(.*)_wuChang_statistics.nc'
+  fls = [f for f in os.listdir(ncDir) if re.match(ncFilePattern, f)]
+  timeSrs = []
+  print('loading file pattern ' + ncFilePattern + ' from directory ' + ncDir)
+  for f in fls:
+    print('  loading ' + f)
+    flpth = os.path.join(ncDir, f)
+    year, outPtIds, timeSrs_ = loadOutletRetLevFromNc(flpth, returnPeriod, ncOutletPth=ncOutletPth)
+    timeSrs.append(timeSrs_)
+  timeSrs = np.array(timeSrs)
+  return year, outPtIds, timeSrs
 
 
 

@@ -3,10 +3,14 @@ function lfEvaModel(scenario, model, wuChanging, outDir, varargin)
 args.nparworker = 12;
 args.skipExistingFiles = true;
 args.varname = 'dis';
+args.dx = 250;
+args.dy = 320;
 args = lfEasyParseNamedArgs(varargin, args);
 nparworker = args.nparworker;
 skipExistingFiles = args.skipExistingFiles;
 varname = args.varname;
+dx = args.dx;
+dy = args.dy;
 
 returnPeriodsInYears = [1.5 2 3 4 5 7 10 15 20 30 50 70 100 150 250 350 500 700 1000 1500 2000];  
 outYears = (1985:5:2095)';
@@ -37,12 +41,12 @@ nyrall = size(allYears, 1);
 
 % this procedure will analyze 120x60 windows, to avoid using too much
 % memory
+%  dx = 100;
+%  dy = 100;
+% dx = 250;
+% dy = 320;
 %dx = 250;
-%dy = 190;
-%dx = 250;
-%dy = 320;
-dx = 250;
-dy = 249;
+%dy = 249;
 
 % if nparworker > 1
 %   parObj = parpool(nparworker);
@@ -52,13 +56,8 @@ dy = 249;
 
 try
     
-  if exist(retLevNcOutFilePath, 'file')
-    if skipExistingFiles
-      disp(['          file ' retLevNcOutFilePath ' already exists. Skipping']);
-      return;
-    else
-      delete(retLevNcOutFilePath);
-    end
+  if exist(retLevNcOutFilePath, 'file') && skipExistingFiles
+    disp(['          file ' retLevNcOutFilePath ' already exists. Skipping']);
   end
 
   disp('allocating output ...');
@@ -72,6 +71,16 @@ try
   thresholdGPDErr = ones(ny, nx, nyrout)*nan;
   yMax = ones(ny, nx, nyrall)*nan;
 
+  retLevGEVMin = ones(ny, nx, nyrout, nretper)*nan;
+  retLevErrGEVMin = ones(ny, nx, nyrout, nretper)*nan;
+  shapeGEVMin = ones(ny, nx)*nan;
+  shapeGEVErrMin = ones(ny, nx)*nan;
+  scaleGEVMin = ones(ny, nx, nyrout)*nan;
+  scaleGEVErrMin = ones(ny, nx, nyrout)*nan;
+  locationGEVMin = ones(ny, nx, nyrout)*nan;
+  locationGEVErrMin = ones(ny, nx, nyrout)*nan;
+  yMin = ones(ny, nx, nyrall)*nan;
+
   nsubx = ceil(nx/dx);
   nsuby = ceil(ny/dy);
   xx = ones(nx, 1)*nan;
@@ -81,8 +90,8 @@ try
   
   for isubx = 1:nsubx
     for isuby = 1:nsuby
-% for isubx = 1:1
-%   for isuby = 1:1
+%  for isubx = 7:7
+%    for isuby = 5:5
       fprintf('\n');
       disp(['elaborating sub area ' num2str(isubx) ', ' num2str(isuby)]);
       iLonStart = (isubx - 1)*dx + 1;
@@ -96,21 +105,41 @@ try
       channelMap_ = channelMap(iLonStart:iLonEnd, iLatStart:iLatEnd);
       [ tmstmp, xx_, yy_, vls ] = lfDisLoadFromNc( [iLonStart iLatStart], [iLonEnd iLatEnd], scenario, model, wuChanging, varargin{:} );
      %evaData = lfExecuteTsEva( tmstmp, xx_, yy_, vls, outYears, returnPeriodsInYears, channelMap_, 'parObj', parObj );
-      evaData = lfExecuteTsEva( tmstmp, xx_, yy_, vls, outYears, returnPeriodsInYears, channelMap_, 'nWorker', nparworker, varargin{:} );
+      evaDataMax = lfExecuteTsEva( tmstmp, xx_, yy_, vls, outYears, returnPeriodsInYears, channelMap_, 'nWorker', nparworker, varargin{:} );
+
+      vlsmn = movmean(vls, 30, 3);
+      vlsmnmin_ = permute(tsEvaComputeAnnualMaximaMtx(tmstmp, permute(-vlsmn, [3,1,2])), [2,3,1]);
+      yys = unique(tsYear(tmstmp));
+      yydt = datenum([yys, ones(size(yys)), ones(size(yys))]);
+      evaDataMin = lfExecuteTsEvaGEV( yydt, xx_, yy_, vlsmnmin_, outYears, returnPeriodsInYears, channelMap_, 'nWorker', nparworker, 'maxFracNan', .1, varargin{:} );
+      retLevGEVMin_ = -evaDataMin.retLevGEV;
+      cnd0 = retLevGEVMin_ < 0;
+      retLevGEVMin_(cnd0) = 0;
+      evaDataMin.retLevErrGEV(cnd0) = 0;
       
       fprintf('\n');
       toc;
       disp('eva on chunk complete. Assigning results to the final output')
-      retLevGPD(iLatStart:iLatEnd, iLonStart:iLonEnd, :, :) = evaData.retLevGPD;
+      retLevGPD(iLatStart:iLatEnd, iLonStart:iLonEnd, :, :) = evaDataMax.retLevGPD;
+      retLevErrGPD(iLatStart:iLatEnd, iLonStart:iLonEnd, :, :) = evaDataMax.retLevErrGPD;
+      shapeGPD(iLatStart:iLatEnd, iLonStart:iLonEnd) = evaDataMax.shapeGPD;
+      shapeGPDErr(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMax.shapeGPDErr;
+      scaleGPD(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMax.scaleGPD;
+      scaleGPDErr(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMax.scaleGPDErr;
+      thresholdGPD(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMax.thresholdGPD;
+      thresholdGPDErr(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMax.thresholdGPDErr;
+      yMax(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMax.yMax;
+      clear('evaDataMax');
 
-      retLevErrGPD(iLatStart:iLatEnd, iLonStart:iLonEnd, :, :) = evaData.retLevErrGPD;
-      shapeGPD(iLatStart:iLatEnd, iLonStart:iLonEnd) = evaData.shapeGPD;
-      shapeGPDErr(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.shapeGPDErr;
-      scaleGPD(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.scaleGPD;
-      scaleGPDErr(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.scaleGPDErr;
-      thresholdGPD(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.thresholdGPD;
-      thresholdGPDErr(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.thresholdGPDErr;
-      yMax(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaData.yMax;
+      retLevGEVMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :, :) = retLevGEVMin_;
+      retLevErrGEVMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :, :) = evaDataMin.retLevErrGEV;
+      shapeGEVMin(iLatStart:iLatEnd, iLonStart:iLonEnd) = evaDataMin.shapeGEV;
+      shapeGEVErrMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMin.shapeGEVErr;
+      scaleGEVMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMin.scaleGEV;
+      scaleGEVErrMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMin.scaleGEVErr;
+      locationGEVMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = -evaDataMin.locationGEV;
+      locationGEVErrMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMin.locationGEVErr;
+      yMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = -evaDataMin.yMax;
       
       xx(iLonStart:iLonEnd) = xx_;
       yy(iLatStart:iLatEnd) = yy_;
@@ -120,7 +149,12 @@ try
   toc(wholeTicToc);
   fprintf('\n');
   disp('all done! Saving the output');
+    
+  if exist(retLevNcOutFilePath, 'file')
+    delete(retLevNcOutFilePath);
+  end
 
+  % max
   nccreate(retLevNcOutFilePath, 'rl', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout, 'return_period', nretper});
   ncwrite(retLevNcOutFilePath, 'rl', retLevGPD);
 
@@ -148,6 +182,34 @@ try
   nccreate(retLevNcOutFilePath, 'year_max', 'dimensions', {'y', ny, 'x', nx, 'year_all', nyrall});
   ncwrite(retLevNcOutFilePath, 'year_max', yMax);
 
+  % min
+  nccreate(retLevNcOutFilePath, 'rl_min', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout, 'return_period', nretper});
+  ncwrite(retLevNcOutFilePath, 'rl_min', retLevGEVMin);
+
+  nccreate(retLevNcOutFilePath, 'se_rl_min', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout, 'return_period', nretper});
+  ncwrite(retLevNcOutFilePath, 'se_rl_min', retLevErrGEVMin);
+
+  nccreate(retLevNcOutFilePath, 'shape_fit_min', 'dimensions', {'y', ny, 'x', nx});
+  ncwrite(retLevNcOutFilePath, 'shape_fit_min', shapeGEVMin);
+
+  nccreate(retLevNcOutFilePath, 'se_shape_min', 'dimensions', {'y', ny, 'x', nx});
+  ncwrite(retLevNcOutFilePath, 'se_shape', shapeGEVErrMin);
+
+  nccreate(retLevNcOutFilePath, 'scale_fit_min', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout});
+  ncwrite(retLevNcOutFilePath, 'scale_fit_min', scaleGEVMin);
+
+  nccreate(retLevNcOutFilePath, 'se_scale_min', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout});
+  ncwrite(retLevNcOutFilePath, 'se_scale_min', scaleGEVErrMin);
+
+  nccreate(retLevNcOutFilePath, 'location_fit_min', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout});
+  ncwrite(retLevNcOutFilePath, 'location_fit_min', locationGEVMin);
+
+  nccreate(retLevNcOutFilePath, 'se_location_min', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout});
+  ncwrite(retLevNcOutFilePath, 'se_location_min', locationGEVErrMin);
+  
+  nccreate(retLevNcOutFilePath, 'year_min', 'dimensions', {'y', ny, 'x', nx, 'year_all', nyrall});
+  ncwrite(retLevNcOutFilePath, 'year_min', yMin);
+  
   nccreate(retLevNcOutFilePath, 'x', 'dimensions', {'ix', nx});
   ncwrite(retLevNcOutFilePath, 'x', xx);
 
@@ -164,8 +226,11 @@ try
   ncwrite(retLevNcOutFilePath, 'return_period', returnPeriodsInYears);
   
   
-  nccreate(retLevNcOutFilePath, 'eva_type', 'datatype', 'char', 'dimensions', {'nchar', 10});
-  ncwrite(retLevNcOutFilePath, 'eva_type', 'GPD');
+  nccreate(retLevNcOutFilePath, 'eva_type_max', 'datatype', 'char', 'dimensions', {'nchar', 10});
+  ncwrite(retLevNcOutFilePath, 'eva_type_max', 'GPD');
+
+  nccreate(retLevNcOutFilePath, 'eva_type_min', 'datatype', 'char', 'dimensions', {'nchar', 10});
+  ncwrite(retLevNcOutFilePath, 'eva_type_min', 'GEV');
 
 
   

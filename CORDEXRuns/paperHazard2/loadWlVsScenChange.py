@@ -6,7 +6,8 @@ from getWarmingLevels import getWarmingLevels
 from loadOutletRetLevFromNc import getAfricaAndTurkeyMask
 
 
-def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, retPer=100, threshold=100):
+
+def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, retPer=100, threshold=100, rlVarName='rl'):
   flpattern = 'projection_dis_{scen}_{mdl}_wuChang_statistics.nc'
 
   wlyR8 = getWarmingLevels('rcp85', warmingLev)
@@ -38,29 +39,29 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
     rpIndx = np.where(retper_==retPer)[0][0]
     year_ = ds.variables['year'][:]
     yIndxBsln = np.where(year_ == bslnYear)[0][0]
-    rlBslnR8 = ds.variables['rl'][rpIndx, yIndxBsln, :, :]
+    rlBslnR8 = ds.variables[rlVarName][rpIndx, yIndxBsln, :, :]
     yIndx = np.where(year_==r8yearInf)[0][0]
-    rlR8_ = ds.variables['rl'][rpIndx, yIndx:yIndx+2, :, :]
+    rlR8_ = ds.variables[rlVarName][rpIndx, yIndx:yIndx+2, :, :]
     ds.close()
     rlR8 = interp1d(year_[yIndx:yIndx+2], rlR8_, axis=0)(r8year)
     r8RelChng = (rlR8-rlBslnR8)/rlBslnR8
     if threshold > 0:
       cnd = rlBslnR8 < threshold
       r8RelChng[cnd] = np.nan
-      r8RelChng[r8RelChng < -.15] = np.nan
+     #r8RelChng[r8RelChng < -.15] = np.nan
 
     print('  loading file ' + flr4pth)
     ds = netCDF4.Dataset(flr4pth)
-    rlBslnR4 = ds.variables['rl'][rpIndx, yIndxBsln, :, :]
+    rlBslnR4 = ds.variables[rlVarName][rpIndx, yIndxBsln, :, :]
     yIndx = np.where(year_==r4yearInf)[0][0]
-    rlR4_ = ds.variables['rl'][rpIndx, yIndx:yIndx+2, :, :]
+    rlR4_ = ds.variables[rlVarName][rpIndx, yIndx:yIndx+2, :, :]
     ds.close()
     rlR4 = interp1d(year_[yIndx:yIndx+2], rlR4_, axis=0)(r4year)
     r4RelChng = (rlR4-rlBslnR4)/rlBslnR4
     if threshold > 0:
       cnd = rlBslnR4 < threshold
       r4RelChng[cnd] = np.nan
-      r4RelChng[r4RelChng < -.15] = np.nan
+     #r4RelChng[r4RelChng < -.15] = np.nan
 
     r8RelChng[~tamask] = np.nan
     r4RelChng[~tamask] = np.nan
@@ -187,4 +188,70 @@ def getRcpEnsembleAtYear(ryear, ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=
   return ensembleRelChng
 
   
+
+
+
+def loadMdlsAtWl(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, rlVarName='rl', numberOfModels=-1):
+  flpattern = 'projection_dis_{scen}_{mdl}_wuChang_statistics.nc'
+
+  wlyR8 = getWarmingLevels('rcp85', warmingLev)
+  wlyR4 = getWarmingLevels('rcp45', warmingLev)
+
+  models = wlyR8.keys()
+  models.sort()
+  numberOfModels = len(models) if numberOfModels==-1 else numberOfModels
+ #tamask, _, _ = getAfricaAndTurkeyMask()
+ #tamask = tamask.transpose()
+
+  bsln = []
+  rl_r4 = []
+  rl_r8 = [] 
+  for mdl, imdl in zip(models[:numberOfModels], range(numberOfModels)):
+    print('model ' + mdl)
+    flr8 = flpattern.format(scen='rcp85', mdl=mdl)
+    flr8pth = os.path.join(ncDir, flr8)
+    flr4 = flpattern.format(scen='rcp45', mdl=mdl)
+    flr4pth = os.path.join(ncDir, flr4)
+
+    r8year = wlyR8[mdl]
+    r8yearInf = int(np.floor(r8year/float(5))*5)
+    print('  rcp85 w.l. year: ' + str(r8year))
+    r4year = wlyR4[mdl]
+    r4yearInf = int(np.floor(r4year/float(5))*5)
+    print('  rcp45 w.l. year: ' + str(r4year))
+
+    print('  loading file ' + flr8pth)
+    ds = netCDF4.Dataset(flr8pth)
+    retper_ = ds.variables['return_period'][:]
+    year_ = ds.variables['year'][:]
+    yIndxBsln = np.where(year_ == bslnYear)[0][0]
+    rlBslnR8 = ds.variables[rlVarName][:, yIndxBsln, :, :]
+    yIndx = np.where(year_==r8yearInf)[0][0]
+    rlR8_ = ds.variables[rlVarName][:, yIndx:yIndx+2, :, :]
+    ds.close()
+    rlR8 = interp1d(year_[yIndx:yIndx+2], rlR8_, axis=1)(r8year)
+
+    print('  loading file ' + flr4pth)
+    ds = netCDF4.Dataset(flr4pth)
+    rlBslnR4 = ds.variables[rlVarName][:, yIndxBsln, :, :]
+    yIndx = np.where(year_==r4yearInf)[0][0]
+    rlR4_ = ds.variables[rlVarName][:, yIndx:yIndx+2, :, :]
+    ds.close()
+    rlR4 = interp1d(year_[yIndx:yIndx+2], rlR4_, axis=1)(r4year)
+
+    rlBsln = rlBslnR8
+   #rlBsln[~tamask] = np.nan
+   #rlR4[~tamask] = np.nan
+   #rlR8[~tamask] = np.nan
+
+    bsln.append(rlBsln)
+    rl_r8.append(rlR8)
+    rl_r4.append(rlR4)
+
+  bsln = np.array(bsln)
+  rl_r8 = np.array(rl_r8)
+  rl_r4 = np.array(rl_r4)
+
+  return bsln, rl_r8, rl_r4, retper_
+
 

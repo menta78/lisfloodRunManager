@@ -1,16 +1,14 @@
-function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPeriodsInYears, channelMap, varargin)
+function dt = lfExecuteTsEvaGEV(tmstmp, lonAll, latAll, vlsAll, outYears, returnPeriodsInYears, channelMap, varargin)
   args.parObj = [];
   args.nWorker = 12;
   args.tsEvaTimeWindow = 365.25*30; % 30 years
   args.maxFracNan = .5;
-  args.ciPercentile = 98.5;
   args = lfEasyParseNamedArgs(varargin, args);
   parObj = args.parObj;
   nWorker = args.nWorker;
   maxFracNan = args.maxFracNan;
   timeWindow = args.tsEvaTimeWindow;
   minPeakDistanceInDays = 30;
-  ciPercentile = args.ciPercentile;
   
   nlon = length(lonAll);
   nlat = length(latAll);
@@ -40,14 +38,14 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
 
   nretper = length(returnPeriodsInYears);
 
-  retLevGPD_ = ones(npt, nyr, nretper)*nan;
-  retLevErrGPD_ = ones(npt, nyr, nretper)*nan;
-  shapeGPD_ = ones(npt, 1)*nan;
-  shapeGPDErr_ = ones(npt, 1)*nan;
-  scaleGPD_ = ones(npt, nyr)*nan;
-  scaleGPDErr_ = ones(npt, nyr)*nan;
-  thresholdGPD_ = ones(npt, nyr)*nan;
-  thresholdGPDErr_ = ones(npt, nyr)*nan;
+  retLevGEV_ = ones(npt, nyr, nretper)*nan;
+  retLevErrGEV_ = ones(npt, nyr, nretper)*nan;
+  shapeGEV_ = ones(npt, 1)*nan;
+  shapeGEVErr_ = ones(npt, 1)*nan;
+  scaleGEV_ = ones(npt, nyr)*nan;
+  scaleGEVErr_ = ones(npt, nyr)*nan;
+  locationGEV_ = ones(npt, nyr)*nan;
+  locationGEVErr_ = ones(npt, nyr)*nan;
   yMax_ = ones(npt, nyrAll)*nan;
   
   ownsParObj = isempty(parObj) & (nWorker > 1);
@@ -57,7 +55,6 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
   try
 
     tic;
-    %for ipt = 1:npt
     parfor ipt = 1:npt
     %for ipt = 139:139
       try
@@ -80,8 +77,8 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
           continue;
         end
 
-        [nonStatEvaParams, statTransfData, isValid] = tsEvaNonStationary(timeAndSeries, timeWindow, 'transfType', 'trendCiPercentile',...
-             'ciPercentile', ciPercentile, 'minPeakDistanceInDays', minPeakDistanceInDays, 'potEventsPerYear', 2);
+        [nonStatEvaParams, statTransfData, isValid] = tsEvaNonStationary(timeAndSeries, timeWindow,...
+             'evdType', 'GEV', 'minPeakDistanceInDays', minPeakDistanceInDays, 'potEventsPerYear', 2);
 
 
         if ~isValid
@@ -91,21 +88,22 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
 
         [ nonStatEvaParams, statTransfData ] = tsEvaReduceOutputObjSize( nonStatEvaParams, statTransfData, outDt );
 
-        [ptReturnLevels, ptReturnLevelsErr, ~, ~] = tsEvaComputeReturnLevelsGPDFromAnalysisObj(nonStatEvaParams, returnPeriodsInYears);
+        [ptReturnLevels, ptReturnLevelsErr, ~, ~] = tsEvaComputeReturnLevelsGEVFromAnalysisObj(nonStatEvaParams, returnPeriodsInYears);
 
         [ptYMax, ptDt, ~] = tsEvaComputeAnnualMaxima(timeAndSeries);
         cndYmax = (ptDt >= datenum(min(outYears), 1, 1)) & (ptDt <= datenum(max(outYears) + 1, 1, 1));
         ptYMax = ptYMax(cndYmax);
         
-        retLevGPD_(ipt, :, :) = ptReturnLevels;
-        retLevErrGPD_(ipt, :, :) = ptReturnLevelsErr;
-        shapeGPD_(ipt) = nonStatEvaParams(2).parameters.epsilon;
-        shapeGPDErr_(ipt) = nonStatEvaParams(2).paramErr.epsilonErr;
-        scaleGPD_(ipt, :) = nonStatEvaParams(2).parameters.sigma;
-        scaleGPDErr_(ipt, :) = nonStatEvaParams(2).paramErr.sigmaErr;
-        thresholdGPD_(ipt, :) = nonStatEvaParams(2).parameters.threshold;
-        thresholdGPDErr_(ipt, :) = 0;
+        retLevGEV_(ipt, :, :) = ptReturnLevels;
+        retLevErrGEV_(ipt, :, :) = ptReturnLevelsErr;
+        shapeGEV_(ipt) = nonStatEvaParams(1).parameters.epsilon;
+        shapeGEVErr_(ipt) = nonStatEvaParams(1).paramErr.epsilonErr;
+        scaleGEV_(ipt, :) = nonStatEvaParams(1).parameters.sigma;
+        scaleGEVErr_(ipt, :) = nonStatEvaParams(1).paramErr.sigmaErr;
+        locationGEV_(ipt, :) = nonStatEvaParams(1).parameters.mu;
+        locationGEVErr_(ipt, :) = nonStatEvaParams(1).paramErr.muErr;
 
+        % for some reason the sizes of ptYMax and yMax_ may differ here
         lPtYMax = length(ptYMax);
         if lPtYMax >= nyrAll
           yMax_(ipt, :) = ptYMax(1:nyrAll);
@@ -134,14 +132,14 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
 
   
   disp('assigning gridded output ...');
-  dt.retLevGPD = ones(nlat, nlon, nyr, nretper)*nan;
-  dt.retLevErrGPD = ones(nlat, nlon, nyr, nretper)*nan;
-  dt.shapeGPD = ones(nlat, nlon)*nan;
-  dt.shapeGPDErr = ones(nlat, nlon)*nan;
-  dt.scaleGPD = ones(nlat, nlon, nyr)*nan;
-  dt.scaleGPDErr = ones(nlat, nlon, nyr)*nan;
-  dt.thresholdGPD = ones(nlat, nlon, nyr)*nan;
-  dt.thresholdGPDErr = ones(nlat, nlon, nyr)*nan;
+  dt.retLevGEV = ones(nlat, nlon, nyr, nretper)*nan;
+  dt.retLevErrGEV = ones(nlat, nlon, nyr, nretper)*nan;
+  dt.shapeGEV = ones(nlat, nlon)*nan;
+  dt.shapeGEVErr = ones(nlat, nlon)*nan;
+  dt.scaleGEV = ones(nlat, nlon, nyr)*nan;
+  dt.scaleGEVErr = ones(nlat, nlon, nyr)*nan;
+  dt.locationGEV = ones(nlat, nlon, nyr)*nan;
+  dt.locationGEVErr = ones(nlat, nlon, nyr)*nan;
   dt.yMax = ones(nlat, nlon, nyrAll)*nan;
 
   for ipt = 1:npt
@@ -151,14 +149,14 @@ function dt = lfExecuteTsEva(tmstmp, lonAll, latAll, vlsAll, outYears, returnPer
     iilat = ilat(ipt);
     iilon = ilon(ipt);
 
-    dt.retLevGPD(iilat, iilon, :) = retLevGPD_(ipt, :);
-    dt.retLevErrGPD(iilat, iilon, :) = retLevErrGPD_(ipt, :);
-    dt.shapeGPD(iilat, iilon) = shapeGPD_(ipt);
-    dt.shapeGPDErr(iilat, iilon) = shapeGPDErr_(ipt);
-    dt.scaleGPD(iilat, iilon, :) = scaleGPD_(ipt, :);
-    dt.scaleGPDErr(iilat, iilon, :) = scaleGPDErr_(ipt, :);
-    dt.thresholdGPD(iilat, iilon, :) = thresholdGPD_(ipt, :);
-    dt.thresholdGPDErr(iilat, iilon, :) = thresholdGPDErr_(ipt, :);
+    dt.retLevGEV(iilat, iilon, :) = retLevGEV_(ipt, :);
+    dt.retLevErrGEV(iilat, iilon, :) = retLevErrGEV_(ipt, :);
+    dt.shapeGEV(iilat, iilon) = shapeGEV_(ipt);
+    dt.shapeGEVErr(iilat, iilon) = shapeGEVErr_(ipt);
+    dt.scaleGEV(iilat, iilon, :) = scaleGEV_(ipt, :);
+    dt.scaleGEVErr(iilat, iilon, :) = scaleGEVErr_(ipt, :);
+    dt.locationGEV(iilat, iilon, :) = locationGEV_(ipt, :);
+    dt.locationGEVErr(iilat, iilon, :) = locationGEVErr_(ipt, :);
     dt.yMax(iilat, iilon, :) = yMax_(ipt, :);
   end
   
