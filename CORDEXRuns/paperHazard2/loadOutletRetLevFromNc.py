@@ -58,12 +58,12 @@ def loadOutletRetLevsFromDir(ncDir, ncFilePattern, returnPeriod, ncOutletPth='')
 
 
 
-def loadAllRetLevFromNc(ncEvaMapPth, returnPeriod, maskOutAfricaAndTurkey=True):
+def loadAllRetLevFromNc(ncEvaMapPth, returnPeriod, maskOutAfricaAndTurkey=True, ncvar='rl'):
   disDs = netCDF4.Dataset(ncEvaMapPth)
   year = disDs.variables['year'][:]
   retper = disDs.variables['return_period'][:]
   rpIndx = np.where(retper == returnPeriod)[0][0]
-  rl = np.squeeze(disDs.variables['rl'][rpIndx, :, :, :])
+  rl = np.squeeze(disDs.variables[ncvar][rpIndx, :, :, :])
 
   if maskOutAfricaAndTurkey:
     msk, lon, lat = getAfricaAndTurkeyMask()

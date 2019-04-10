@@ -1,15 +1,17 @@
 %function lfEvaEstimRetPerForYearMinima_all
 
 inputDir = '/ClimateRun4/multi-hazard/eva/';
-inputFlPattern = 'projection_dis_rcp*_*_wuChang_statistics.nc';
+%inputFlPattern = 'projection_dis_rcp*_*_wuChang_statistics.nc';
+inputFlPattern = 'projection_dis_rcp*_SMHI-RCA4_BC_MOHC-HadGEM2-ES_wuChang_statistics.nc';
 outputDir = '/ClimateRun4/multi-hazard/eva/minDischargeExtremesRetPer/';
 
 fls = strsplit(strtrim(ls(fullfile(inputDir, inputFlPattern))));
 nfls = length(fls);
 
-pl = parpool(4);
+%pl = parpool(min(nfls, 4));
 
-parfor ifl = 1:nfls
+%parfor ifl = 1:nfls
+for ifl = 1:nfls
   fl = fls{ifl};
   re = regexp(fl, '(.*)/projection_dis_rcp([48])5_(.*)_wuChang_statistics.nc', 'tokens');
   scen = ['rcp' re{1}{2} '5'];

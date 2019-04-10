@@ -8,7 +8,8 @@ if ischar(nParWorker)
 end
 scenarios = {'rcp85', 'rcp45'};
 %wuChangingSet = {true, false};
-wuChangingSet = {true};
+%wuChangingSet = {true};
+wuChangingSet = {false};
 
 tsEvaTimeWindow = 30*365.25; % 30 years
 
