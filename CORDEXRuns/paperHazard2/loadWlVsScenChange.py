@@ -7,13 +7,19 @@ from loadOutletRetLevFromNc import getAfricaAndTurkeyMask
 
 
 
-def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, retPer=100, threshold=100, rlVarName='rl'):
+def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, retPer=100, threshold=0, rlVarName='rl'):
   flpattern = 'projection_dis_{scen}_{mdl}_wuChang_statistics.nc'
 
   wlyR8 = getWarmingLevels('rcp85', warmingLev)
   wlyR4 = getWarmingLevels('rcp45', warmingLev)
 
+  dsuparea = netCDF4.Dataset('upArea.nc')
+  upArea = dsuparea.variables['upArea'][:].transpose()
+  dsuparea.close()
+
   models = wlyR8.keys()
+  # menta
+ #models = [models[0], models[1]]
   tamask, _, _ = getAfricaAndTurkeyMask()
   tamask = tamask.transpose()
 
@@ -49,6 +55,8 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
       cnd = rlBslnR8 < threshold
       r8RelChng[cnd] = np.nan
      #r8RelChng[r8RelChng < -.15] = np.nan
+
+    r8RelChng[upArea < 1e9] = np.nan
 
     print('  loading file ' + flr4pth)
     ds = netCDF4.Dataset(flr4pth)
