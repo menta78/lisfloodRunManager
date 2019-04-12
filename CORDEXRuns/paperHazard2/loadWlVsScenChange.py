@@ -8,6 +8,7 @@ from loadOutletRetLevFromNc import getAfricaAndTurkeyMask
 
 
 def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, retPer=100, threshold=0, rlVarName='rl'):
+  # computes the mean relative change
   flpattern = 'projection_dis_{scen}_{mdl}_wuChang_statistics.nc'
 
   wlyR8 = getWarmingLevels('rcp85', warmingLev)
@@ -56,11 +57,10 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
       r8RelChng[cnd] = np.nan
      #r8RelChng[r8RelChng < -.15] = np.nan
 
-    r8RelChng[upArea < 1e9] = np.nan
-
     print('  loading file ' + flr4pth)
     ds = netCDF4.Dataset(flr4pth)
-    rlBslnR4 = ds.variables[rlVarName][rpIndx, yIndxBsln, :, :]
+   #rlBslnR4 = ds.variables[rlVarName][rpIndx, yIndxBsln, :, :]
+    rlBslnR4 = rlBslnR8
     yIndx = np.where(year_==r4yearInf)[0][0]
     rlR4_ = ds.variables[rlVarName][rpIndx, yIndx:yIndx+2, :, :]
     ds.close()
@@ -70,6 +70,9 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
       cnd = rlBslnR4 < threshold
       r4RelChng[cnd] = np.nan
      #r4RelChng[r4RelChng < -.15] = np.nan
+
+    r8RelChng[upArea < 1e9] = np.nan
+    r4RelChng[upArea < 1e9] = np.nan
 
     r8RelChng[~tamask] = np.nan
     r4RelChng[~tamask] = np.nan
@@ -84,6 +87,90 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
   relChngDiff[~tamask] = np.nan
 
   return relChngDiff, np.nanmean(rl_r8, 0), np.nanmean(rl_r4, 0), rl_r8, rl_r4
+
+
+
+def loadWlVsScenChange2(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, retPer=100, threshold=0, rlVarName='rl'):
+  # computes the relative change of the ensemble
+  flpattern = 'projection_dis_{scen}_{mdl}_wuChang_statistics.nc'
+
+  wlyR8 = getWarmingLevels('rcp85', warmingLev)
+  wlyR4 = getWarmingLevels('rcp45', warmingLev)
+
+  dsuparea = netCDF4.Dataset('upArea.nc')
+  upArea = dsuparea.variables['upArea'][:].transpose()
+  dsuparea.close()
+
+  models = wlyR8.keys()
+  # menta
+ #models = [models[0], models[1]]
+  tamask, _, _ = getAfricaAndTurkeyMask()
+  tamask = tamask.transpose()
+
+  rl_bsln = []
+  rl_r4 = []
+  rl_r8 = [] 
+  for mdl, imdl in zip(models, range(len(models))):
+    print('model ' + mdl)
+    flr8 = flpattern.format(scen='rcp85', mdl=mdl)
+    flr8pth = os.path.join(ncDir, flr8)
+    flr4 = flpattern.format(scen='rcp45', mdl=mdl)
+    flr4pth = os.path.join(ncDir, flr4)
+
+    r8year = wlyR8[mdl]
+    r8yearInf = int(np.floor(r8year/float(5))*5)
+    print('  rcp85 w.l. year: ' + str(r8year))
+    r4year = wlyR4[mdl]
+    r4yearInf = int(np.floor(r4year/float(5))*5)
+    print('  rcp45 w.l. year: ' + str(r4year))
+
+    print('  loading file ' + flr8pth)
+    ds = netCDF4.Dataset(flr8pth)
+    retper_ = ds.variables['return_period'][:]
+    rpIndx = np.where(retper_==retPer)[0][0]
+    year_ = ds.variables['year'][:]
+    yIndxBsln = np.where(year_ == bslnYear)[0][0]
+    rlBslnR8 = ds.variables[rlVarName][rpIndx, yIndxBsln, :, :]
+    yIndx = np.where(year_==r8yearInf)[0][0]
+    rlR8_ = ds.variables[rlVarName][rpIndx, yIndx:yIndx+2, :, :]
+    ds.close()
+    rlR8 = interp1d(year_[yIndx:yIndx+2], rlR8_, axis=0)(r8year)
+
+    print('  loading file ' + flr4pth)
+    ds = netCDF4.Dataset(flr4pth)
+    yIndx = np.where(year_==r4yearInf)[0][0]
+    rlR4_ = ds.variables[rlVarName][rpIndx, yIndx:yIndx+2, :, :]
+    ds.close()
+    rlR4 = interp1d(year_[yIndx:yIndx+2], rlR4_, axis=0)(r4year)
+
+    rlR8[upArea < 1e9] = np.nan
+    rlR4[upArea < 1e9] = np.nan
+
+    rlR8[~tamask] = np.nan
+    rlR4[~tamask] = np.nan
+
+    rl_r8.append(rlR8)
+    rl_r4.append(rlR4)
+    rl_bsln.append(rlBslnR8)
+
+  rl_r8 = np.array(rl_r8)
+  rl_r4 = np.array(rl_r4)
+  rl_bsln = np.array(rl_bsln)
+
+  mnbsln = np.nanmean(rl_bsln, 0)
+  mnbsln[mnbsln < threshold] = np.nan
+  rc_r8 = (np.nanmean(rl_r8, 0) - mnbsln)/mnbsln
+  rc_r4 = (np.nanmean(rl_r4, 0) - mnbsln)/mnbsln
+
+  relChngDiff = rc_r8-rc_r4
+  relChngDiff[~tamask] = np.nan
+
+  nmdl = rl_bsln.shape[0]
+  std_r8 = np.std(rl_r8 - rl_bsln, 0)/np.sqrt(np.sum(rl_bsln**2., 0)/nmdl)
+  std_r4 = np.std(rl_r4 - rl_bsln, 0)/np.sqrt(np.sum(rl_bsln**2., 0)/nmdl)
+  std_diff = np.std(rl_r8 - rl_r4, 0)/np.sqrt(np.sum(rl_bsln**2., 0)/nmdl)
+
+  return relChngDiff, rc_r8, rc_r4, std_r8, std_r4, std_diff
 
 
 def getGrossEnsembleAtYear(ryear, ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, retPer=100, threshold=200):

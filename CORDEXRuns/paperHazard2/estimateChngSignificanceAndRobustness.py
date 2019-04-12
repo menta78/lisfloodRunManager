@@ -303,7 +303,7 @@ def saveRlChngPValueAtWarmingLevBtwScen_15deg(outFilePath='./pvalue_cfr_2deg.csv
 
 
 ######### significance of chng between baseline and warming level ##
-def computeRlChngPValueAtWarmingLev(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, scen='rcp85', warmingLev=2, retPer=100, minThreshold=0):
+def computeRlChngPValueAtWarmingLev(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, scen='rcp85', warmingLev=2, retPer=100, minThreshold=0, rlVarName='rl', rlErrVarName='se_rl'):
   flpattern = 'projection_dis_{scen}_{mdl}_wuChang_statistics.nc'
 
   wly = getWarmingLevels(scen, warmingLev)
@@ -329,11 +329,11 @@ def computeRlChngPValueAtWarmingLev(ncDir='/ClimateRun4/multi-hazard/eva', bslnY
     rpIndx = np.where(retper_==retPer)[0][0]
     year_ = ds.variables['year'][:]
     yIndx = np.where(year_==rcyearInf)[0][0]
-    rlR_ = ds.variables['rl'][rpIndx, yIndx:yIndx+2, :, :]
-    serlR_ = ds.variables['se_rl'][rpIndx, yIndx:yIndx+2, :, :]
+    rlR_ = ds.variables[rlVarName][rpIndx, yIndx:yIndx+2, :, :]
+    serlR_ = ds.variables[rlErrVarName][rpIndx, yIndx:yIndx+2, :, :]
     yBslnIndx = np.where(year_==bslnYear)[0][0]
-    rlBsln = ds.variables['rl'][rpIndx, yBslnIndx, :, :]
-    serlBsln = ds.variables['se_rl'][rpIndx, yBslnIndx, :, :]
+    rlBsln = ds.variables[rlVarName][rpIndx, yBslnIndx, :, :]
+    serlBsln = ds.variables[rlErrVarName][rpIndx, yBslnIndx, :, :]
     ds.close()
     rlR = interp1d(year_[yIndx:yIndx+2], rlR_, axis=0)(rcyear)
     serlR = interp1d(year_[yIndx:yIndx+2], serlR_, axis=0)(rcyear)

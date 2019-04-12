@@ -270,7 +270,7 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 
 
 
-def plotEnsembles_min(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=100, gs=None, showLegend=True):
+def plotEnsembles_min(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=15, gs=None, showLegend=True):
   warmingLevs = [1.5, 2.0]
   rcp8, rcp4 = 'rcp85', 'rcp45'
 
@@ -301,8 +301,8 @@ KNMI-RACMO22E-ICHEC-EC-EARTH_BC
   lon, lat = [], []
   axs = []
   lgndShown = not showLegend
-  lims = {1.5: [-20, 50], 2.0: [-40, 80]}
-  lims = {1.5: [-24, 60], 2.0: [-39, 80]}
+  lims = {1.5: [-20, 50], 2.0: [-39, 80]}
+# lims = {1.5: [-24, 60], 2.0: [-39, 80]}
   densityBins = {1.5: 130, 2.0: 130}
   for warmingLev, iwl in zip(warmingLevs, range(len(warmingLevs))):
 
