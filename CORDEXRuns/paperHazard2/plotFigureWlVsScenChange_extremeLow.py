@@ -46,16 +46,62 @@ def plotRelChngDiff(ax, relChngDiff, mp, txt, cmap='RdBu', vmax=20, vmin=None):
   plt.annotate(txt, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=13)
 
   return sc, mp
+
+
+
+
+def plotPvalue(ax, pValue, relChngDiff, mp, txt):
+  if mp == None:
+   #llcrnrlon = -11.5
+   #llcrnrlat = 23
+   #urcrnrlon = 44
+   #urcrnrlat = 74
+
+    llcrnrlon = -25
+    llcrnrlat = 25
+    urcrnrlon = 44
+    urcrnrlat = 71.5
+
+   #mp = bm.Basemap(llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon, 
+   #         urcrnrlat=urcrnrlat, resolution='l')
+    mp = bm.Basemap(llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon, 
+             urcrnrlat=urcrnrlat, resolution='l', projection='lcc', lon_0=-15, lat_1=-15, lat_2=10)
+
+  lon, lat = estimateChngSignificanceAndRobustness.getLonLat()
+  lon, lat = lon.transpose(), lat.transpose()
+
+  plt.axes(ax)
+  mp.drawcoastlines(linewidth=.25)
+
+  pvl_ = pValue.copy()
+  pvl_[pvl_ > .5] = np.nan
+ #pcl = mp.pcolor(lon, lat, pvl_, cmap='hot', vmin=0, vmax=.5)
+  x, y = mp(lon, lat)
+  sc = plt.scatter(x, y, s=1, c=pvl_, linewidth=0, cmap='hot')
+
+  txtpos = mp(-7, 27)
+  plt.annotate(txt, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=13)
+
+  return sc, mp
+
   
 
 def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThreshold1=1, signSigmaThreshold2=2, prcTxtTmpl='', printSignTxt=True):
   if mp == None:
-    llcrnrlon = -11.5
-    llcrnrlat = 23
+   #llcrnrlon = -11.5
+   #llcrnrlat = 23
+   #urcrnrlon = 44
+   #urcrnrlat = 74
+
+    llcrnrlon = -25
+    llcrnrlat = 25
     urcrnrlon = 44
-    urcrnrlat = 74
+    urcrnrlat = 71.5
+
+   #mp = bm.Basemap(llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon, 
+   #         urcrnrlat=urcrnrlat, resolution='l')
     mp = bm.Basemap(llcrnrlon=llcrnrlon, llcrnrlat=llcrnrlat, urcrnrlon=urcrnrlon, 
-             urcrnrlat=urcrnrlat, resolution='l')
+             urcrnrlat=urcrnrlat, resolution='l', projection='lcc', lon_0=-15, lat_1=-15, lat_2=10)
 
   lon, lat = estimateChngSignificanceAndRobustness.getLonLat()
   lon, lat = lon.transpose(), lat.transpose()
@@ -73,7 +119,7 @@ def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThreshold1=1
   x, y = mp(lon, lat)
  #sc = plt.scatter(x, y, s=1, c=absSigma, linewidth=0, cmap='PuBu_r')
   absSigma[absSigma > 1.75] = 1.75
-  sc = plt.scatter(x, y, s=1, c=absSigma, linewidth=0, cmap='bwr', vmin=0, vmax=sigmamax)
+  sc = plt.scatter(x, y, s=1, c=absSigma, linewidth=0, cmap='PuBu_r', vmin=0, vmax=sigmamax)
   prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma_{{im}}$: {p:2.2f}%' if prcTxtTmpl == '' else prcTxtTmpl
 
   percSign = float(np.nansum(absSigma <= signSigmaThreshold1))/np.nansum(np.logical_not(np.isnan(absSigma)))
@@ -121,6 +167,7 @@ def nanGaussianBlur(U, sigma):
 
 
 def plotScenVsScen(warmingLev=2.0):
+  # DON'T USE THIS, USE plotScenVsScen2
 
   outPng = 'wlRelChngScenVsScen_lowDis_wl' + str(warmingLev) + '.png'
 
@@ -187,7 +234,7 @@ def plotScenVsScen(warmingLev=2.0):
 
 def plotScenVsScen2(warmingLev=2.0):
 
-  outPng = 'wlRelChngScenVsScen2_lowDis_wl' + str(warmingLev) + '.png'
+  outPng = 'wlRelChngScenVsScen_lowDis_wl' + str(warmingLev) + '.png'
 
   f = plt.figure(figsize=(13, 8))
   gs = gridspec.GridSpec(2, 4, width_ratios=[1,1,1,1./12.])
@@ -195,13 +242,15 @@ def plotScenVsScen2(warmingLev=2.0):
   mp = None
  #blurSigma = 2
 
-  relChngDiff, rc_r8, rc_r4, std_r8, std_r4, std_diff = ldEnsmbl.loadWlVsScenChange2(warmingLev=warmingLev, rlVarName='rl_min', threshold=.0001, retPer=15)
+  relChngDiff, rc_r8, rc_r4, std_r8, std_r4, std_diff, pvl_r8, pvl_r4, pvl_diff = ldEnsmbl.loadWlVsScenChange2(
+       warmingLev=warmingLev, rlVarName='rl_min', threshold=.0001, retPer=15)
  #relChngDiff = nanGaussianBlur(relChngDiff, blurSigma)
  #rc_r8 = nanGaussianBlur(rc_r8, blurSigma)
  #rc_r4 = nanGaussianBlur(rc_r4, blurSigma)
 
   ax0 = plt.subplot(gs[0,0])
   cmap = 'bwr_r'
+ #cmap = 'RdBu'
   pcl, mp = plotRelChngDiff(ax0, rc_r8, mp, 'a: RCP85 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=60, cmap=cmap)
   ax1 = plt.subplot(gs[0,1])
   pcl, mp = plotRelChngDiff(ax1, rc_r4, mp, 'b: RCP45 - hist., w.l. $' + str(warmingLev) +'^\circ$', vmax=60, cmap=cmap)
@@ -217,24 +266,16 @@ def plotScenVsScen2(warmingLev=2.0):
 
   ax0 = plt.subplot(gs[1,0])
   std = std_r8/np.abs(rc_r8)
- #std = nanGaussianBlur(std, blurSigma)
- #pcl, mp = plotPvalue(ax0, pValue, None, mp, 'd: p-value, $\Delta rcp85$')
   pcl, mp = plotSigma(ax0, std, None, mp, 'd: $\sigma_{im}$, ratio of $\Delta RCP85$', sigmamax=2.)
+ #pcl, mp = plotPvalue(ax0, pvl_r8, relChngDiff, mp, 'test')
   ax1 = plt.subplot(gs[1,1])
-  pValue, _, sigma_im = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLev(scen='rcp45', warmingLev=warmingLev, rlVarName='rl_min', rlErrVarName='se_rl_min', retPer=10)
   std = std_r4/np.abs(rc_r4)
- #std = nanGaussianBlur(std, blurSigma)
- #pcl, mp = plotPvalue(ax1, pValue, None, mp, 'e: p-value, $\Delta rcp45$')
   pcl, mp = plotSigma(ax1, std, None, mp, 'e: $\sigma_{im}$, ratio of $\Delta RCP45$', sigmamax=2)
   ax2 = plt.subplot(gs[1,2])  
- #pValue, _, _ = estimateChngSignificanceAndRobustness.computeRlChngPValueAtWarmingLevBtwScen(warmingLev=warmingLev)
- #pcl, mp = plotPvalue(ax2, pValue, relChngDiff, mp, 'f: p-value, $\Delta RCP85 - \Delta RCP45$')
   std = std_diff/np.abs(rc_r8)
- #std = nanGaussianBlur(std, blurSigma)
   pcl, mp = plotSigma(ax2, std, relChngDiff, mp, 'f: $\sigma_{im}$, $\Delta RCP85 - \Delta RCP45$', sigmamax=2, printSignTxt=False)
   cax = plt.subplot(gs[1,3])
   cb = plt.colorbar(pcl, ax=ax2, cax=cax)
- #cb.set_label('p-value')
   cb.set_label('$\sigma_{im}$ (fraction of relative change)')
   ax0.set_aspect('auto')
   ax1.set_aspect('auto')
@@ -247,7 +288,7 @@ def plotScenVsScen2(warmingLev=2.0):
 
 
 if __name__ == '__main__':
-  plotScenVsScen2(1.5)
+  plotScenVsScen2(2.0)
  #plotScenVsScenAll()
  #plotGrossEnsembles()
  #printStatsByScenEnsemble('rcp85', 1.5)

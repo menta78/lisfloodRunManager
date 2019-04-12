@@ -177,4 +177,6 @@ def plotMinDisFreqChange():
   
   
 if __name__ == '__main__':
-  plotMinFreqChange()
+  plotMinDisFreqChange()
+  plt.show()
+

@@ -99,7 +99,7 @@ def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=2, signSigmaThreshold1=1
   x, y = mp(lon, lat)
  #sc = plt.scatter(x, y, s=1, c=absSigma, linewidth=0, cmap='PuBu_r')
   absSigma[absSigma > 1.75] = 1.75
-  sc = plt.scatter(x, y, s=1, c=absSigma, linewidth=0, cmap='bwr', vmax=sigmamax)
+  sc = plt.scatter(x, y, s=1, c=absSigma, linewidth=0, cmap='PuBu_r', vmax=sigmamax)
   prcTxtTmpl = '% of pixel where ${thr}\|\Delta d_{{100-wl}}\| > \sigma_{{im}}$: {p:2.2f}%' if prcTxtTmpl == '' else prcTxtTmpl
 
   percSign = float(np.nansum(absSigma <= signSigmaThreshold1))/np.nansum(np.logical_not(np.isnan(absSigma)))
@@ -361,7 +361,7 @@ def plotScenVsScen(warmingLev=2.0):
 
 
 if __name__ == '__main__':
-  plotScenVsScen(2.0)
+  plotScenVsScen(1.5)
  #plotScenVsScenAll()
  #plotGrossEnsembles()
  #printStatsByScenEnsemble('rcp85', 1.5)

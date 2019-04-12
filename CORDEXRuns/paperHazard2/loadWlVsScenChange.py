@@ -1,6 +1,7 @@
 import numpy as np
 import os, netCDF4
 from scipy.interpolate import interp1d
+from scipy import stats
 
 from getWarmingLevels import getWarmingLevels
 from loadOutletRetLevFromNc import getAfricaAndTurkeyMask
@@ -170,7 +171,11 @@ def loadWlVsScenChange2(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, wa
   std_r4 = np.std(rl_r4 - rl_bsln, 0)/np.sqrt(np.sum(rl_bsln**2., 0)/nmdl)
   std_diff = np.std(rl_r8 - rl_r4, 0)/np.sqrt(np.sum(rl_bsln**2., 0)/nmdl)
 
-  return relChngDiff, rc_r8, rc_r4, std_r8, std_r4, std_diff
+  _, pval_r8 = stats.ttest_ind(rl_r8, rl_bsln, 0)
+  _, pval_r4 = stats.ttest_ind(rl_r4, rl_bsln, 0)
+  _, pval_diff = stats.ttest_ind(rl_r8, rl_r4, 0)
+
+  return relChngDiff, rc_r8, rc_r4, std_r8, std_r4, std_diff, pval_r8, pval_r4, pval_diff
 
 
 def getGrossEnsembleAtYear(ryear, ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, retPer=100, threshold=200):
