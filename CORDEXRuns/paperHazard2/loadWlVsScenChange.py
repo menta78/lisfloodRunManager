@@ -8,9 +8,9 @@ from loadOutletRetLevFromNc import getAfricaAndTurkeyMask
 
 
 
-def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, retPer=100, threshold=0, rlVarName='rl'):
+def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, retPer=100, threshold=0, rlVarName='rl',
+  flpattern='projection_dis_{scen}_{mdl}_wuChang_statistics.nc'):
   # computes the mean relative change
-  flpattern = 'projection_dis_{scen}_{mdl}_wuChang_statistics.nc'
 
   wlyR8 = getWarmingLevels('rcp85', warmingLev)
   wlyR4 = getWarmingLevels('rcp45', warmingLev)
