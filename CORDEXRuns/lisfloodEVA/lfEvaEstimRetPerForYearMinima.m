@@ -41,8 +41,8 @@ for ipt = 1:npt
   scli = scale(iy, ix, :);
   loci = loc(iy, ix, :);
   
-% if all(isnan(vlsymax)) || all(vlsymax == 0)
-  if all(isnan(vlsymax)) || (max(vlsymax(1:30)) > -.5)
+  if all(isnan(vlsymax)) || all(vlsymax == 0)
+% if all(isnan(vlsymax)) || (max(vlsymax(1:30)) > -.5)
     continue;
   end
  

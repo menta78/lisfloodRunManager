@@ -1,9 +1,10 @@
 %function lfEvaEstimRetPerForYearMinima_all
 
 inputDir = '/ClimateRun4/multi-hazard/eva/';
-%inputFlPattern = 'projection_dis_rcp*_*_wuChang_statistics.nc';
-inputFlPattern = 'projection_dis_rcp*_SMHI-RCA4_BC_MOHC-HadGEM2-ES_wuChang_statistics.nc';
+inputFlPattern = 'projection_dis_rcp*_*_wuChang_statistics.nc';
+%inputFlPattern = 'projection_dis_rcp*_SMHI-RCA4_BC_MOHC-HadGEM2-ES_wuChang_statistics.nc';
 outputDir = '/ClimateRun4/multi-hazard/eva/minDischargeExtremesRetPer/';
+outputDir = '/ClimateRun/menta/xCarmelo/minDischargeExtremesRetPer/';
 
 fls = strsplit(strtrim(ls(fullfile(inputDir, inputFlPattern))));
 nfls = length(fls);

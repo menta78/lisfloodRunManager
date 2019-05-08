@@ -120,7 +120,49 @@ def plotEnsembleStaticVsDynamicDiffMin():
 
   plt.show()
 
+
+
+
+def plotEnsembleStaticVsDynamicDiffMin_ymin():
+  import pdb; pdb.set_trace()
+  cacheFlPth = 'staticVsDynamicDiffMin_ymin.pkl'
+  figFlNamePattern = 'staticVsDynamicDifMin_ymin_{wl}.png'
+  if os.path.isfile(cacheFlPth):
+    fl = open(cacheFlPth)
+    relChngDiffChng15, rlR8Chng15, rlR4Chng15, rlR8AllChng15, rlR4AllChng15,\
+    relChngDiffCnst15, rlR8Cnst15, rlR4Cnst15, rlR8AllCnst15, rlR4AllCnst15,\
+    relChngDiffChng20, rlR8Chng20, rlR4Chng20, rlR8AllChng20, rlR4AllChng20,\
+    relChngDiffCnst20, rlR8Cnst20, rlR4Cnst20, rlR8AllCnst20, rlR4AllCnst20\
+          = pickle.load(fl)
+    fl.close()
+  else:
+    relChngDiffChng15, rlR8Chng15, rlR4Chng15, rlR8AllChng15, rlR4AllChng15 = ldEnsmbl.loadWlVsScenChangeYMax(warmingLev=1.5, retPer=15,
+               threshold=1., flpattern='projection_dis_{scen}_{mdl}_wuChang_statistics.nc', rlVarName='year_min')
+    relChngDiffCnst15, rlR8Cnst15, rlR4Cnst15, rlR8AllCnst15, rlR4AllCnst15 = ldEnsmbl.loadWlVsScenChangeYMax(warmingLev=1.5, retPer=15,
+               threshold=1., flpattern='projection_dis_{scen}_{mdl}_wuConst_statistics.nc', rlVarName='year_min')
+    relChngDiffChng20, rlR8Chng20, rlR4Chng20, rlR8AllChng20, rlR4AllChng20 = ldEnsmbl.loadWlVsScenChangeYMax(warmingLev=2.0, retPer=15,
+               threshold=1., flpattern='projection_dis_{scen}_{mdl}_wuChang_statistics.nc', rlVarName='year_min')
+    relChngDiffCnst20, rlR8Cnst20, rlR4Cnst20, rlR8AllCnst20, rlR4AllCnst20 = ldEnsmbl.loadWlVsScenChangeYMax(warmingLev=2.0, retPer=15,
+               threshold=1., flpattern='projection_dis_{scen}_{mdl}_wuConst_statistics.nc', rlVarName='year_min')
+    cacheLst = [
+        relChngDiffChng15, rlR8Chng15, rlR4Chng15, rlR8AllChng15, rlR4AllChng15,
+        relChngDiffCnst15, rlR8Cnst15, rlR4Cnst15, rlR8AllCnst15, rlR4AllCnst15,
+        relChngDiffChng20, rlR8Chng20, rlR4Chng20, rlR8AllChng20, rlR4AllChng20,
+        relChngDiffCnst20, rlR8Cnst20, rlR4Cnst20, rlR8AllCnst20, rlR4AllCnst20]
+    fl = open(cacheFlPth, 'w')
+    pickle.dump(cacheLst, fl)
+    fl.close()
+
+  mp = None
+  fig15, mp = plotFigureDiff(rlR8Cnst15, rlR8Chng15, rlR4Cnst15, rlR4Chng15, 'Dynamic - static w.u., y. min. $1.5^\circ$. % pts', mp=mp)
+  fig20, mp = plotFigureDiff(rlR8Cnst20, rlR8Chng20, rlR4Cnst20, rlR4Chng20, 'Dynamic - static w.u., y. min. $2.0^\circ$. % pts', mp=mp)
+
+  fig15.savefig(figFlNamePattern.format(wl='15'), dpi=300)
+  fig20.savefig(figFlNamePattern.format(wl='20'), dpi=300)
+
+  plt.show()
+
   
 if __name__ == '__main__':
-  plotEnsembleStaticVsDynamicDiffMin()
+  plotEnsembleStaticVsDynamicDiffMin_ymin()
 

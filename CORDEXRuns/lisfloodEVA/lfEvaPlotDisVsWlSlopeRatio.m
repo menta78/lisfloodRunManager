@@ -5,7 +5,7 @@ outPng = fullfile(outPlotDir, ['wlVsDisSlopeMap.png']);
 ncfileDis = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/lisfloodEVA/test/projection_dis_rcp85_CLMcom-CCLM4-8-17_BC_MPI-M-MPI-ESM-LR_wuConst_statistics.nc';
 ncfileWl = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/lisfloodEVA/test/projection_wl_rcp85_CLMcom-CCLM4-8-17_BC_MPI-M-MPI-ESM-LR_wuConst_statistics.nc';
 
-plotFigure = true;
+plotFigure = false;
 
 stationMsrsJsOpFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/waterLevel/allStationMeasurements_operational.json';
 stationMsrsJsOpCacheFile = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/verifyOutput/waterLevel/allStationMeasurements_operational.mat';

@@ -355,3 +355,81 @@ def loadMdlsAtWl(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLe
   return bsln, rl_r8, rl_r4, retper_
 
 
+
+def loadWlVsScenChangeYMax(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, retPer=100, 
+  threshold=0, rlVarName='year_max', windowHalfSize=10, flpattern='projection_dis_{scen}_{mdl}_wuChang_statistics.nc'):
+  # computes the mean relative change
+
+  wlyR8 = getWarmingLevels('rcp85', warmingLev)
+  wlyR4 = getWarmingLevels('rcp45', warmingLev)
+
+  dsuparea = netCDF4.Dataset('upArea.nc')
+  upArea = dsuparea.variables['upArea'][:].transpose()
+  dsuparea.close()
+
+  models = wlyR8.keys()
+  # menta
+ #models = [models[0], models[1]]
+  tamask, _, _ = getAfricaAndTurkeyMask()
+  tamask = tamask.transpose()
+
+  rl_r4 = []
+  rl_r8 = [] 
+  for mdl, imdl in zip(models, range(len(models))):
+    print('model ' + mdl)
+    flr8 = flpattern.format(scen='rcp85', mdl=mdl)
+    flr8pth = os.path.join(ncDir, flr8)
+    flr4 = flpattern.format(scen='rcp45', mdl=mdl)
+    flr4pth = os.path.join(ncDir, flr4)
+
+    r8year = wlyR8[mdl]
+    print('  rcp85 w.l. year: ' + str(r8year))
+    r4year = wlyR4[mdl]
+    print('  rcp45 w.l. year: ' + str(r4year))
+
+    hsz = windowHalfSize
+
+    print('  loading file ' + flr8pth)
+    ds = netCDF4.Dataset(flr8pth)
+    year_ = ds.variables['year_all'][:]
+    yIndxBsln = np.where(year_ == bslnYear)[0][0]
+    rlBslnR8 = np.nanmean(ds.variables[rlVarName][yIndxBsln-hsz:yIndxBsln+hsz, :, :], 0)
+    yIndx = np.where(year_==r8year)[0][0]
+    rlR8 = np.nanmean(ds.variables[rlVarName][yIndx-hsz:yIndx+hsz, :, :], 0)
+    ds.close()
+    r8RelChng = (rlR8-rlBslnR8)/rlBslnR8
+    if threshold > 0:
+      cnd = rlBslnR8 < threshold
+      r8RelChng[cnd] = np.nan
+     #r8RelChng[r8RelChng < -.15] = np.nan
+
+    print('  loading file ' + flr4pth)
+    ds = netCDF4.Dataset(flr4pth)
+   #rlBslnR4 = ds.variables[rlVarName][rpIndx, yIndxBsln, :, :]
+    rlBslnR4 = rlBslnR8
+    yIndx = np.where(year_==r4year)[0][0]
+    rlR4 = np.nanmean(ds.variables[rlVarName][yIndx-hsz:yIndx+hsz, :, :], 0)
+    ds.close()
+    r4RelChng = (rlR4-rlBslnR4)/rlBslnR4
+    if threshold > 0:
+      cnd = rlBslnR4 < threshold
+      r4RelChng[cnd] = np.nan
+     #r4RelChng[r4RelChng < -.15] = np.nan
+
+    r8RelChng[upArea < 1e9] = np.nan
+    r4RelChng[upArea < 1e9] = np.nan
+
+    r8RelChng[~tamask] = np.nan
+    r4RelChng[~tamask] = np.nan
+
+    rl_r8.append(r8RelChng)
+    rl_r4.append(r4RelChng)
+
+  rl_r8 = np.array(rl_r8)
+  rl_r4 = np.array(rl_r4)
+
+  relChngDiff = np.nanmean(rl_r8-rl_r4, 0)
+  relChngDiff[~tamask] = np.nan
+
+  return relChngDiff, np.nanmean(rl_r8, 0), np.nanmean(rl_r4, 0), rl_r8, rl_r4
+
