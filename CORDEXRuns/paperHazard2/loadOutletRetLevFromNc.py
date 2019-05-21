@@ -58,7 +58,7 @@ def loadOutletRetLevsFromDir(ncDir, ncFilePattern, returnPeriod, ncOutletPth='')
 
 
 
-def loadAllRetLevFromNc(ncEvaMapPth, returnPeriod, maskOutAfricaAndTurkey=True, ncvar='rl'):
+def loadAllRetLevFromNc(ncEvaMapPth, returnPeriod, maskOutAfricaAndTurkey=True, maskOutSmallCatch=True, ncvar='rl'):
   disDs = netCDF4.Dataset(ncEvaMapPth)
   year = disDs.variables['year'][:]
   retper = disDs.variables['return_period'][:]
@@ -70,7 +70,37 @@ def loadAllRetLevFromNc(ncEvaMapPth, returnPeriod, maskOutAfricaAndTurkey=True, 
     msk = np.tile(msk.transpose(), [rl.shape[0], 1, 1])
     rl[~msk] = np.nan
 
+  if maskOutSmallCatch:
+    dsuparea = netCDF4.Dataset('upArea.nc')
+    upArea = dsuparea.variables['upArea'][:]
+    dsuparea.close()
+    msk = upArea > 1e9
+    msk = np.tile(msk.transpose(), [rl.shape[0], 1, 1])
+    rl[~msk] = np.nan
+
   return year, rl
+
+
+
+def loadYearlyMeanFromNc(ncEvaMapPth, maskOutAfricaAndTurkey=True, maskOutSmallCatch=True):
+  disDs = netCDF4.Dataset(ncEvaMapPth)
+  year = disDs.variables['year_all'][:]
+  vl = disDs.variables['year_mean'][:, :, :]
+
+  if maskOutAfricaAndTurkey:
+    msk, lon, lat = getAfricaAndTurkeyMask()
+    msk = np.tile(msk.transpose(), [vl.shape[0], 1, 1])
+    vl[~msk] = np.nan
+
+  if maskOutSmallCatch:
+    dsuparea = netCDF4.Dataset('upArea.nc')
+    upArea = dsuparea.variables['upArea'][:]
+    dsuparea.close()
+    msk = upArea > 1e9
+    msk = np.tile(msk.transpose(), [vl.shape[0], 1, 1])
+    vl[~msk] = np.nan
+
+  return year, vl
 
 
 

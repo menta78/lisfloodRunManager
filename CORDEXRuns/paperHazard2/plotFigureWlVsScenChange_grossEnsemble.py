@@ -7,6 +7,7 @@ import estimateChngSignificanceAndRobustness
 import loadWlVsScenChange as ldEnsmbl
 import getWarmingLevels as gwl
 
+nmodels = -1
 
 def plotRelChngDiff(ax, relChngDiff, mp, txt, cmap='RdBu', vmax=20, vmin=None):
   if mp == None:
@@ -153,8 +154,8 @@ def plotSigma(ax, sigma, relChngDiff, mp, txt, sigmamax=30, signSigmaThreshold1=
     bb = {'boxstyle': 'square,pad=0', 'ec': 'none', 'fc': 'w'}
     plt.annotate(prcTxt1, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=10, bbox=bb)
    #txtpos = mp(-8, 24)
-    txtpos = mp(-24.3, 69.1)
-    plt.annotate(prcTxt2, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=10, bbox=bb)
+   #txtpos = mp(-24.3, 69.1)
+   #plt.annotate(prcTxt2, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=10, bbox=bb)
 
   return pcl, mp
   
@@ -226,8 +227,9 @@ def printStatsByGrossEnsemble(warmingLev=2.0, ncDir='/ClimateRun4/multi-hazard/e
   
 
 
-def plotGrossEnsembles(ncDir='/ClimateRun4/multi-hazard/eva'):
-  outPng = 'wlRelChngGrossEnsembles.png'
+
+def plotGrossEnsembles_highExt(ncDir='/ClimateRun4/multi-hazard/eva'):
+  outPng = 'wlRelChngGrossEnsembles_extHigh.png'
   
   f = plt.figure(figsize=(9,8))
   gs = gridspec.GridSpec(2, 3, width_ratios=[1,1,.05])
@@ -236,39 +238,175 @@ def plotGrossEnsembles(ncDir='/ClimateRun4/multi-hazard/eva'):
 
   warmingLev = 1.5
 
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev)
+  import pdb; pdb.set_trace()
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax0 = plt.subplot(gs[0,0])
   pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=30)
   
-  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
-  sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
-  sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
- #sigma_ratio = sigma/rc_mega
- #sigma_ratio[np.abs(rc_mega)<=.05] = np.nan
+ #sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+ #sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
+ #sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+
   ax1 = plt.subplot(gs[1,0])
   pcl, mp = plotSigma(ax1, sigma*100, rc_mega*100, mp, 'c: $\sigma$ (%) at $' + str(warmingLev) +'^\circ$',
     prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.0f}%')
 
   warmingLev = 2.0
 
-  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev)
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax2 = plt.subplot(gs[0,1])
   pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=30)
   
-  sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
-  sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
-  sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
- #sigma_ratio = sigma/rc_mega
- #sigma_ratio[np.abs(rc_mega)<=.05] = np.nan
+ #sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+ #sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
+ #sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+
   ax3 = plt.subplot(gs[1,1])
   pclSigma, mp = plotSigma(ax3, sigma*100, rc_mega*100, mp, 'd: $\sigma$ (%) at $' + str(warmingLev) +'^\circ$',
     prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{100-wl}}\| > \sigma$: {p:2.0f}%')
   
   cax1 = plt.subplot(gs[0,2])
   cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
-  cb.set_label('$\Delta$ 100-y discharge (%)')
+  cb.set_label('$\Delta$ 100-y high discharge (%)')
+  
+  cax2 = plt.subplot(gs[1,2])
+  cb = plt.colorbar(pclSigma, ax=ax3, cax=cax2)
+  cb.set_label('$\sigma$ (%)')
+
+  ax0.set_aspect('auto')
+  ax1.set_aspect('auto')
+  ax2.set_aspect('auto')
+  ax3.set_aspect('auto')
+  cax1.set_aspect('auto')
+  cax2.set_aspect('auto')
+
+  plt.tight_layout()
+
+  f.savefig(outPng, dpi=300)
+  
+  
+
+
+def plotGrossEnsembles_mean(ncDir='/ClimateRun4/multi-hazard/eva'):
+  outPng = 'wlRelChngGrossEnsembles_mean.png'
+  
+  f = plt.figure(figsize=(9,8))
+  gs = gridspec.GridSpec(2, 3, width_ratios=[1,1,.05])
+
+  mp = None
+
+  warmingLev = 1.5
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadMeanChangesAtWl(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax0 = plt.subplot(gs[0,0])
+  pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=25)
+  
+ #sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+ #sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
+ #sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+
+  ax1 = plt.subplot(gs[1,0])
+  pcl, mp = plotSigma(ax1, sigma*100, rc_mega*100, mp, 'c: $\sigma$ (%) at $' + str(warmingLev) +'^\circ$',
+    prcTxtTmpl = '% of pixel where $\|\Delta \overline{{Q}}\| > \sigma$: {p:2.0f}%', sigmamax=25)
+
+  warmingLev = 2.0
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadMeanChangesAtWl(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax2 = plt.subplot(gs[0,1])
+  pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=25)
+  
+ #sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+ #sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
+ #sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+
+  ax3 = plt.subplot(gs[1,1])
+  pclSigma, mp = plotSigma(ax3, sigma*100, rc_mega*100, mp, 'd: $\sigma$ (%) at $' + str(warmingLev) +'^\circ$',
+    prcTxtTmpl = '% of pixel where $\|\Delta \overline{{Q}}\| > \sigma$: {p:2.0f}%', sigmamax=25)
+  
+  cax1 = plt.subplot(gs[0,2])
+  cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
+  cb.set_label('$\Delta$ Q discharge (%)')
+  
+  cax2 = plt.subplot(gs[1,2])
+  cb = plt.colorbar(pclSigma, ax=ax3, cax=cax2)
+  cb.set_label('$\sigma$ (%)')
+
+  ax0.set_aspect('auto')
+  ax1.set_aspect('auto')
+  ax2.set_aspect('auto')
+  ax3.set_aspect('auto')
+  cax1.set_aspect('auto')
+  cax2.set_aspect('auto')
+
+  plt.tight_layout()
+
+  f.savefig(outPng, dpi=300)
+
+
+
+def plotGrossEnsembles_lowExt(ncDir='/ClimateRun4/multi-hazard/eva'):
+  outPng = 'wlRelChngGrossEnsembles_extLow.png'
+  
+  f = plt.figure(figsize=(9,8))
+  gs = gridspec.GridSpec(2, 3, width_ratios=[1,1,.05])
+
+  mp = None
+
+  warmingLev = 1.5
+
+  retPer = 15
+  rlVarName = 'rl_min'
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, 
+      warmingLev=warmingLev, rlVarName=rlVarName, retPer=retPer,
+      nmodels=nmodels)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax0 = plt.subplot(gs[0,0])
+  pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=50)
+  
+ #sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+ #sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
+ #sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+
+  ax1 = plt.subplot(gs[1,0])
+  pcl, mp = plotSigma(ax1, sigma*100, rc_mega*100, mp, 'c: $\sigma$ (%) at $' + str(warmingLev) +'^\circ$',
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{15-wl}}\| > \sigma$: {p:2.0f}%', sigmamax=50)
+
+  warmingLev = 2.0
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, 
+      warmingLev=warmingLev, rlVarName=rlVarName, retPer=retPer,
+      nmodels=nmodels)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax2 = plt.subplot(gs[0,1])
+  pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=50)
+  
+ #sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+ #sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
+ #sigma = np.sqrt(sigma_im**2. + sigmaT**2.)
+
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+
+  ax3 = plt.subplot(gs[1,1])
+  pclSigma, mp = plotSigma(ax3, sigma*100, rc_mega*100, mp, 'd: $\sigma$ (%) at $' + str(warmingLev) +'^\circ$',
+    prcTxtTmpl = '% of pixel where ${thr}\|\Delta Q_{{15-wl}}\| > \sigma$: {p:2.0f}%', sigmamax=50)
+  
+  cax1 = plt.subplot(gs[0,2])
+  cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
+  cb.set_label('$\Delta$ 15-y low discharge (%)')
   
   cax2 = plt.subplot(gs[1,2])
   cb = plt.colorbar(pclSigma, ax=ax3, cax=cax2)
@@ -367,12 +505,14 @@ def plotErrorDecomposition(ncDir='/ClimateRun4/multi-hazard/eva'):
 
 
 if __name__ == '__main__':
- #plotGrossEnsembles()
-  plotGrossEnsembles(ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
+ #plotGrossEnsembles_highExt()
+ #plotGrossEnsembles_lowExt()
+  plotGrossEnsembles_mean()
+ #plotGrossEnsembles(ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #printStatsByScenEnsemble('rcp85', 1.5)
  #printStatsByScenEnsemble('rcp85', 1.5, ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #printStatsByGrossEnsemble(1.5)
  #printStatsByGrossEnsemble(1.5, ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #plotErrorDecomposition()
  #plotErrorDecomposition(ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
- #plt.show()
+  plt.show()

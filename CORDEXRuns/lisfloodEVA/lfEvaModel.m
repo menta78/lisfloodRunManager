@@ -58,6 +58,7 @@ try
     
   if exist(retLevNcOutFilePath, 'file') && skipExistingFiles
     disp(['          file ' retLevNcOutFilePath ' already exists. Skipping']);
+    return;
   end
 
   disp('allocating output ...');
@@ -80,6 +81,8 @@ try
   locationGEVMin = ones(ny, nx, nyrout)*nan;
   locationGEVErrMin = ones(ny, nx, nyrout)*nan;
   yMin = ones(ny, nx, nyrall)*nan;
+  
+  yMean = ones(ny, nx, nyrall)*nan;
 
   nsubx = ceil(nx/dx);
   nsuby = ceil(ny/dy);
@@ -117,6 +120,9 @@ try
       retLevGEVMin_(cnd0) = 0;
       evaDataMin.retLevErrGEV(cnd0) = 0;
       
+      vlsYMean = tsEvaComputeAnnualMeanMtx(tmstmp, permute(vls, [3, 1, 2]));
+      vlsYMean = permute(vlsYMean, [3, 2, 1]);
+      
       fprintf('\n');
       toc;
       disp('eva on chunk complete. Assigning results to the final output')
@@ -140,6 +146,14 @@ try
       locationGEVMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = -evaDataMin.locationGEV;
       locationGEVErrMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMin.locationGEVErr;
       yMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = -evaDataMin.yMax;
+      
+      if size(yMean, 3) > size(vlsYMean, 3)
+        yMean(iLatStart:iLatEnd, iLonStart:iLonEnd, 1:size(vlsYMean, 3)) = vlsYMean;
+      elseif size(yMean, 3) < size(vlsYMean, 3)
+        yMean(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = vlsYMean(:,:,1:size(yMean));
+      else
+        yMean(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = vlsYMean;
+      end
       
       xx(iLonStart:iLonEnd) = xx_;
       yy(iLatStart:iLatEnd) = yy_;
@@ -209,6 +223,13 @@ try
   
   nccreate(retLevNcOutFilePath, 'year_min', 'dimensions', {'y', ny, 'x', nx, 'year_all', nyrall});
   ncwrite(retLevNcOutFilePath, 'year_min', yMin);
+
+  
+  % mean
+  nccreate(retLevNcOutFilePath, 'year_mean', 'dimensions', {'y', ny, 'x', nx, 'year_all', nyrall});
+  ncwrite(retLevNcOutFilePath, 'year_mean', yMean);
+
+  
   
   nccreate(retLevNcOutFilePath, 'x', 'dimensions', {'ix', nx});
   ncwrite(retLevNcOutFilePath, 'x', xx);
@@ -231,7 +252,6 @@ try
 
   nccreate(retLevNcOutFilePath, 'eva_type_min', 'datatype', 'char', 'dimensions', {'nchar', 10});
   ncwrite(retLevNcOutFilePath, 'eva_type_min', 'GEV');
-
 
   
   
