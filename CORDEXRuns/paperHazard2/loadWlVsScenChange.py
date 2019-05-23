@@ -11,7 +11,7 @@ from loadOutletRetLevFromNc import getAfricaAndTurkeyMask
 def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, 
     retPer=100, threshold=0, rlVarName='rl',
     flpattern='projection_dis_{scen}_{mdl}_wuConst_statistics.nc',
-    nmodels=-1):
+    nmodels=-1, shapeParamNcVarName='', minNumModels=8):
   # computes the mean relative change
 
   wlyR8 = getWarmingLevels('rcp85', warmingLev)
@@ -20,6 +20,8 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
   dsuparea = netCDF4.Dataset('upArea.nc')
   upArea = dsuparea.variables['upArea'][:].transpose()
   dsuparea.close()
+
+  maskInvalidShapeParamPts = shapeParamNcVarName != ''
 
   models = wlyR8.keys()
   if nmodels > -1:
@@ -31,6 +33,8 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
 
   rl_r4 = []
   rl_r8 = [] 
+  mdlCountR4 = np.zeros(upArea.shape)
+  mdlCountR8 = np.zeros(upArea.shape)
   for mdl, imdl in zip(models, range(len(models))):
     print('model ' + mdl)
     flr8 = flpattern.format(scen='rcp85', mdl=mdl)
@@ -54,8 +58,13 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
     rlBslnR8 = ds.variables[rlVarName][rpIndx, yIndxBsln, :, :]
     yIndx = np.where(year_==r8yearInf)[0][0]
     rlR8_ = ds.variables[rlVarName][rpIndx, yIndx:yIndx+2, :, :]
-    ds.close()
     rlR8 = interp1d(year_[yIndx:yIndx+2], rlR8_, axis=0)(r8year)
+    if maskInvalidShapeParamPts:
+      shapeParam = ds.variables[shapeParamNcVarName][:]
+      cnd = shapeParam <= -.4
+      rlBslnR8[cnd] = np.nan
+      rlR8[cnd] = np.nan
+    ds.close()
     r8RelChng = (rlR8-rlBslnR8)/rlBslnR8
     if threshold > 0:
       cnd = rlBslnR8 < threshold
@@ -68,8 +77,13 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
    #rlBslnR4 = rlBslnR8
     yIndx = np.where(year_==r4yearInf)[0][0]
     rlR4_ = ds.variables[rlVarName][rpIndx, yIndx:yIndx+2, :, :]
-    ds.close()
     rlR4 = interp1d(year_[yIndx:yIndx+2], rlR4_, axis=0)(r4year)
+    if maskInvalidShapeParamPts:
+      shapeParam = ds.variables[shapeParamNcVarName][:]
+      cnd = shapeParam <= -.4
+      rlBslnR4[cnd] = np.nan
+      rlR4[cnd] = np.nan
+    ds.close()
     r4RelChng = (rlR4-rlBslnR4)/rlBslnR4
     if threshold > 0:
       cnd = rlBslnR4 < threshold
@@ -84,12 +98,19 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
 
     rl_r8.append(r8RelChng)
     rl_r4.append(r4RelChng)
+    
+    mdlCountR8 += ~np.isnan(r8RelChng)
+    mdlCountR4 += ~np.isnan(r4RelChng)
 
   rl_r8 = np.array(rl_r8)
   rl_r4 = np.array(rl_r4)
 
   relChngDiff = np.nanmean(rl_r8-rl_r4, 0)
   relChngDiff[~tamask] = np.nan
+  
+  mdlCountMskR8 = mdlCountR8 >= minNumModels
+  mdlCountMskR4 = mdlCountR4 >= minNumModels
+  relChngDiff[np.logical_or(~mdlCountMskR8, ~mdlCountMskR4)] = np.nan
 
   return relChngDiff, np.nanmean(rl_r8, 0), np.nanmean(rl_r4, 0), rl_r8, rl_r4
 

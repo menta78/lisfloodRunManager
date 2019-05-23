@@ -238,7 +238,6 @@ def plotGrossEnsembles_highExt(ncDir='/ClimateRun4/multi-hazard/eva'):
 
   warmingLev = 1.5
 
-  import pdb; pdb.set_trace()
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax0 = plt.subplot(gs[0,0])
@@ -370,7 +369,7 @@ def plotGrossEnsembles_lowExt(ncDir='/ClimateRun4/multi-hazard/eva'):
   rlVarName = 'rl_min'
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, 
       warmingLev=warmingLev, rlVarName=rlVarName, retPer=retPer,
-      nmodels=nmodels)
+      nmodels=nmodels, threshold=.1)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax0 = plt.subplot(gs[0,0])
   pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=50)
@@ -389,7 +388,7 @@ def plotGrossEnsembles_lowExt(ncDir='/ClimateRun4/multi-hazard/eva'):
 
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, 
       warmingLev=warmingLev, rlVarName=rlVarName, retPer=retPer,
-      nmodels=nmodels)
+      nmodels=nmodels, threshold=.1)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax2 = plt.subplot(gs[0,1])
   pclChng, mp = plotRelChngDiff(ax2, rc_mega, mp, 'b: $\Delta$ RCP all at $' + str(warmingLev) +'^\circ$', vmax=50)
@@ -506,8 +505,8 @@ def plotErrorDecomposition(ncDir='/ClimateRun4/multi-hazard/eva'):
 
 if __name__ == '__main__':
  #plotGrossEnsembles_highExt()
- #plotGrossEnsembles_lowExt()
-  plotGrossEnsembles_mean()
+  plotGrossEnsembles_lowExt()
+ #plotGrossEnsembles_mean()
  #plotGrossEnsembles(ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #printStatsByScenEnsemble('rcp85', 1.5)
  #printStatsByScenEnsemble('rcp85', 1.5, ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
