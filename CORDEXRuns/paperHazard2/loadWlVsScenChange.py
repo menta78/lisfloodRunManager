@@ -105,12 +105,16 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
   rl_r8 = np.array(rl_r8)
   rl_r4 = np.array(rl_r4)
 
-  relChngDiff = np.nanmean(rl_r8-rl_r4, 0)
-  relChngDiff[~tamask] = np.nan
-  
   mdlCountMskR8 = mdlCountR8 >= minNumModels
   mdlCountMskR4 = mdlCountR4 >= minNumModels
-  relChngDiff[np.logical_or(~mdlCountMskR8, ~mdlCountMskR4)] = np.nan
+  mskR8 = np.tile(mdlCountMskR8, [rl_r8.shape[0], 1, 1])
+  mskR4 = np.tile(mdlCountMskR4, [rl_r8.shape[0], 1, 1])
+
+  rl_r8[mskR8 != 1] = np.nan
+  rl_r4[mskR4 != 1] = np.nan
+
+  relChngDiff = np.nanmean(rl_r8-rl_r4, 0)
+  relChngDiff[~tamask] = np.nan
 
   return relChngDiff, np.nanmean(rl_r8, 0), np.nanmean(rl_r4, 0), rl_r8, rl_r4
 
@@ -527,6 +531,101 @@ def loadWlVsScenChangeYMax(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995,
 
     r8RelChng[upArea < 1e9] = np.nan
     r4RelChng[upArea < 1e9] = np.nan
+
+    r8RelChng[~tamask] = np.nan
+    r4RelChng[~tamask] = np.nan
+
+    rl_r8.append(r8RelChng)
+    rl_r4.append(r4RelChng)
+
+  rl_r8 = np.array(rl_r8)
+  rl_r4 = np.array(rl_r4)
+
+  relChngDiff = np.nanmean(rl_r8-rl_r4, 0)
+  relChngDiff[~tamask] = np.nan
+
+  return relChngDiff, np.nanmean(rl_r8, 0), np.nanmean(rl_r4, 0), rl_r8, rl_r4
+
+
+
+def loadMeanPrecipitationChangesAtWl(ncRootDir='/DATA/ClimateData/cordexEurope/yearlymeans/', bslnYear=1995, warmingLev=2, 
+    threshold=0,
+    flname='pr.nc',
+    nmodels=-1, timeWindowHalfSize=15):
+  # computes the mean relative change
+
+  wlyR8 = getWarmingLevels('rcp85', warmingLev)
+  wlyR4 = getWarmingLevels('rcp45', warmingLev)
+
+  models = wlyR8.keys()
+  if nmodels > -1:
+    models = models[:nmodels]
+
+  tamask, _, _ = getAfricaAndTurkeyMask()
+  tamask = tamask
+
+  rlVarName1='pr'
+  rlVarname2='prAdjust'
+
+  rl_r4 = []
+  rl_r8 = [] 
+  for mdl, imdl in zip(models, range(len(models))):
+    print('model ' + mdl)
+    flhistpth = os.path.join(ncRootDir, mdl, 'historical', flname)
+    flr8pth = os.path.join(ncRootDir, mdl, 'rcp85', flname)
+    flr4pth = os.path.join(ncRootDir, mdl, 'rcp45', flname)
+
+    r8year = wlyR8[mdl]
+    r4year = wlyR4[mdl]
+
+    print('  loading file ' + flhistpth)
+    ds = netCDF4.Dataset(flhistpth)
+    rlVarName = 'pr' if 'pr' in ds.variables else 'prAdjust'
+    tmnc = ds.variables['time']
+    tm = netCDF4.num2date(tmnc[:], tmnc.units, tmnc.calendar)
+    yearHist = np.array([t.year for t in tm])
+    yIndxBsln = np.where(yearHist == bslnYear)[0][0]
+    minIndx = np.max([yIndxBsln-timeWindowHalfSize, 0])
+    maxIndx = np.min([yIndxBsln+timeWindowHalfSize, len(yearHist)])
+    rlBsln = np.nanmean(ds.variables[rlVarName][minIndx:maxIndx, :, :], 0)
+    ds.close()
+
+    print('  loading file ' + flr8pth)
+    ds = netCDF4.Dataset(flr8pth)
+    rlVarName = 'pr' if 'pr' in ds.variables else 'prAdjust'
+    tmnc = ds.variables['time']
+    tm = netCDF4.num2date(tmnc[:], tmnc.units, tmnc.calendar)
+    yearR = np.array([t.year for t in tm])
+    yIndx = np.where(yearR==r8year)[0][0]
+    minIndx = np.max([yIndx-timeWindowHalfSize, 0])
+    maxIndx = np.min([yIndx+timeWindowHalfSize, len(yearR)])
+    rlR8 = np.nanmean(ds.variables[rlVarName][minIndx:maxIndx, :, :], 0)
+    r8RelChng = (rlR8-rlBsln)/rlBsln
+    if threshold > 0:
+      cnd = rlBslnR8 < threshold
+      r8RelChng[cnd] = np.nan
+     #r8RelChng[r8RelChng < -.15] = np.nan
+    ds.close()
+
+    print('  loading file ' + flr4pth)
+    ds = netCDF4.Dataset(flr4pth)
+    rlVarName = 'pr' if 'pr' in ds.variables else 'prAdjust'
+    tmnc = ds.variables['time']
+    tm = netCDF4.num2date(tmnc[:], tmnc.units, tmnc.calendar)
+    yearR = np.array([t.year for t in tm])
+    yIndx = np.where(yearR==r4year)[0][0]
+    minIndx = np.max([yIndx-timeWindowHalfSize, 0])
+    maxIndx = np.min([yIndx+timeWindowHalfSize, len(yearR)])
+    rlR4 = np.nanmean(ds.variables[rlVarName][minIndx:maxIndx, :, :], 0)
+    r4RelChng = (rlR4-rlBsln)/rlBsln
+    if threshold > 0:
+      cnd = rlBslnR4 < threshold
+      r4RelChng[cnd] = np.nan
+     #r4RelChng[r4RelChng < -.15] = np.nan
+    ds.close()
+
+   #r8RelChng[upArea < 1e9] = np.nan
+   #r4RelChng[upArea < 1e9] = np.nan
 
     r8RelChng[~tamask] = np.nan
     r4RelChng[~tamask] = np.nan

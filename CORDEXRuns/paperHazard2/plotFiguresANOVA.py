@@ -116,6 +116,13 @@ def anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all):
   return sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize
 
 
+def printAnovaStats(sigmaTot, sigmaWithin, sigmaBetween):
+  sw = np.nanmean(sigmaWithin**2/sigmaTot**2 *100.)
+  sb = np.nanmean(sigmaBetween**2/sigmaTot**2 *100.)
+  print('  sigma_within: ' + str(sw) + '%')
+  print('  sigma_between: ' + str(sb) + '%')
+
+
 
 def plotFigureANOVA(varType='extHigh', ncDir='/ClimateRun4/multi-hazard/eva'):
  #varType can be extHigh, extLow, mean
@@ -146,6 +153,7 @@ def plotFigureANOVA(varType='extHigh', ncDir='/ClimateRun4/multi-hazard/eva'):
     sigmaMax = 50
 
   sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
+  printAnovaStats(sigmaTot, sigmaWithin, sigmaBetween)
 
   ax00 = plt.subplot(gs[0, 0])
   plt00, mp = plotSigma(ax00, sigmaWithin*100, mp, 'a: $\sigma_{within}, 1.5^\circ C$', txt2=descrTxt, sigmamax=sigmaMax)  
@@ -166,6 +174,7 @@ def plotFigureANOVA(varType='extHigh', ncDir='/ClimateRun4/multi-hazard/eva'):
     relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels, rlVarName='rl_min', retPer=15, threshold=.1)
 
   sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
+  printAnovaStats(sigmaTot, sigmaWithin, sigmaBetween)
 
   ax01 = plt.subplot(gs[0, 1])
   plt01, mp = plotSigma(ax01, sigmaWithin*100, mp, 'b: $\sigma_{within}, 2.0^\circ C$', sigmamax=sigmaMax)  
@@ -269,7 +278,7 @@ def plotEnglandPoints():
 
 if __name__ == '__main__':
   import pdb; pdb.set_trace()
-  plotFigureANOVA(varType='mean')
+ #plotFigureANOVA(varType='mean')
  #plotFigureANOVA(varType='extHigh')
- #plotFigureANOVA(varType='extLow')
+  plotFigureANOVA(varType='extLow')
  #plotEnglandPoints()
