@@ -501,11 +501,109 @@ def plotErrorDecomposition(ncDir='/ClimateRun4/multi-hazard/eva'):
 
 
 
+def plotGrossEnsembleChange(ncDir='/ClimateRun4/multi-hazard/eva'):
+  outPng = 'wlRelChngGrossEnsembles.png'
+  
+  f = plt.figure(figsize=(9, 12))
+  gs = gridspec.GridSpec(3, 3, width_ratios=[1,1,.05])
+
+  mp = None
+
+
+  def writeSigmaRatioTxt(ax, sigma, relChng, varname):
+    sigma_ratio = sigma/np.abs(relChng)
+    percSign = float(np.nansum(sigma_ratio <= 1))/np.nansum(np.logical_not(np.isnan(sigma_ratio)))
+    prcTxtTmpl = '% of pixel where $\|{varname}\| > \sigma$: {p:2.0f}%'
+    prcTxt = prcTxtTmpl.format(varname=varname, p=percSign*100)
+   #prcTxt = '% of pixel where $\|\Delta ' + varname + '\| > \sigma$: {p:2.0f}%'.format(p=percSign*100)
+    plt.axes(ax)
+    txtpos = mp(-24.3, 70.3)
+    bb = {'boxstyle': 'square,pad=0', 'ec': 'none', 'fc': 'w'}
+    plt.annotate(prcTxt, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=10, bbox=bb)
+
+
+  warmingLev = 1.5
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax00 = plt.subplot(gs[0,0])
+  pcl, mp = plotRelChngDiff(ax00, rc_mega, mp, 'a: $\Delta Q_{H100}$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  writeSigmaRatioTxt(ax00, sigma, rc_mega, '\Delta Q_{H100}')
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadMeanChangesAtWl(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax10 = plt.subplot(gs[1,0])
+  pcl, mp = plotRelChngDiff(ax10, rc_mega, mp, 'b: $\Delta Q_M$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  writeSigmaRatioTxt(ax10, sigma, rc_mega, '\Delta Q_M')
+
+  retPer = 15
+  rlVarName = 'rl_min'
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, 
+      warmingLev=warmingLev, rlVarName=rlVarName, retPer=retPer,
+      nmodels=nmodels, threshold=.1)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax20 = plt.subplot(gs[2,0])
+  pcl, mp = plotRelChngDiff(ax20, rc_mega, mp, 'c: $\Delta Q_{L15}$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  writeSigmaRatioTxt(ax20, sigma, rc_mega, '\Delta Q_{L15}')
+  
+
+  warmingLev = 2.0
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax01 = plt.subplot(gs[0,1])
+  pcl, mp = plotRelChngDiff(ax01, rc_mega, mp, 'd: $\Delta Q_{H100}$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  writeSigmaRatioTxt(ax01, sigma, rc_mega, '\Delta Q_{H100}')
+
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadMeanChangesAtWl(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax11 = plt.subplot(gs[1,1])
+  pcl, mp = plotRelChngDiff(ax11, rc_mega, mp, 'e: $\Delta Q_M$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  writeSigmaRatioTxt(ax11, sigma, rc_mega, '\Delta Q_{H100}')
+
+  retPer = 15
+  rlVarName = 'rl_min'
+  relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, 
+      warmingLev=warmingLev, rlVarName=rlVarName, retPer=retPer,
+      nmodels=nmodels, threshold=.1)
+  rc_mega = (rc_r8 + rc_r4)/2.
+  ax21 = plt.subplot(gs[2,1])
+  pcl, mp = plotRelChngDiff(ax21, rc_mega, mp, 'f: $\Delta Q_{L15}$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  writeSigmaRatioTxt(ax21, sigma, rc_mega, '\Delta Q_M')
+
+  cax00 = plt.subplot(gs[:,2])
+  cb = plt.colorbar(pcl, ax=ax21, cax=cax00)
+  cb.set_label('%', fontsize=13)
+  cb.ax.tick_params(labelsize=11)
+  sigma = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
+  writeSigmaRatioTxt(ax21, sigma, rc_mega, '\Delta Q_{L15}')
+
+  ax00.set_aspect('auto')
+  ax10.set_aspect('auto')
+  ax20.set_aspect('auto')
+  ax01.set_aspect('auto')
+  ax11.set_aspect('auto')
+  ax21.set_aspect('auto')
+  cax00.set_aspect('auto')
+
+  plt.tight_layout()
+
+  f.savefig(outPng, dpi=300)
+
+
 
 if __name__ == '__main__':
+  import pdb; pdb.set_trace()
  #plotGrossEnsembles_highExt()
-  plotGrossEnsembles_lowExt()
+ #plotGrossEnsembles_lowExt()
  #plotGrossEnsembles_mean()
+  plotGrossEnsembleChange()
  #plotGrossEnsembles(ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #printStatsByScenEnsemble('rcp85', 1.5)
  #printStatsByScenEnsemble('rcp85', 1.5, ncDir='/ClimateRun/menta/eva_50y_timeWindow/')

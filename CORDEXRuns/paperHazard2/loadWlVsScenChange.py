@@ -31,6 +31,9 @@ def loadWlVsScenChange(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, war
   tamask, _, _ = getAfricaAndTurkeyMask()
   tamask = tamask.transpose()
 
+  if minNumModels > nmodels:
+    minNumModels = nmodels
+
   rl_r4 = []
   rl_r8 = [] 
   mdlCountR4 = np.zeros(upArea.shape)
