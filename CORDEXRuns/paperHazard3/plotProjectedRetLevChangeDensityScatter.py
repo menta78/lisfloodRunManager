@@ -30,7 +30,7 @@ DMI-HIRHAM5-ICHEC-EC-EARTH_BC
 KNMI-RACMO22E-ICHEC-EC-EARTH_BC
 """
 
-def plotSingleModel(ax, relChngR8, relChngR4, modelName, plotRegression=False, showLegend=False, densityBins=70, lim=None, **kwargs):
+def plotSingleModel(ax, relChngR8, relChngR4, modelName, plotRegression=False, plotPPGraph=False, showLegend=False, densityBins=70, lim=None, **kwargs):
   cnd = np.logical_and(
            np.logical_and(
               np.logical_and(~np.isnan(relChngR8), ~np.isnan(relChngR4)),
@@ -86,12 +86,13 @@ def plotSingleModel(ax, relChngR8, relChngR4, modelName, plotRegression=False, s
   xlim = plt.xlim()
   ylim = plt.ylim()
 
-  prcn = np.linspace(.5,99.5)
-  nnchng = relChngR8[np.logical_not(np.isnan(relChngR8))]*100
-  prcntl8 = np.percentile(nnchng, prcn)
-  nnchng = relChngR4[np.logical_not(np.isnan(relChngR4))]*100
-  prcntl4 = np.percentile(nnchng, prcn)
-  prcntPlt = plt.plot(prcntl4, prcntl8, 'red', linewidth=2, label='p-p line')
+  if plotPPGraph:
+    prcn = np.linspace(.5,99.5)
+    nnchng = relChngR8[np.logical_not(np.isnan(relChngR8))]*100
+    prcntl8 = np.percentile(nnchng, prcn)
+    nnchng = relChngR4[np.logical_not(np.isnan(relChngR4))]*100
+    prcntl4 = np.percentile(nnchng, prcn)
+    prcntPlt = plt.plot(prcntl4, prcntl8, 'red', linewidth=2, label='p-p line')
   
 
   nnchng = relChngR8[np.logical_not(np.isnan(relChngR8))]*100
@@ -257,8 +258,10 @@ def plotEnsembles_max(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=100, gs=N
       relChng4lst.append(relChngR4)
 
     ax = plt.subplot(gs[iwl])
-    relChng8 = np.nanmean(np.array(relChng8lst), 0)
-    relChng4 = np.nanmean(np.array(relChng4lst), 0)
+   #relChng8 = np.nanmean(np.array(relChng8lst), 0)
+   #relChng4 = np.nanmean(np.array(relChng4lst), 0)
+    relChng8 = np.nanmedian(np.array(relChng8lst), 0)
+    relChng4 = np.nanmedian(np.array(relChng4lst), 0)
     showLegend = not lgndShown
     dp = plotSingleModel(ax, relChng8, relChng4, 
              str(retPer) + '-year ret. lev.\nextreme high discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$', 
@@ -335,8 +338,10 @@ def plotEnsembles_min(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=15, gs=No
       relChng4lst.append(relChngR4)
 
     ax = plt.subplot(gs[iwl])
-    relChng8 = np.nanmean(np.array(relChng8lst), 0)
-    relChng4 = np.nanmean(np.array(relChng4lst), 0)
+   #relChng8 = np.nanmean(np.array(relChng8lst), 0)
+   #relChng4 = np.nanmean(np.array(relChng4lst), 0)
+    relChng8 = np.nanmedian(np.array(relChng8lst), 0)
+    relChng4 = np.nanmedian(np.array(relChng4lst), 0)
     showLegend = not lgndShown
     dp = plotSingleModel(ax, relChng8, relChng4, 
              str(retPer) + '-year ret. lev.\nextreme low discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$', 
@@ -415,8 +420,11 @@ def plotEnsembles_means(rootDir='/ClimateRun4/multi-hazard/eva/', gs=None, showL
       relChng4lst.append(relChngR4)
 
     ax = plt.subplot(gs[iwl])
-    relChng8 = np.nanmean(np.array(relChng8lst), 0)
-    relChng4 = np.nanmean(np.array(relChng4lst), 0)
+   #relChng8 = np.nanmean(np.array(relChng8lst), 0)
+   #relChng4 = np.nanmean(np.array(relChng4lst), 0)
+    relChng8 = np.nanmedian(np.array(relChng8lst), 0)
+    relChng4 = np.nanmedian(np.array(relChng4lst), 0)
+    import pdb; pdb.set_trace()
     showLegend = not lgndShown
     dp = plotSingleModel(ax, relChng8, relChng4, 
              'mean discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$', 
@@ -462,7 +470,7 @@ if __name__ == '__main__':
  #plotEnsembles(rootDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #plotEnsembles_min(rootDir='/ClimateRun4/multi-hazard/eva/')
  #plotEnsembles_max(rootDir='/ClimateRun4/multi-hazard/eva/')
- #plotEnsembles_means()
-  plotEnsembles()
+  plotEnsembles_means()
+ #plotEnsembles()
   plt.show()
 

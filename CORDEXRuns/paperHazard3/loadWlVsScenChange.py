@@ -2,6 +2,7 @@ import numpy as np
 import os, netCDF4
 from scipy.interpolate import interp1d
 from scipy import stats
+from scipy.ndimage.filters import convolve1d
 
 from getWarmingLevels import getWarmingLevels
 from loadOutletRetLevFromNc import getAfricaAndTurkeyMask
@@ -288,6 +289,99 @@ def loadMeanChangesAtWl(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, wa
 
   relChngDiff = np.nanmean(rl_r8-rl_r4, 0)
   relChngDiff[~tamask] = np.nan
+
+  return relChngDiff, np.nanmean(rl_r8, 0), np.nanmean(rl_r4, 0), rl_r8, rl_r4
+
+
+
+def loadMeanChangesAtWl_nYearsAroundWLYear(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, 
+    threshold=0, rlVarName='year_mean',
+    flpattern='projection_dis_{scen}_{mdl}_wuConst_statistics.nc',
+    nmodels=-1, timeWindowHalfSize=15):
+  # computes the mean relative change
+
+  wlyR8 = getWarmingLevels('rcp85', warmingLev)
+  wlyR4 = getWarmingLevels('rcp45', warmingLev)
+
+  dsuparea = netCDF4.Dataset('upArea.nc')
+  upArea = dsuparea.variables['upArea'][:].transpose()
+  dsuparea.close()
+
+  models = wlyR8.keys()
+  if nmodels > -1:
+    models = models[:nmodels]
+  # menta
+ #models = [models[0], models[1]]
+  tamask, _, _ = getAfricaAndTurkeyMask()
+  tamask = tamask.transpose()
+
+  rl_r4 = []
+  rl_r8 = [] 
+  for mdl, imdl in zip(models, range(len(models))):
+    print('model ' + mdl)
+    flr8 = flpattern.format(scen='rcp85', mdl=mdl)
+    flr8pth = os.path.join(ncDir, flr8)
+    flr4 = flpattern.format(scen='rcp45', mdl=mdl)
+    flr4pth = os.path.join(ncDir, flr4)
+
+    r8year = wlyR8[mdl]
+    r4year = wlyR4[mdl]
+
+    print('  loading file ' + flr8pth)
+    ds = netCDF4.Dataset(flr8pth)
+    year_ = ds.variables['year_all'][:]
+    yIndxBsln = np.where(year_ == bslnYear)[0][0]
+    minIndx = np.max([yIndxBsln-timeWindowHalfSize, 0])
+    maxIndx = np.min([yIndxBsln+timeWindowHalfSize+1, len(year_)])
+    rlBslnR8 = np.nanmean(ds.variables[rlVarName][minIndx:maxIndx, :, :], 0)
+    yIndx = np.where(year_==r8year)[0][0]
+    minIndx = np.max([yIndx-timeWindowHalfSize*2, 0])
+    maxIndx = np.min([yIndx+timeWindowHalfSize*2, len(year_)])
+    rlR8All = ds.variables[rlVarName][minIndx:maxIndx, :, :]
+    convFnct = np.ones([timeWindowHalfSize*2])/(timeWindowHalfSize*2)
+    rlR8RunningMean = convolve1d(rlR8All, convFnct, 0)
+    minIndx, maxIndx = timeWindowHalfSize, timeWindowHalfSize*3+1
+    rlR8RunningMean = rlR8RunningMean[minIndx:maxIndx, :, :]
+    indx = np.arange(0,31,5)
+    rlR8RunningMean = rlR8RunningMean[indx, :, :]
+    rlBslnR8Mtx = np.tile(rlBslnR8, [rlR8RunningMean.shape[0], 1, 1])
+    r8RelChng = (rlR8RunningMean-rlBslnR8Mtx)/rlBslnR8Mtx
+    if threshold > 0:
+      cnd = rlBslnR8 < threshold
+      r8RelChng[cnd] = np.nan
+     #r8RelChng[r8RelChng < -.15] = np.nan
+
+    print('  loading file ' + flr4pth)
+    ds = netCDF4.Dataset(flr4pth)
+    rlBslnR4 = rlBslnR8
+    yIndx = np.where(year_==r4year)[0][0]
+    minIndx = np.max([yIndx-timeWindowHalfSize*2, 0])
+    maxIndx = np.min([yIndx+timeWindowHalfSize*2, len(year_)])
+    rlR4All = ds.variables[rlVarName][minIndx:maxIndx, :, :]
+    convFnct = np.ones([timeWindowHalfSize*2])/(timeWindowHalfSize*2)
+    rlR4RunningMean = convolve1d(rlR4All, convFnct, 0)
+    minIndx, maxIndx = timeWindowHalfSize, timeWindowHalfSize*3+1
+    rlR4RunningMean = rlR4RunningMean[minIndx:maxIndx, :, :]
+    indx = np.arange(0,31,5)
+    rlR4RunningMean = rlR4RunningMean[indx, :, :]
+    rlBslnR4Mtx = np.tile(rlBslnR4, [rlR4RunningMean.shape[0], 1, 1])
+    r4RelChng = (rlR4RunningMean-rlBslnR4Mtx)/rlBslnR4Mtx
+
+    upAreaMtx = np.tile(upArea, [r8RelChng.shape[0], 1, 1])
+    r8RelChng[upAreaMtx < 1e9] = np.nan
+    r4RelChng[upAreaMtx < 1e9] = np.nan
+
+    tamaskMtx = np.tile(tamask, [r8RelChng.shape[0], 1, 1])
+    r8RelChng[~tamaskMtx] = np.nan
+    r4RelChng[~tamaskMtx] = np.nan
+
+    rl_r8.append(r8RelChng)
+    rl_r4.append(r4RelChng)
+
+  rl_r8 = np.array(rl_r8)
+  rl_r4 = np.array(rl_r4)
+
+  relChngDiff = np.nanmean(rl_r8-rl_r4, 0)
 
   return relChngDiff, np.nanmean(rl_r8, 0), np.nanmean(rl_r4, 0), rl_r8, rl_r4
 
@@ -644,3 +738,52 @@ def loadMeanPrecipitationChangesAtWl(ncRootDir='/DATA/ClimateData/cordexEurope/y
 
   return relChngDiff, np.nanmean(rl_r8, 0), np.nanmean(rl_r4, 0), rl_r8, rl_r4
 
+
+
+def loadRetPerAllYears(ncDir='/ClimateRun4/multi-hazard/eva', rlVarName='rl', retPer=100,
+        flpattern='projection_dis_{scen}_{mdl}_wuConst_statistics.nc', nmodels=-1):
+  
+  wlyR8 = getWarmingLevels('rcp85', 2.0)
+  models = wlyR8.keys()
+  if nmodels > -1:
+    models = models[:nmodels]
+
+  dsuparea = netCDF4.Dataset('upArea.nc')
+  upArea = dsuparea.variables['upArea'][:].transpose()
+  dsuparea.close()
+
+  tamask, _, _ = getAfricaAndTurkeyMask()
+  tamask = tamask.transpose()
+  
+  vlsR8 = []
+  vlsR4 = []  
+  for mdl, imdl in zip(models, range(len(models))):
+    print('model ' + mdl)
+
+    flr8 = flpattern.format(scen='rcp85', mdl=mdl)
+    flr8pth = os.path.join(ncDir, flr8)
+    ds = netCDF4.Dataset(flr8pth)
+    yr = ds.variables['year'][:]
+    upAreaMtx = np.tile(upArea, [yr.shape[0], 1, 1])
+    tamaskMtx = np.tile(tamask, [yr.shape[0], 1, 1])
+    retper_ = ds.variables['return_period'][:]
+    rpIndx = np.where(retper_==retPer)[0][0]
+    vl = ds.variables[rlVarName][rpIndx, :, :, :]
+    vl[upAreaMtx < 1e9] = np.nan
+    vl[~tamaskMtx] = np.nan
+    vlsR8.append(vl)
+    ds.close()
+
+    flr4 = flpattern.format(scen='rcp45', mdl=mdl)
+    flr4pth = os.path.join(ncDir, flr4)
+    ds = netCDF4.Dataset(flr4pth)
+    vl = ds.variables[rlVarName][rpIndx, :, :, :]
+    vl[upAreaMtx < 1e9] = np.nan
+    vl[~tamaskMtx] = np.nan
+    vlsR4.append(vl)
+    ds.close()
+
+  vlsR8 = np.array(vlsR8)
+  vlsR4 = np.array(vlsR4)
+
+  return yr, vlsR8, vlsR4, models
