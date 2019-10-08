@@ -1,4 +1,4 @@
-function dt = lfExecuteTsEvaGEV(tmstmp, lonAll, latAll, vlsAll, outYears, returnPeriodsInYears, varargin)
+function dt = lfExecuteTsEvaGEV_pr(tmstmp, lonAll, latAll, vlsAll, outYears, returnPeriodsInYears, varargin)
   args.parObj = [];
   args.nWorker = 12;
   args.tsEvaTimeWindow = 365.25*30; % 30 years
@@ -78,7 +78,8 @@ function dt = lfExecuteTsEvaGEV(tmstmp, lonAll, latAll, vlsAll, outYears, return
         end
 
         [nonStatEvaParams, statTransfData, isValid] = tsEvaNonStationary(timeAndSeries, timeWindow,...
-             'evdType', 'GEV', 'minPeakDistanceInDays', minPeakDistanceInDays, 'potEventsPerYear', 2);
+             'evdType', 'GEV', 'minPeakDistanceInDays', minPeakDistanceInDays, 'potEventsPerYear', 2,...
+             'transfType', 'trendCIPercentile', 'ciPercentile', 90);
 
 
         if ~isValid

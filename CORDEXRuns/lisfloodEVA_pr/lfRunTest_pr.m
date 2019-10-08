@@ -17,7 +17,7 @@ end
 %model = 'CLMcom-CCLM4-8-17_BC_MPI-M-MPI-ESM-LR';
 %model = 'IPSL-INERIS-WRF331F_BC';
 model = 'SMHI-RCA4_BC_MOHC-HadGEM2-ES';
-scenario = 'rcp85';
+scenario = 'rcp45';
 varname = 'pr';
 ncvarname = 'pr';
 

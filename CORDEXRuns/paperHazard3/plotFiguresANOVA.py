@@ -112,15 +112,29 @@ def anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all):
   # comparing the pvalue from the F-distribution
   pValue = stats.f.sf(fValue, freedomDegBetween, freedomDegWithin)
   effectSize = sigmaBetween**2./sigmaTot**2.
+
+  _, pValueTtest = stats.ttest_ind(rc_r8all, rc_r4all, 0)
   
-  return sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize
+  return sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize, pValueTtest
 
 
-def printAnovaStats(sigmaTot, sigmaWithin, sigmaBetween):
+def printAnovaStats(sigmaTot, sigmaWithin, sigmaBetween, pValue, pValueTtest):
   sw = np.nanmean(sigmaWithin**2/sigmaTot**2 *100.)
   sb = np.nanmean(sigmaBetween**2/sigmaTot**2 *100.)
   print('  sigma_within: ' + str(sw) + '%')
   print('  sigma_between: ' + str(sb) + '%')
+
+  cnd = ~np.isnan(pValue)
+  pval_ = pValue[cnd]
+  cnd = pval_ <= .05
+  prc = float(np.sum(cnd))/len(cnd)*100.
+  print('  ANOVA p-value $\leq$ 0.05 ({prc:1.1f}% of pts)'.format(prc=prc))
+
+  cnd = ~np.isnan(pValueTtest)
+  pval_ = pValueTtest[cnd]
+  cnd = pval_ <= .05
+  prc = float(np.sum(cnd))/len(cnd)*100.
+  print('  Ttest p-value $\leq$ 0.05 ({prc:1.1f}% of pts)'.format(prc=prc))
 
 
 
@@ -152,8 +166,8 @@ def plotFigureANOVA(varType='extHigh', ncDir='/ClimateRun4/multi-hazard/eva'):
     descrTxt = 'Low extremes'
     sigmaMax = 50
 
-  sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
-  printAnovaStats(sigmaTot, sigmaWithin, sigmaBetween)
+  sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize, pValueTtest = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
+  printAnovaStats(sigmaTot, sigmaWithin, sigmaBetween, pValue, pValueTtest)
 
   ax00 = plt.subplot(gs[0, 0])
   plt00, mp = plotSigma(ax00, sigmaWithin*100, mp, 'a: $\sigma_{within}, 1.5^\circ C$', txt2=descrTxt, sigmamax=sigmaMax)  
@@ -173,8 +187,8 @@ def plotFigureANOVA(varType='extHigh', ncDir='/ClimateRun4/multi-hazard/eva'):
   elif varType == 'extLow':
     relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels, rlVarName='rl_min', retPer=15, threshold=.1)
 
-  sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
-  printAnovaStats(sigmaTot, sigmaWithin, sigmaBetween)
+  sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize, pValueTtest = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
+  printAnovaStats(sigmaTot, sigmaWithin, sigmaBetween, pValue, pValueTtest)
 
   ax01 = plt.subplot(gs[0, 1])
   plt01, mp = plotSigma(ax01, sigmaWithin*100, mp, 'b: $\sigma_{within}, 2.0^\circ C$', sigmamax=sigmaMax)  
@@ -208,10 +222,10 @@ def plotEnglandPoints():
   warmingLev = 2.0
 
   relChngDiffMean, rc_r8_mean, rc_r4_mean, rc_r8all_mean, rc_r4all_mean = ldEnsmbl.loadMeanChangesAtWl(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
-  _, _, _, pValueMean, _ = anovaAnalysis(relChngDiffMean, rc_r8_mean, rc_r4_mean, rc_r8all_mean, rc_r4all_mean)
+  _, _, _, pValueMean, _, _ = anovaAnalysis(relChngDiffMean, rc_r8_mean, rc_r4_mean, rc_r8all_mean, rc_r4all_mean)
 
   relChngDiffExt, rc_r8_ext, rc_r4_ext, rc_r8all_ext, rc_r4all_ext = ldEnsmbl.loadWlVsScenChange(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels, rlVarName='rl', retPer=100)
-  _, _, _, pValueExt, _ = anovaAnalysis(relChngDiffMean, rc_r8_mean, rc_r4_mean, rc_r8all_mean, rc_r4all_mean)
+  _, _, _, pValueExt, _, _ = anovaAnalysis(relChngDiffMean, rc_r8_mean, rc_r4_mean, rc_r8all_mean, rc_r4all_mean)
 
   dslonlat = netCDF4.Dataset('lonlat.nc')
   lon = dslonlat.variables['lon'][:].transpose()
@@ -278,7 +292,7 @@ def plotEnglandPoints():
 
 if __name__ == '__main__':
   import pdb; pdb.set_trace()
- #plotFigureANOVA(varType='mean')
+  plotFigureANOVA(varType='mean')
  #plotFigureANOVA(varType='extHigh')
-  plotFigureANOVA(varType='extLow')
+ #plotFigureANOVA(varType='extLow')
  #plotEnglandPoints()

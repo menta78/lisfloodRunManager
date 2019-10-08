@@ -110,22 +110,23 @@ def extract1Model(scen, model, inputNcFlPath, outputNcFlPath):
   bslnYrNc.description = 'baseline year'
   bslnYrNc[:] = bslnYear
 
+  bslnRetLevNc = dsout.createVariable('baseline_return_level', 'f4', ('baseline_rp', 'x', 'y'))
+  bslnRetLevNc.description = 'return levels at baseline'
+  bslnRetLevNc[:] = bslnRetLev
+
   retPerNc = dsout.createVariable('baseline_rp_shift', 'f4', ('warming_lev', 'baseline_rp', 'x', 'y'))
   retPerNc.description = 'shifted return periods of the baseline return values (years)'
   retPerNc[:] = outYrRetPer
 
   retLevNc = dsout.createVariable('return_level', 'f4', ('warming_lev', 'baseline_rp', 'x', 'y'))
-  retLevNc.description = 'return levels at years (m**3)'
+  retLevNc.description = 'return levels at warming levels (m**3)'
   retLevNc[:] = outYrRetLev
 
   dsout.close()
   
 
-def loopModels():
-  inputDir = '/ClimateRun4/multi-hazard/eva/'
-  inputFlPattern = 'projection_dis_(rcp45|rcp85)_(.*)_wuConst_statistics.nc'
+def loopModels(inputDir, inputFlPattern, outputDir):
 
-  outputDir = '/ClimateRun4/multi-hazard/eva/eamonn/'
   
   infls = [fl for fl in os.listdir(inputDir) if re.match(inputFlPattern, fl)]
   for fl in infls:
@@ -160,4 +161,18 @@ def plotResults1Mdl():
 
 if __name__ == '__main__':
   import pdb; pdb.set_trace()
-  loopModels()
+
+
+ # discharge x Eamonn
+  inputDir = '/ClimateRun4/multi-hazard/eva/'
+  inputFlPattern = 'projection_dis_(rcp45|rcp85)_(.*)_wuConst_statistics.nc'
+  outputDir = '/ClimateRun4/multi-hazard/eva/eamonn/'
+
+ # precipitations
+  inputDir = '/ClimateRun4/multi-hazard/eva/'
+  inputDir = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/lisfloodEVA_pr/test'
+  inputFlPattern = 'projection_pr_(rcp45|rcp85)_(.*)_statistics.nc'
+  outputDir = '/ClimateRun4/multi-hazard/eva/prFrequencyShift/'
+
+  loopModels(inputDir, inputFlPattern, outputDir)
+

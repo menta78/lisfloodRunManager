@@ -48,7 +48,8 @@ def plotSingleModel(ax, relChngR8, relChngR4, modelName, plotRegression=False, p
     xlm = [np.percentile(rc4, limPercentiles[0]), np.percentile(rc4, limPercentiles[1])]
     ylm = [np.percentile(rc8, limPercentiles[0]), np.percentile(rc8, limPercentiles[1])]
     lim = [min(xlm[0], ylm[0]), max(xlm[1], ylm[1])]
-  dp = ax.hist2d(rc4, rc8, bins=densityBins, range=[lim, lim], cmap='Purples')
+ #dp = ax.hist2d(rc4, rc8, bins=densityBins, range=[lim, lim], cmap='Purples', cmin=0, cmax=75)
+  dp = ax.hist2d(rc4, rc8, bins=densityBins, range=[lim, lim], cmap='Purples', vmin=0, vmax=70)
   plt.xlim(lim)
   plt.ylim(lim)
   plt.grid('on')
@@ -230,8 +231,8 @@ def plotEnsembles_max(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=100, gs=N
   lgndShown = False
   vlsMask = None
   lims = {
-    1.5: [-15, 35],
-    2.0: [-15, 35]
+    1.5: [-10, 30],
+    2.0: [-10, 30]
   }
   for warmingLev, iwl in zip(warmingLevs, range(len(warmingLevs))):
 
@@ -309,8 +310,8 @@ def plotEnsembles_min(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=15, gs=No
 # lims = {1.5: [-24, 60], 2.0: [-39, 80]}
   densityBins = {1.5: 130, 2.0: 130}
   lims = {
-    1.5: [-25, 60],
-    2.0: [-25, 60]
+    1.5: [-25, 70],
+    2.0: [-25, 70]
   }
   for warmingLev, iwl in zip(warmingLevs, range(len(warmingLevs))):
 
@@ -391,8 +392,8 @@ def plotEnsembles_means(rootDir='/ClimateRun4/multi-hazard/eva/', gs=None, showL
 # lims = {1.5: [-24, 60], 2.0: [-39, 80]}
   densityBins = {1.5: 130, 2.0: 130}
   lims = {
-    1.5: [-10, 30],
-    2.0: [-10, 30]
+    1.5: [-10, 35],
+    2.0: [-10, 35]
   }
   for warmingLev, iwl in zip(warmingLevs, range(len(warmingLevs))):
 
@@ -424,7 +425,6 @@ def plotEnsembles_means(rootDir='/ClimateRun4/multi-hazard/eva/', gs=None, showL
    #relChng4 = np.nanmean(np.array(relChng4lst), 0)
     relChng8 = np.nanmedian(np.array(relChng8lst), 0)
     relChng4 = np.nanmedian(np.array(relChng4lst), 0)
-    import pdb; pdb.set_trace()
     showLegend = not lgndShown
     dp = plotSingleModel(ax, relChng8, relChng4, 
              'mean discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$', 
@@ -470,7 +470,7 @@ if __name__ == '__main__':
  #plotEnsembles(rootDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #plotEnsembles_min(rootDir='/ClimateRun4/multi-hazard/eva/')
  #plotEnsembles_max(rootDir='/ClimateRun4/multi-hazard/eva/')
-  plotEnsembles_means()
- #plotEnsembles()
+ #plotEnsembles_means()
+  plotEnsembles()
   plt.show()
 

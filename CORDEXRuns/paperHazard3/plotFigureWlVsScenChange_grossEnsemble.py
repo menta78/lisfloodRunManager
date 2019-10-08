@@ -150,6 +150,17 @@ def printStatsByScenEnsemble(scen='rcp85', warmingLev=2.0, ncDir='/ClimateRun4/m
   
 
 
+
+def printPosNegChanges(warmingLev, relChngDiff):
+  cnd = ~np.isnan(relChngDiff)
+  rlchngdf = relChngDiff[cnd]
+  prcntPos = float(np.sum(rlchngdf > 0))/np.sum(cnd)*100
+  prcntNeg = 100. - prcntPos
+  print('  warming lvl = ' + str(warmingLev))
+  print('    %positive - %negative = ' + str(prcntPos) + ' - ' + str(prcntNeg))
+
+
+
 def printStatsByGrossEnsemble(warmingLev=2.0, ncDir='/ClimateRun4/multi-hazard/eva'):
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadWlVsScenChange(warmingLev=warmingLev, ncDir=ncDir)
   rc_mega = (rc_r8 + rc_r4)/2.
@@ -164,6 +175,7 @@ def printStatsByGrossEnsemble(warmingLev=2.0, ncDir='/ClimateRun4/multi-hazard/e
   print('% sigma_im0**2: ' + str(np.nanmean(sigma_im0_ratio)*100))
   print('% sigma_t**2: ' + str(np.nanmean(sigmaT_ratio)*100))
   print('% sigma_rcpdiff**2: ' + str(np.nanmean(sigma_rcpdiff_ratio)*100))
+  printPosNegChanges(relChngDiff)
   
 
 
@@ -192,6 +204,7 @@ def plotGrossEnsembles_highExt(ncDir='/ClimateRun4/multi-hazard/eva'):
   rc_mega = (rc_r8 + rc_r4)/2.
   ax0 = plt.subplot(gs[0,0])
   pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: $\Delta Q_{H100}$ at $' + str(warmingLev) +'^\circ$', vmax=30)
+  printPosNegChanges(warmingLev, rc_mega)
   
  #sigma_im = np.nanstd(np.concatenate([rc_r8all, rc_r4all], 0), 0)
  #sigmaT = getTimeSigmaGrossEnsemble(warmingLev, ncDir=ncDir)
@@ -214,6 +227,7 @@ def plotGrossEnsembles_highExt(ncDir='/ClimateRun4/multi-hazard/eva'):
   rc_mega = (rc_r8 + rc_r4)/2.
   ax3 = plt.subplot(gs[0,1])
   pclChng, mp = plotRelChngDiff(ax3, rc_mega, mp, 'b: $\Delta Q_{H100}$ at $' + str(warmingLev) +'^\circ$', vmax=30)
+  printPosNegChanges(warmingLev, rc_mega)
 
   sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
   writeSigmaRatioTxt(ax3, sigmaTot, rc_mega, '\Delta Q_{H100}')
@@ -274,6 +288,7 @@ def plotGrossEnsembles_mean(ncDir='/ClimateRun4/multi-hazard/eva'):
   rc_mega = (rc_r8 + rc_r4)/2.
   ax0 = plt.subplot(gs[0,0])
   pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: $\Delta Q_M$ at $' + str(warmingLev) +'^\circ$', vmax=25)
+  printPosNegChanges(warmingLev, rc_mega)
 
   sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
   writeSigmaRatioTxt(ax0, sigmaTot, rc_mega, '\Delta Q_M')
@@ -291,18 +306,19 @@ def plotGrossEnsembles_mean(ncDir='/ClimateRun4/multi-hazard/eva'):
   relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all = ldEnsmbl.loadMeanChangesAtWl(ncDir=ncDir, warmingLev=warmingLev, nmodels=nmodels)
   rc_mega = (rc_r8 + rc_r4)/2.
   ax3 = plt.subplot(gs[0,1])
-  pclChng, mp = plotRelChngDiff(ax3, rc_mega, mp, 'b: $\Delta Q_M$ at $' + str(warmingLev) +'^\circ$', vmax=25)
+  pclChng, mp = plotRelChngDiff(ax3, rc_mega, mp, 'b: $\Delta Q_M$ at $' + str(warmingLev) +'^\circ$', vmax=30)
+  printPosNegChanges(warmingLev, rc_mega)
   
   sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
   writeSigmaRatioTxt(ax3, sigmaTot, rc_mega, '\Delta Q_M')
 
   ax4 = plt.subplot(gs[1,1])
   pclSigma, mp = plotSigma(ax4, sigmaWithin*100, rc_mega*100, mp, 'd: $\sigma_{within}$ (%) at $' + str(warmingLev) +'^\circ$',
-    prcTxtTmpl = '', sigmamax=25)
+    prcTxtTmpl = '', sigmamax=30)
 
   ax5 = plt.subplot(gs[2,1])
   pclSigma, mp = plotSigma(ax5, sigmaBetween*100, rc_mega*100, mp, 'f: $\sigma_{between}$ (%) at $' + str(warmingLev) +'^\circ$',
-    prcTxtTmpl = '', sigmamax=25)
+    prcTxtTmpl = '', sigmamax=30)
   
   cax1 = plt.subplot(gs[0,2])
   cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
@@ -356,6 +372,7 @@ def plotGrossEnsembles_lowExt(ncDir='/ClimateRun4/multi-hazard/eva'):
   rc_mega = (rc_r8 + rc_r4)/2.
   ax0 = plt.subplot(gs[0,0])
   pcl, mp = plotRelChngDiff(ax0, rc_mega, mp, 'a: $\Delta Q_{L15}$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  printPosNegChanges(warmingLev, rc_mega)
 
   sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
   writeSigmaRatioTxt(ax0, sigmaTot, rc_mega, '\Delta Q_{L15}')
@@ -376,6 +393,7 @@ def plotGrossEnsembles_lowExt(ncDir='/ClimateRun4/multi-hazard/eva'):
   rc_mega = (rc_r8 + rc_r4)/2.
   ax3 = plt.subplot(gs[0,1])
   pclChng, mp = plotRelChngDiff(ax3, rc_mega, mp, 'b: $\Delta Q_{{L15}}$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  printPosNegChanges(warmingLev, rc_mega)
   
   sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
   writeSigmaRatioTxt(ax3, sigmaTot, rc_mega, '\Delta Q_{L15}')

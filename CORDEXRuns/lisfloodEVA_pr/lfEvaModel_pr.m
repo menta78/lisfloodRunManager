@@ -1,4 +1,4 @@
-function lfEvaModel(scenario, model, outDir, varargin)
+function lfEvaModel_pr(scenario, model, outDir, varargin)
 
 args.nparworker = 12;
 args.skipExistingFiles = true;

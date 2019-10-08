@@ -297,7 +297,7 @@ def loadMeanChangesAtWl(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, wa
 def loadMeanChangesAtWl_nYearsAroundWLYear(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, 
     threshold=0, rlVarName='year_mean',
     flpattern='projection_dis_{scen}_{mdl}_wuConst_statistics.nc',
-    nmodels=-1, timeWindowHalfSize=15):
+    nmodels=-1, timeWindowHalfSize=15, excludedModels=[]):
   # computes the mean relative change
 
   wlyR8 = getWarmingLevels('rcp85', warmingLev)
@@ -310,8 +310,9 @@ def loadMeanChangesAtWl_nYearsAroundWLYear(ncDir='/ClimateRun4/multi-hazard/eva'
   models = wlyR8.keys()
   if nmodels > -1:
     models = models[:nmodels]
-  # menta
- #models = [models[0], models[1]]
+  for mdl in excludedModels:
+    if mdl in models:
+      models.remove(mdl)
   tamask, _, _ = getAfricaAndTurkeyMask()
   tamask = tamask.transpose()
 
@@ -319,6 +320,7 @@ def loadMeanChangesAtWl_nYearsAroundWLYear(ncDir='/ClimateRun4/multi-hazard/eva'
   rl_r8 = [] 
   for mdl, imdl in zip(models, range(len(models))):
     print('model ' + mdl)
+
     flr8 = flpattern.format(scen='rcp85', mdl=mdl)
     flr8pth = os.path.join(ncDir, flr8)
     flr4 = flpattern.format(scen='rcp45', mdl=mdl)
@@ -741,12 +743,15 @@ def loadMeanPrecipitationChangesAtWl(ncRootDir='/DATA/ClimateData/cordexEurope/y
 
 
 def loadRetPerAllYears(ncDir='/ClimateRun4/multi-hazard/eva', rlVarName='rl', retPer=100,
-        flpattern='projection_dis_{scen}_{mdl}_wuConst_statistics.nc', nmodels=-1):
+        flpattern='projection_dis_{scen}_{mdl}_wuConst_statistics.nc', nmodels=-1, excludedModels=[]):
   
   wlyR8 = getWarmingLevels('rcp85', 2.0)
   models = wlyR8.keys()
   if nmodels > -1:
     models = models[:nmodels]
+  for mdl in excludedModels:
+    if mdl in models:
+      models.remove(mdl)
 
   dsuparea = netCDF4.Dataset('upArea.nc')
   upArea = dsuparea.variables['upArea'][:].transpose()
