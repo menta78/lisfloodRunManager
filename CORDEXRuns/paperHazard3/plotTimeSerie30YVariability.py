@@ -9,6 +9,7 @@ from getWarmingLevels import getWarmingLevels
 
 nmodels = -1
 axFontSize = 14
+positiveChanges = True
 #excludedModels = ['IPSL-INERIS-WRF331F_BC']
 excludedModels = []
 
@@ -66,16 +67,15 @@ def plotTimeSerie30YVariability_hiExt(ax=None, plotXLabel=True, plotYLabel=True,
   wlyR8 = getWarmingLevels('rcp85', warmingLev)
   r8srs = getNYrsTimeSeriesAroundWl(yrs, rpR8, wlyR8, models)
   r8meanWl, r8sigmaWl = getMeanAndSigma(r8srs)
-  cndSignR8 = np.abs(r8meanWl) > r8sigmaWl
   cndPosi = r8meanWl > 0
- #cnd = np.logical_and(cndSignR8, cndPosi)
-  cnd = cndPosi
+  cndNega = r8meanWl < 0
+  cnd = cndPosi if positiveChanges else cndNega
   cndMtx = np.tile(cnd, [r8srs.shape[0], r8srs.shape[1], 1, 1])
   r8srs[~cndMtx] = np.nan
   r8mean_ = np.nanmean(r8srs, 0)
   r8mean = r8mean_.reshape(r8mean_.shape[0], r8mean_.shape[1]*r8mean_.shape[2])
-  r8mean = np.nanmedian(r8mean, 1)
- #r8mean = np.nanmean(r8mean, 1)
+ #r8mean = np.nanmedian(r8mean, 1)
+  r8mean = np.nanmean(r8mean, 1)
 
   r8spmean = r8srs.reshape(r8srs.shape[0], r8srs.shape[1], r8srs.shape[2]*r8srs.shape[3])
   r8spmean = np.nanmean(r8spmean, 2)
@@ -87,15 +87,15 @@ def plotTimeSerie30YVariability_hiExt(ax=None, plotXLabel=True, plotYLabel=True,
   wlyR4 = getWarmingLevels('rcp45', warmingLev)
   r4srs = getNYrsTimeSeriesAroundWl(yrs, rpR4, wlyR4, models)
   r4meanWl, r4sigmaWl = getMeanAndSigma(r4srs)
-  cndSignR4 = np.abs(r4meanWl) > r4sigmaWl
   cndPosi = r4meanWl > 0
-  cnd = cndPosi
+  cndNega = r8meanWl < 0
+  cnd = cndPosi if positiveChanges else cndNega
   cndMtx = np.tile(cnd, [r4srs.shape[0], r4srs.shape[1], 1, 1])
   r4srs[~cndMtx] = np.nan
   r4mean_ = np.nanmean(r4srs, 0)
   r4mean = r4mean_.reshape(r4mean_.shape[0], r4mean_.shape[1]*r4mean_.shape[2])
-  r4mean = np.nanmedian(r4mean, 1)
- #r4mean = np.nanmean(r4mean, 1)
+ #r4mean = np.nanmedian(r4mean, 1)
+  r4mean = np.nanmean(r4mean, 1)
 
   r4spmean = r4srs.reshape(r4srs.shape[0], r4srs.shape[1], r4srs.shape[2]*r4srs.shape[3])
   r4spmean = np.nanmean(r4spmean, 2)
@@ -104,17 +104,23 @@ def plotTimeSerie30YVariability_hiExt(ax=None, plotXLabel=True, plotYLabel=True,
   r4sigma = np.std(r4spmean[:, 3])
   r4mean = np.nanmean(r4spmean, 0)
 
+  ensTot = np.concatenate([r8spmean, r4spmean], 0)
+  stdDevTot = np.std(ensTot, 0)*100.
+  meanTot = (r4mean + r8mean)/2.*100.
+
   yr = [-15, -10, -5, 0, 5, 10, 15]
   if ax is None:
     fg = plt.figure(figsize=[8.46, 4.98])
- #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'peachpuff', label='RCP8.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r8sigma*100, s=r8skew)); 
+  pstdDev = plt.fill_between(yr, meanTot+stdDevTot, meanTot-stdDevTot, color='gainsboro', label='$\sigma={sgm:1.0f}\%$'.format(sgm=stdDevTot[int(np.floor(len(stdDevTot)/2))]))
+ #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r8sigma*100, s=r8skew)); 
  #pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f})$'.format(sgm=r4sigma*100, s=r4skew)); 
-  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'peachpuff', label='RCP8.5 models ($\sigma={sgm:1.2f}\%$'.format(sgm=r8sigma*100, s=r8skew)); 
-  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma={sgm:1.2f}\%$'.format(sgm=r4sigma*100, s=r4skew)); 
+  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma_{{RCP8.5}}={sgm:1.0f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
+  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma_{{RCP4.5}}={sgm:1.0f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
   pmedr8 = plt.plot(yr, r8mean*100, 'firebrick', linewidth=6, label='RCP8.5 mean'); 
   pmedr4 = plt.plot(yr, r4mean*100, 'royalblue', linewidth=6, label='RCP4.5 mean'); 
   plt.grid('on')
-  plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0]], fontsize=12, loc=2)
+  lgndLoc = 2 if positiveChanges else 3
+  plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0], pstdDev], fontsize=12, loc=lgndLoc)
   if plotXLabel:
     plt.xlabel('years to $' + str(warmingLev) + '^\circ$C w.l.', fontsize=18)
   else:
@@ -125,7 +131,14 @@ def plotTimeSerie30YVariability_hiExt(ax=None, plotXLabel=True, plotYLabel=True,
     ax.set_yticklabels([])
   ax.tick_params(axis="x", labelsize=axFontSize)
   ax.tick_params(axis="y", labelsize=axFontSize)
+
+  ylm = ax.get_ylim()
+  dlt = max(ylm) - min(ylm)
+  pzr = plt.plot([0, 0], [min(ylm)-dlt*4, max(ylm)+dlt*4], 'k', linewidth=2)
+  pzr[0].set_zorder(1)
+  ax.set_ylim(ylm)
   plt.tight_layout()
+
   if ax is None:
     fg.savefig('./ensemblesVariabilityAround2deg.png', dpi=400)
 
@@ -141,8 +154,8 @@ def plotTimeSerie30YVariability_lowExt(ax=None, plotXLabel=True, plotYLabel=True
   r8meanWl, r8sigmaWl = getMeanAndSigma(r8srs)
   cndSignR8 = np.abs(r8meanWl) > r8sigmaWl
   cndPosi = r8meanWl > 0
- #cnd = np.logical_and(cndSignR8, cndPosi)
-  cnd = cndPosi
+  cndNega = r8meanWl < 0
+  cnd = cndPosi if positiveChanges else cndNega
   cndMtx = np.tile(cnd, [r8srs.shape[0], r8srs.shape[1], 1, 1])
   r8srs[~cndMtx] = np.nan
   r8mean_ = np.nanmean(r8srs, 0)
@@ -163,8 +176,8 @@ def plotTimeSerie30YVariability_lowExt(ax=None, plotXLabel=True, plotYLabel=True
   r4meanWl, r4sigmaWl = getMeanAndSigma(r4srs)
   cndSignR4 = np.abs(r4meanWl) > r4sigmaWl
   cndPosi = r4meanWl > 0
- #cnd = np.logical_and(cndSignR4, cndPosi)
-  cnd = cndPosi
+  cndNega = r8meanWl < 0
+  cnd = cndPosi if positiveChanges else cndNega
   cndMtx = np.tile(cnd, [r4srs.shape[0], r4srs.shape[1], 1, 1])
   r4srs[~cndMtx] = np.nan
   r4mean_ = np.nanmean(r4srs, 0)
@@ -179,17 +192,23 @@ def plotTimeSerie30YVariability_lowExt(ax=None, plotXLabel=True, plotYLabel=True
   r4sigma = np.std(r4spmean[:, 3])
   r4mean = np.nanmean(r4spmean, 0)
 
+  ensTot = np.concatenate([r8spmean, r4spmean], 0)
+  stdDevTot = np.std(ensTot, 0)*100.
+  meanTot = (r4mean + r8mean)/2.*100.
+
   yr = [-15, -10, -5, 0, 5, 10, 15]
   if ax is None:
     fg = plt.figure(figsize=[8.46, 4.98])
- #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'peachpuff', label='RCP8.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r8sigma*100, s=r8skew)); 
+  pstdDev = plt.fill_between(yr, meanTot+stdDevTot, meanTot-stdDevTot, color='gainsboro', label='$\sigma={sgm:1.0f}\%$'.format(sgm=stdDevTot[int(np.floor(len(stdDevTot)/2))]))
+ #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r8sigma*100, s=r8skew)); 
  #pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r4sigma*100, s=r4skew)); 
-  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'peachpuff', label='RCP8.5 models ($\sigma={sgm:1.2f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
-  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma={sgm:1.2f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
+  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma_{{RCP8.5}}={sgm:1.0f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
+  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma_{{RCP4.5}}={sgm:1.0f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
   pmedr8 = plt.plot(yr, r8mean*100, 'firebrick', linewidth=6, label='RCP8.5 mean'); 
   pmedr4 = plt.plot(yr, r4mean*100, 'royalblue', linewidth=6, label='RCP4.5 mean'); 
   plt.grid('on')
-  plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0]], fontsize=12, loc=2)
+  lgndLoc = 2 if positiveChanges else 3
+  plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0], pstdDev], fontsize=12, loc=lgndLoc)
   if plotXLabel:
     plt.xlabel('years to $' + str(warmingLev) + '^\circ$C w.l.', fontsize=18)
   else:
@@ -200,6 +219,12 @@ def plotTimeSerie30YVariability_lowExt(ax=None, plotXLabel=True, plotYLabel=True
     ax.set_yticklabels([])
   ax.tick_params(axis="x", labelsize=axFontSize)
   ax.tick_params(axis="y", labelsize=axFontSize)
+
+  ylm = ax.get_ylim()
+  dlt = max(ylm) - min(ylm)
+  pzr = plt.plot([0, 0], [min(ylm)-dlt*4, max(ylm)+dlt*4], 'k', linewidth=2)
+  pzr[0].set_zorder(1)
+  ax.set_ylim(ylm)
   plt.tight_layout()
   if ax is None:
     fg.savefig('./ensemblesVariabilityAround2deg_lowExt.png', dpi=400)
@@ -211,14 +236,14 @@ def plotTimeSerie30YVariability_mean(ax=None, plotXLabel=True, plotYLabel=True, 
   r8meanWl, r8sigmaWl = getMeanAndSigma(r8srs)
   cndSignR8 = np.abs(r8meanWl) > r8sigmaWl
   cndPosi = r8meanWl > 0
- #cnd = np.logical_and(cndSignR8, cndPosi)
-  cnd = cndPosi
+  cndNega = r8meanWl < 0
+  cnd = cndPosi if positiveChanges else cndNega
   cndMtx = np.tile(cnd, [r8srs.shape[0], r8srs.shape[1], 1, 1])
   r8srs[~cndMtx] = np.nan
   r8mean_ = np.nanmean(r8srs, 0)
   r8mean = r8mean_.reshape(r8mean_.shape[0], r8mean_.shape[1]*r8mean_.shape[2])
-  r8mean = np.nanmedian(r8mean, 1)
- #r8mean = np.nanmean(r8mean, 1)
+ #r8mean = np.nanmedian(r8mean, 1)
+  r8mean = np.nanmean(r8mean, 1)
 
   r8spmean = r8srs.reshape(r8srs.shape[0], r8srs.shape[1], r8srs.shape[2]*r8srs.shape[3])
   r8spmean = np.nanmean(r8spmean, 2)
@@ -229,14 +254,14 @@ def plotTimeSerie30YVariability_mean(ax=None, plotXLabel=True, plotYLabel=True, 
   r4meanWl, r4sigmaWl = getMeanAndSigma(r4srs)
   cndSignR4 = np.abs(r4meanWl) > r4sigmaWl
   cndPosi = r4meanWl > 0
- #cnd = np.logical_and(cndSignR4, cndPosi)
-  cnd = cndPosi
+  cndNega = r8meanWl < 0
+  cnd = cndPosi if positiveChanges else cndNega
   cndMtx = np.tile(cnd, [r4srs.shape[0], r4srs.shape[1], 1, 1])
   r4srs[~cndMtx] = np.nan
   r4mean_ = np.nanmean(r4srs, 0)
   r4mean = r4mean_.reshape(r4mean_.shape[0], r4mean_.shape[1]*r4mean_.shape[2])
-  r4mean = np.nanmedian(r4mean, 1)
- #r4mean = np.nanmean(r4mean, 1)
+ #r4mean = np.nanmedian(r4mean, 1)
+  r4mean = np.nanmean(r4mean, 1)
 
   r4spmean = r4srs.reshape(r4srs.shape[0], r4srs.shape[1], r4srs.shape[2]*r4srs.shape[3])
   r4spmean = np.nanmean(r4spmean, 2)
@@ -244,17 +269,23 @@ def plotTimeSerie30YVariability_mean(ax=None, plotXLabel=True, plotYLabel=True, 
   r4sigma = np.std(r4spmean[:, 3])
   r4mean = np.nanmean(r4spmean, 0)
 
+  ensTot = np.concatenate([r8spmean, r4spmean], 0)
+  stdDevTot = np.std(ensTot, 0)*100.
+  meanTot = (r4mean + r8mean)/2.*100.
+
   yr = [-15, -10, -5, 0, 5, 10, 15]
   if ax is None:
     fg = plt.figure(figsize=[8.46, 4.98])
- #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'peachpuff', label='RCP8.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r8sigma*100, s=r8skew)); 
+  pstdDev = plt.fill_between(yr, meanTot+stdDevTot, meanTot-stdDevTot, color='gainsboro', label='$\sigma={sgm:1.0f}\%$'.format(sgm=stdDevTot[int(np.floor(len(stdDevTot)/2))]))
+ #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r8sigma*100, s=r8skew)); 
  #pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r4sigma*100, s=r4skew)); 
-  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'peachpuff', label='RCP8.5 models ($\sigma={sgm:1.2f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
-  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma={sgm:1.2f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
+  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma_{{RCP8.5}}={sgm:1.0f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
+  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma_{{RCP4.5}}={sgm:1.0f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
   pmedr8 = plt.plot(yr, r8mean*100, 'firebrick', linewidth=6, label='RCP8.5 mean'); 
   pmedr4 = plt.plot(yr, r4mean*100, 'royalblue', linewidth=6, label='RCP4.5 mean'); 
   plt.grid('on')
-  plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0]], fontsize=12, loc=2)
+  lgndLoc = 2 if positiveChanges else 3
+  plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0], pstdDev], fontsize=12, loc=lgndLoc)
   if plotXLabel:
     plt.xlabel('years to $' + str(warmingLev) + '^\circ$C w.l.', fontsize=18)
   else:
@@ -265,6 +296,12 @@ def plotTimeSerie30YVariability_mean(ax=None, plotXLabel=True, plotYLabel=True, 
     ax.set_yticklabels([])
   ax.tick_params(axis="x", labelsize=axFontSize)
   ax.tick_params(axis="y", labelsize=axFontSize)
+
+  ylm = ax.get_ylim()
+  dlt = max(ylm) - min(ylm)
+  pzr = plt.plot([0, 0], [min(ylm)-dlt*4, max(ylm)+dlt*4], 'k', linewidth=2)
+  pzr[0].set_zorder(1)
+  ax.set_ylim(ylm)
   plt.tight_layout()
   if ax is None:
     fg.savefig('./ensemblesVariabilityAround2deg_mean.png', dpi=400)
@@ -304,7 +341,8 @@ def plotTimeSerie30YVariability_hiLowExt(warmingLev=2.0):
 
 
 def plotTimeSerie30YVariability_hiLowExt_bothWarmLev():
-  outPng = './ensemblesVariability_hiLowExt.png'
+  posiNegaStr = 'posi' if positiveChanges else 'nega'
+  outPng = './ensemblesVariability_hiLowExt_' + posiNegaStr + '.png'
 
   fg = plt.figure(figsize=[20, 4.98*3])
   gs = gridspec.GridSpec(3, 2)
@@ -313,38 +351,38 @@ def plotTimeSerie30YVariability_hiLowExt_bothWarmLev():
   warmingLev = 1.5
   ax1 = plt.subplot(gs[0,0])
   plotTimeSerie30YVariability_hiExt(ax1, plotXLabel=False, warmingLev=warmingLev)
-  ylm = plt.ylim([-2, 45])
+  ylm = plt.ylim([-2, 45]) if positiveChanges else plt.ylim([-25, 10])
   ytxt = min(ylm) + (max(ylm) - min(ylm))*.9
   plt.text(xtxt, ytxt, 'a: $\Delta Q_{H100}$ at $1.5^\circ$ C', fontsize=19)
 
   ax2 = plt.subplot(gs[1,0])
   plotTimeSerie30YVariability_mean(ax2, plotXLabel=False, warmingLev=warmingLev)
-  ylm = plt.ylim([-2, 50])
+  ylm = plt.ylim([-2, 50]) if positiveChanges else plt.ylim([-30, 15])
   ytxt = min(ylm) + (max(ylm) - min(ylm))*.9
   plt.text(xtxt, ytxt, 'c: $\Delta Q_M$ at $1.5^\circ$ C', fontsize=19)
 
   ax3 = plt.subplot(gs[2,0])
   plotTimeSerie30YVariability_lowExt(ax3, plotXLabel=True, warmingLev=warmingLev)
-  ylm = plt.ylim([-15, 90])
+  ylm = plt.ylim([-15, 90]) if positiveChanges else plt.ylim([-45, 15])
   ytxt = min(ylm) + (max(ylm) - min(ylm))*.9
   plt.text(xtxt, ytxt, 'e: $\Delta Q_{L15}$ at $1.5^\circ$ C', fontsize=19)
 
   warmingLev = 2.0
   ax4 = plt.subplot(gs[0,1])
   plotTimeSerie30YVariability_hiExt(ax4, plotXLabel=False, plotYLabel=False, warmingLev=warmingLev)
-  ylm = plt.ylim([-2, 45])
+  ylm = plt.ylim([-2, 45]) if positiveChanges else plt.ylim([-25, 10])
   ytxt = min(ylm) + (max(ylm) - min(ylm))*.9
   plt.text(xtxt, ytxt, 'b: $\Delta Q_{H100}$ at $2.0^\circ$ C', fontsize=19)
 
   ax5 = plt.subplot(gs[1,1])
   plotTimeSerie30YVariability_mean(ax5, plotXLabel=False, plotYLabel=False, warmingLev=warmingLev)
-  ylm = plt.ylim([-2, 50])
+  ylm = plt.ylim([-2, 50]) if positiveChanges else plt.ylim([-30, 15])
   ytxt = min(ylm) + (max(ylm) - min(ylm))*.9
-  plt.text(xtxt, ytxt, 'b: $\Delta Q_M$ at $2.0^\circ$ C', fontsize=19)
+  plt.text(xtxt, ytxt, 'd: $\Delta Q_M$ at $2.0^\circ$ C', fontsize=19)
 
   ax6 = plt.subplot(gs[2,1])
   plotTimeSerie30YVariability_lowExt(ax6, plotXLabel=True, plotYLabel=False, warmingLev=warmingLev)
-  ylm = plt.ylim([-15, 90])
+  ylm = plt.ylim([-15, 90]) if positiveChanges else plt.ylim([-45, 15])
   ytxt = min(ylm) + (max(ylm) - min(ylm))*.9
   plt.text(xtxt, ytxt, 'f: $\Delta Q_{L15}$ at $2.0^\circ$ C', fontsize=19)
 
@@ -357,9 +395,9 @@ def plotTimeSerie30YVariability_hiLowExt_bothWarmLev():
 
 
 if __name__ == '__main__':
-  plotTimeSerie30YVariability_hiLowExt(warmingLev=1.5)
+ #plotTimeSerie30YVariability_hiLowExt(warmingLev=1.5)
  #plotTimeSerie30YVariability_hiLowExt(warmingLev=2.0)
- #plotTimeSerie30YVariability_hiLowExt_bothWarmLev()
+  plotTimeSerie30YVariability_hiLowExt_bothWarmLev()
  #plotTimeSerie30YVariability_hiExt()
  #plotTimeSerie30YVariability_mean()
   plt.show()
