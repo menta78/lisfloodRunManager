@@ -9,7 +9,7 @@ from getWarmingLevels import getWarmingLevels
 
 nmodels = -1
 axFontSize = 14
-positiveChanges = True
+positiveChanges = False
 #excludedModels = ['IPSL-INERIS-WRF331F_BC']
 excludedModels = []
 
@@ -114,13 +114,17 @@ def plotTimeSerie30YVariability_hiExt(ax=None, plotXLabel=True, plotYLabel=True,
   pstdDev = plt.fill_between(yr, meanTot+stdDevTot, meanTot-stdDevTot, color='gainsboro', label='$\sigma={sgm:1.0f}\%$'.format(sgm=stdDevTot[int(np.floor(len(stdDevTot)/2))]))
  #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r8sigma*100, s=r8skew)); 
  #pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f})$'.format(sgm=r4sigma*100, s=r4skew)); 
-  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma_{{RCP8.5}}={sgm:1.0f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
-  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma_{{RCP4.5}}={sgm:1.0f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
-  pmedr8 = plt.plot(yr, r8mean*100, 'firebrick', linewidth=6, label='RCP8.5 mean'); 
-  pmedr4 = plt.plot(yr, r4mean*100, 'royalblue', linewidth=6, label='RCP4.5 mean'); 
+ #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma_{{RCP8.5}}={sgm:1.0f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
+ #pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma_{{RCP4.5}}={sgm:1.0f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
+  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models'); 
+  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models'); 
+ #pmedr8 = plt.plot(yr, r8mean*100, 'firebrick', linewidth=6, label='RCP8.5 mean'); 
+ #pmedr4 = plt.plot(yr, r4mean*100, 'royalblue', linewidth=6, label='RCP4.5 mean'); 
+  pmn = plt.plot(yr, (r4mean+r8mean)/2.*100, 'k', linewidth=6, label='ens. mean'); 
   plt.grid('on')
   lgndLoc = 2 if positiveChanges else 3
-  plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0], pstdDev], fontsize=12, loc=lgndLoc)
+ #plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0], pstdDev], fontsize=12, loc=lgndLoc)
+  plt.legend(handles=[pmdlr8[0], pmdlr4[0], pmn[0], pstdDev], fontsize=12, loc=lgndLoc)
   if plotXLabel:
     plt.xlabel('years to $' + str(warmingLev) + '^\circ$C w.l.', fontsize=18)
   else:
@@ -202,13 +206,17 @@ def plotTimeSerie30YVariability_lowExt(ax=None, plotXLabel=True, plotYLabel=True
   pstdDev = plt.fill_between(yr, meanTot+stdDevTot, meanTot-stdDevTot, color='gainsboro', label='$\sigma={sgm:1.0f}\%$'.format(sgm=stdDevTot[int(np.floor(len(stdDevTot)/2))]))
  #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r8sigma*100, s=r8skew)); 
  #pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r4sigma*100, s=r4skew)); 
-  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma_{{RCP8.5}}={sgm:1.0f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
-  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma_{{RCP4.5}}={sgm:1.0f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
-  pmedr8 = plt.plot(yr, r8mean*100, 'firebrick', linewidth=6, label='RCP8.5 mean'); 
-  pmedr4 = plt.plot(yr, r4mean*100, 'royalblue', linewidth=6, label='RCP4.5 mean'); 
+ #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma_{{RCP8.5}}={sgm:1.0f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
+ #pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma_{{RCP4.5}}={sgm:1.0f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
+  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models'); 
+  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models'); 
+ #pmedr8 = plt.plot(yr, r8mean*100, 'firebrick', linewidth=6, label='RCP8.5 mean'); 
+ #pmedr4 = plt.plot(yr, r4mean*100, 'royalblue', linewidth=6, label='RCP4.5 mean'); 
+  pmn = plt.plot(yr, (r4mean+r8mean)/2.*100, 'k', linewidth=6, label='ens. mean'); 
   plt.grid('on')
   lgndLoc = 2 if positiveChanges else 3
-  plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0], pstdDev], fontsize=12, loc=lgndLoc)
+ #plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0], pstdDev], fontsize=12, loc=lgndLoc)
+  plt.legend(handles=[pmdlr8[0], pmdlr4[0], pmn[0], pstdDev], fontsize=12, loc=lgndLoc)
   if plotXLabel:
     plt.xlabel('years to $' + str(warmingLev) + '^\circ$C w.l.', fontsize=18)
   else:
@@ -279,13 +287,17 @@ def plotTimeSerie30YVariability_mean(ax=None, plotXLabel=True, plotYLabel=True, 
   pstdDev = plt.fill_between(yr, meanTot+stdDevTot, meanTot-stdDevTot, color='gainsboro', label='$\sigma={sgm:1.0f}\%$'.format(sgm=stdDevTot[int(np.floor(len(stdDevTot)/2))]))
  #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r8sigma*100, s=r8skew)); 
  #pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma={sgm:1.2f}\%, skw.={s:1.2f}$)'.format(sgm=r4sigma*100, s=r4skew)); 
-  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma_{{RCP8.5}}={sgm:1.0f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
-  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma_{{RCP4.5}}={sgm:1.0f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
-  pmedr8 = plt.plot(yr, r8mean*100, 'firebrick', linewidth=6, label='RCP8.5 mean'); 
-  pmedr4 = plt.plot(yr, r4mean*100, 'royalblue', linewidth=6, label='RCP4.5 mean'); 
+ #pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models ($\sigma_{{RCP8.5}}={sgm:1.0f}\%$)'.format(sgm=r8sigma*100, s=r8skew)); 
+ #pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models ($\sigma_{{RCP4.5}}={sgm:1.0f}\%$)'.format(sgm=r4sigma*100, s=r4skew)); 
+  pmdlr8 = plt.plot(yr, r8spmean.transpose()*100, 'sandybrown', label='RCP8.5 models'); 
+  pmdlr4 = plt.plot(yr, r4spmean.transpose()*100, 'skyblue', label='RCP4.5 models'); 
+ #pmedr8 = plt.plot(yr, r8mean*100, 'firebrick', linewidth=6, label='RCP8.5 mean'); 
+ #pmedr4 = plt.plot(yr, r4mean*100, 'royalblue', linewidth=6, label='RCP4.5 mean'); 
+  pmn = plt.plot(yr, (r4mean+r8mean)/2.*100, 'k', linewidth=6, label='ens. mean'); 
   plt.grid('on')
   lgndLoc = 2 if positiveChanges else 3
-  plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0], pstdDev], fontsize=12, loc=lgndLoc)
+ #plt.legend(handles=[pmdlr8[0], pmedr8[0], pmdlr4[0], pmedr4[0], pstdDev], fontsize=12, loc=lgndLoc)
+  plt.legend(handles=[pmdlr8[0], pmdlr4[0], pmn[0], pstdDev], fontsize=12, loc=lgndLoc)
   if plotXLabel:
     plt.xlabel('years to $' + str(warmingLev) + '^\circ$C w.l.', fontsize=18)
   else:
