@@ -282,6 +282,7 @@ def plotEnsembles_max(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=100, gs=N
 
   if ownsFig:
     fig.savefig(outputPngFile, dpi=300)
+  return axs
 
 
 
@@ -310,8 +311,8 @@ def plotEnsembles_min(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=15, gs=No
 # lims = {1.5: [-24, 60], 2.0: [-39, 80]}
   densityBins = {1.5: 130, 2.0: 130}
   lims = {
-    1.5: [-25, 70],
-    2.0: [-25, 70]
+    1.5: [-45, 105],
+    2.0: [-45, 105]
   }
   for warmingLev, iwl in zip(warmingLevs, range(len(warmingLevs))):
 
@@ -364,6 +365,7 @@ def plotEnsembles_min(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=15, gs=No
 
   if ownsFig:
     fig.savefig(outputPngFile, dpi=300)
+  return axs
 
 
 
@@ -446,6 +448,7 @@ def plotEnsembles_means(rootDir='/ClimateRun4/multi-hazard/eva/', gs=None, showL
 
   if ownsFig:
     fig.savefig(outputPngFile, dpi=300)
+  return axs
 
 
 
@@ -455,11 +458,25 @@ def plotEnsembles(rootDir='/ClimateRun4/multi-hazard/eva/'):
   fig = plt.figure(figsize=(11, 15))
   gs = gridspec.GridSpec(3, 3, width_ratios=[1,1,.04])
   gsMx = [gs[0,0], gs[0,1], gs[0,2]]
-  plotEnsembles_max(rootDir=rootDir, gs=gsMx)
+  axs = plotEnsembles_max(rootDir=rootDir, gs=gsMx)
+  plt.axes(axs[0])
+  plt.text(-9, 25, 'a', fontsize=16)
+  plt.axes(axs[1])
+  plt.text(-9, 25, 'b', fontsize=16)
+
   gsMn = [gs[1,0], gs[1,1], gs[1,2]]
-  plotEnsembles_means(rootDir=rootDir, gs=gsMn, showLegend=False)
+  axs = plotEnsembles_means(rootDir=rootDir, gs=gsMn, showLegend=False)
+  plt.axes(axs[0])
+  plt.text(-8, 30, 'c', fontsize=16)
+  plt.axes(axs[1])
+  plt.text(-8, 30, 'd', fontsize=16)
+
   gsMn = [gs[2,0], gs[2,1], gs[2,2]]
-  plotEnsembles_min(rootDir=rootDir, gs=gsMn, showLegend=False)
+  axs = plotEnsembles_min(rootDir=rootDir, gs=gsMn, showLegend=False)
+  plt.axes(axs[0])
+  plt.text(-40, 90, 'e', fontsize=16)
+  plt.axes(axs[1])
+  plt.text(-40, 90, 'f', fontsize=16)
 
   plt.tight_layout()
   fig.savefig(outputPngFile, dpi=300)

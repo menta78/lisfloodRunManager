@@ -215,7 +215,7 @@ def loadWlVsScenChange2(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, wa
 def loadMeanChangesAtWl(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, warmingLev=2, 
     threshold=0, rlVarName='year_mean',
     flpattern='projection_dis_{scen}_{mdl}_wuConst_statistics.nc',
-    nmodels=-1, timeWindowHalfSize=15):
+    nmodels=-1, timeWindowHalfSize=15, excludedModels=[]):
   # computes the mean relative change
 
   wlyR8 = getWarmingLevels('rcp85', warmingLev)
@@ -228,8 +228,11 @@ def loadMeanChangesAtWl(ncDir='/ClimateRun4/multi-hazard/eva', bslnYear=1995, wa
   models = wlyR8.keys()
   if nmodels > -1:
     models = models[:nmodels]
-  # menta
- #models = [models[0], models[1]]
+
+  for mdl in excludedModels:
+    if mdl in models:
+      models.remove(mdl)
+
   tamask, _, _ = getAfricaAndTurkeyMask()
   tamask = tamask.transpose()
 

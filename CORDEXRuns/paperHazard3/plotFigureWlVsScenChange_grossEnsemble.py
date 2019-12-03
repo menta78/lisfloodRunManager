@@ -4,6 +4,7 @@ from scipy.interpolate import griddata
 from matplotlib import pyplot as plt
 from matplotlib import gridspec
 from mpl_toolkits import basemap as bm
+import matplotlib as mpl
 
 import estimateChngSignificanceAndRobustness
 import loadWlVsScenChange as ldEnsmbl
@@ -53,11 +54,21 @@ def plotRelChngDiff(ax, relChngDiff, sigma, mp, txt, cmap='RdBu', vmax=20, vmin=
   xFt, yFt = mp(lonFt, latFt)
   signMap = chSigmaRatioMap >= 1
   signMap = bm.maskoceans(longrd, latgrd, signMap)
+  mskEast = np.logical_and(latgrd <= 66.47, longrd >= 34.88)
+  mskTrk0 = np.logical_and( np.logical_and(36. <= latgrd, latgrd <= 39.13), longrd >= 26.17)
+  mskTrk1 = np.logical_and( np.logical_and(39.13 <= latgrd, latgrd <= 42.57), longrd >= 31)
+  mskNAfrica = np.logical_and( np.logical_and(-1 <= longrd, longrd <= 11.55), latgrd <= 36.66)
+  signMap[mskEast] = False
+  signMap[mskTrk0] = False
+  signMap[mskTrk1] = False
+  signMap[mskNAfrica] = False
   
   pcl = plt.scatter(xFt, yFt, .07, c=rlChngDiffFt*100, cmap=cmap, alpha=1)
   vmin = -vmax if vmin is None else vmin
   plt.clim(vmin, vmax)
-  htch = plt.contourf(xgrd, ygrd, signMap, 3, hatches=['', '\\\\\\\\\\'], alpha=0)
+ #htch = plt.contourf(xgrd, ygrd, signMap, 3, hatches=['', '\\\\\\\\\\'], alpha=0)
+  mpl.rcParams['hatch.linewidth'] = 0.5
+  htch = plt.contourf(xgrd, ygrd, signMap, 3, hatches=['', '\\\\\\'], alpha=0, linewidth=.2)
   print('mean absolute change: ' + str(np.nanmean(np.abs(relChngDiff)*100)) + '%')
 
   txtpos = mp(-24, 32)
@@ -381,6 +392,7 @@ def plotGrossEnsembles_lowExt(ncDir='/ClimateRun4/multi-hazard/eva'):
     plt.annotate(prcTxt, xy=txtpos, xycoords='data', xytext=txtpos, textcoords='data', fontsize=10, bbox=bb)
 
   warmingLev = 1.5
+  vmax = 100
 
   retPer = 15
   rlVarName = 'rl_min'
@@ -391,18 +403,18 @@ def plotGrossEnsembles_lowExt(ncDir='/ClimateRun4/multi-hazard/eva'):
   sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
 
   ax0 = plt.subplot(gs[0,0])
-  pcl, mp = plotRelChngDiff(ax0, rc_mega, sigmaTot, mp, 'a: $\Delta Q_{L15}$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  pcl, mp = plotRelChngDiff(ax0, rc_mega, sigmaTot, mp, 'a: $\Delta Q_{L15}$ at $' + str(warmingLev) +'^\circ$', vmax=vmax)
   printPosNegChanges(warmingLev, rc_mega)
   writeSigmaRatioTxt(ax0, sigmaTot, rc_mega, '\Delta Q_{L15}')
 
 
   ax1 = plt.subplot(gs[1,0])
   pcl, mp = plotSigma(ax1, sigmaWithin*100, rc_mega*100, mp, 'c: $\sigma_{within}$ (%) at $' + str(warmingLev) +'^\circ$',
-    prcTxtTmpl = '', sigmamax=50)
+    prcTxtTmpl = '', sigmamax=vmax)
 
   ax2 = plt.subplot(gs[2,0])
   pcl, mp = plotSigma(ax2, sigmaBetween*100, rc_mega*100, mp, 'e: $\sigma_{between}$ (%) at $' + str(warmingLev) +'^\circ$',
-    prcTxtTmpl = '', sigmamax=50)
+    prcTxtTmpl = '', sigmamax=vmax)
 
   warmingLev = 2.0
 
@@ -413,18 +425,18 @@ def plotGrossEnsembles_lowExt(ncDir='/ClimateRun4/multi-hazard/eva'):
   sigmaTot, sigmaWithin, sigmaBetween, pValue, effectSize = anovaAnalysis(relChngDiff, rc_r8, rc_r4, rc_r8all, rc_r4all)
 
   ax3 = plt.subplot(gs[0,1])
-  pclChng, mp = plotRelChngDiff(ax3, rc_mega, sigmaTot, mp, 'b: $\Delta Q_{{L15}}$ at $' + str(warmingLev) +'^\circ$', vmax=50)
+  pclChng, mp = plotRelChngDiff(ax3, rc_mega, sigmaTot, mp, 'b: $\Delta Q_{{L15}}$ at $' + str(warmingLev) +'^\circ$', vmax=vmax)
   printPosNegChanges(warmingLev, rc_mega)
   writeSigmaRatioTxt(ax3, sigmaTot, rc_mega, '\Delta Q_{L15}')
   
 
   ax4 = plt.subplot(gs[1,1])
   pclSigma, mp = plotSigma(ax4, sigmaWithin*100, rc_mega*100, mp, 'd: $\sigma_{within}$ (%) at $' + str(warmingLev) +'^\circ$',
-    prcTxtTmpl = '', sigmamax=50)
+    prcTxtTmpl = '', sigmamax=vmax)
 
   ax5 = plt.subplot(gs[2,1])
   pclSigma, mp = plotSigma(ax5, sigmaBetween*100, rc_mega*100, mp, 'f: $\sigma_{between}$ (%) at $' + str(warmingLev) +'^\circ$',
-    prcTxtTmpl = '', sigmamax=50)
+    prcTxtTmpl = '', sigmamax=vmax)
   
   cax1 = plt.subplot(gs[0,2])
   cb = plt.colorbar(pclChng, ax=ax2, cax=cax1)
@@ -451,9 +463,9 @@ def plotGrossEnsembles_lowExt(ncDir='/ClimateRun4/multi-hazard/eva'):
 
 if __name__ == '__main__':
   import pdb; pdb.set_trace()
-  plotGrossEnsembles_highExt()
- #plotGrossEnsembles_lowExt()
-  plotGrossEnsembles_mean()
+ #plotGrossEnsembles_highExt()
+  plotGrossEnsembles_lowExt()
+ #plotGrossEnsembles_mean()
  #plotGrossEnsembleChange()
  #plotGrossEnsembles(ncDir='/ClimateRun/menta/eva_50y_timeWindow/')
  #printStatsByScenEnsemble('rcp85', 1.5)
