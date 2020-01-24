@@ -169,10 +169,10 @@ if __name__ == '__main__':
   outputDir = '/ClimateRun4/multi-hazard/eva/eamonn/'
 
  # precipitations
-  inputDir = '/ClimateRun4/multi-hazard/eva/'
-  inputDir = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/lisfloodEVA_pr/test'
-  inputFlPattern = 'projection_pr_(rcp45|rcp85)_(.*)_statistics.nc'
-  outputDir = '/ClimateRun4/multi-hazard/eva/prFrequencyShift/'
+ #inputDir = '/ClimateRun4/multi-hazard/eva/'
+ #inputDir = '/STORAGE/src1/git/lisfloodRunManager/CORDEXRuns/lisfloodEVA_pr/test'
+ #inputFlPattern = 'projection_pr_(rcp45|rcp85)_(.*)_statistics.nc'
+ #outputDir = '/ClimateRun4/multi-hazard/eva/prFrequencyShift/'
 
   loopModels(inputDir, inputFlPattern, outputDir)
 

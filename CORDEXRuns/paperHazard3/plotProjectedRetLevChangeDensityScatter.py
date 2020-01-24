@@ -202,7 +202,7 @@ def plotAllModelsWarmingLevel(warmingLev, rootDir='/ClimateRun4/multi-hazard/eva
   ax = plt.subplot(gs[0, 0])
   relChng8 = np.nanmean(np.array(relChng8lst), 0)
   relChng4 = np.nanmean(np.array(relChng4lst), 0)
-  plotSingleModel(ax, relChng8, relChng4, str(retPer) + '-year ret. lev.\nensemble rcp85 vs rcp45,\nwrm. lev. ' + str(warmingLev) + '$^\circ$', bold=True, plotRegression=True)
+  plotSingleModel(ax, relChng8, relChng4, str(retPer) + '-year ret. lev.\nensemble rcp85 vs rcp45,\nwrm. lev. ' + str(warmingLev) + '$^\circ$C', bold=True, plotRegression=True)
   plt.tight_layout()
 
   fig.savefig(outputPngFile, dpi=300)
@@ -265,7 +265,7 @@ def plotEnsembles_max(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=100, gs=N
     relChng4 = np.nanmedian(np.array(relChng4lst), 0)
     showLegend = not lgndShown
     dp = plotSingleModel(ax, relChng8, relChng4, 
-             str(retPer) + '-year ret. lev.\nextreme high discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$', 
+             str(retPer) + '-year ret. lev.\nextreme high discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$C', 
              bold=True, plotRegression=False, tickFontSize=13, labelFontSize=15, titleFontSize=14,
              xLabelPad=-30, yLabelPad=-15, showLegend=showLegend, lim=lims[warmingLev])
     lgndShown = True
@@ -346,7 +346,7 @@ def plotEnsembles_min(rootDir='/ClimateRun4/multi-hazard/eva/', retPer=15, gs=No
     relChng4 = np.nanmedian(np.array(relChng4lst), 0)
     showLegend = not lgndShown
     dp = plotSingleModel(ax, relChng8, relChng4, 
-             str(retPer) + '-year ret. lev.\nextreme low discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$', 
+             str(retPer) + '-year ret. lev.\nextreme low discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$C', 
              bold=True, plotRegression=False, tickFontSize=13, labelFontSize=15, titleFontSize=14,
              xLabelPad=-30, yLabelPad=-15, showLegend=showLegend, lim=lims[warmingLev])
     plt.xlim(lims[warmingLev])
@@ -429,7 +429,7 @@ def plotEnsembles_means(rootDir='/ClimateRun4/multi-hazard/eva/', gs=None, showL
     relChng4 = np.nanmedian(np.array(relChng4lst), 0)
     showLegend = not lgndShown
     dp = plotSingleModel(ax, relChng8, relChng4, 
-             'mean discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$', 
+             'mean discharge\nwrm. lev. ' + str(warmingLev) + '$^\circ$C', 
              bold=True, plotRegression=False, tickFontSize=13, labelFontSize=15, titleFontSize=14,
              xLabelPad=-30, yLabelPad=-15, showLegend=showLegend, lim=lims[warmingLev])
     plt.xlim(lims[warmingLev])
