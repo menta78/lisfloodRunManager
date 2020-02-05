@@ -147,7 +147,7 @@ def plotBaseline():
   
   plt.tight_layout()
 
-  f.savefig(outPng, dpi=300)
+  f.savefig(outPng, dpi=600)
   
 
 
