@@ -81,6 +81,16 @@ try
   locationGEVMin = ones(ny, nx, nyrout)*nan;
   locationGEVErrMin = ones(ny, nx, nyrout)*nan;
   yMin = ones(ny, nx, nyrall)*nan;
+
+  retLevGEVMinWS = ones(ny, nx, nyrout, nretper)*nan;
+  retLevErrGEVMinWS = ones(ny, nx, nyrout, nretper)*nan;
+  shapeGEVMinWS = ones(ny, nx)*nan;
+  shapeGEVErrMinWS = ones(ny, nx)*nan;
+  scaleGEVMinWS = ones(ny, nx, nyrout)*nan;
+  scaleGEVErrMinWS = ones(ny, nx, nyrout)*nan;
+  locationGEVMinWS = ones(ny, nx, nyrout)*nan;
+  locationGEVErrMinWS = ones(ny, nx, nyrout)*nan;
+  yMinWS = ones(ny, nx, nyrall)*nan;
   
   yMean = ones(ny, nx, nyrall)*nan;
 
@@ -119,6 +129,23 @@ try
       cnd0 = retLevGEVMin_ < 0;
       retLevGEVMin_(cnd0) = 0;
       evaDataMin.retLevErrGEV(cnd0) = 0;
+
+     % EVA OF MINIMA IN WARMING SEASON (APRIL-SEPTEMBER)
+      vlsmn_ = movmean(vls, 7, 3);
+      dtvc = datevec(tmstmp);
+      mnt = dtvc(:,2);
+      iwrm = (mnt >= 4) & (mnt <= 9);
+      tmstmpWS = tmstmp(iwrm);
+      vlsmn = vlsmn_(:,:,iwrm);
+      evaDataMinWS = lfExecuteTsEvaGEV( tmstmpWS, xx_, yy_, -vlsmn, outYears, returnPeriodsInYears, channelMap_, 'nWorker', nparworker, 'maxFracNan', .1, varargin{:} );
+     %vlsmnmin_ = permute(tsEvaComputeAnnualMaximaMtx(tmstmpWS, permute(-vlsmn, [3,1,2])), [2,3,1]);
+     %yys = unique(tsYear(tmstmpWS));
+     %yydt = datenum([yys, ones(size(yys)), ones(size(yys))]);
+     %evaDataMinWS = lfExecuteTsEvaGEV( yydt, xx_, yy_, vlsmnmin_, outYears, returnPeriodsInYears, channelMap_, 'nWorker', nparworker, 'maxFracNan', .1, varargin{:} );
+      retLevGEVMinWS_ = -evaDataMinWS.retLevGEV;
+      cnd0 = retLevGEVMinWS_ < 0;
+      retLevGEVMinWS_(cnd0) = 0;
+      evaDataMinWS.retLevErrGEV(cnd0) = 0;
       
       vlsYMean = tsEvaComputeAnnualMeanMtx(tmstmp, permute(vls, [3, 1, 2]));
       vlsYMean = permute(vlsYMean, [3, 2, 1]);
@@ -146,6 +173,18 @@ try
       locationGEVMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = -evaDataMin.locationGEV;
       locationGEVErrMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMin.locationGEVErr;
       yMin(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = -evaDataMin.yMax;
+      clear('evaDataMin');
+
+      retLevGEVMinWS(iLatStart:iLatEnd, iLonStart:iLonEnd, :, :) = retLevGEVMinWS_;
+      retLevErrGEVMinWS(iLatStart:iLatEnd, iLonStart:iLonEnd, :, :) = evaDataMinWS.retLevErrGEV;
+      shapeGEVMinWS(iLatStart:iLatEnd, iLonStart:iLonEnd) = evaDataMinWS.shapeGEV;
+      shapeGEVErrMinWS(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMinWS.shapeGEVErr;
+      scaleGEVMinWS(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMinWS.scaleGEV;
+      scaleGEVErrMinWS(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMinWS.scaleGEVErr;
+      locationGEVMinWS(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = -evaDataMinWS.locationGEV;
+      locationGEVErrMinWS(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = evaDataMinWS.locationGEVErr;
+      yMinWS(iLatStart:iLatEnd, iLonStart:iLonEnd, :) = -evaDataMinWS.yMax;
+      clear('evaDataMinWS');
       
       if size(yMean, 3) > size(vlsYMean, 3)
         yMean(iLatStart:iLatEnd, iLonStart:iLonEnd, 1:size(vlsYMean, 3)) = vlsYMean;
@@ -223,6 +262,34 @@ try
   
   nccreate(retLevNcOutFilePath, 'year_min', 'dimensions', {'y', ny, 'x', nx, 'year_all', nyrall});
   ncwrite(retLevNcOutFilePath, 'year_min', yMin);
+
+  % min warming season
+  nccreate(retLevNcOutFilePath, 'rl_min_ws', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout, 'return_period', nretper});
+  ncwrite(retLevNcOutFilePath, 'rl_min_ws', retLevGEVMinWS);
+
+  nccreate(retLevNcOutFilePath, 'se_rl_min_ws', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout, 'return_period', nretper});
+  ncwrite(retLevNcOutFilePath, 'se_rl_min_ws', retLevErrGEVMinWS);
+
+  nccreate(retLevNcOutFilePath, 'shape_fit_min_ws', 'dimensions', {'y', ny, 'x', nx});
+  ncwrite(retLevNcOutFilePath, 'shape_fit_min_ws', shapeGEVMinWS);
+
+  nccreate(retLevNcOutFilePath, 'se_shape_min_ws', 'dimensions', {'y', ny, 'x', nx});
+  ncwrite(retLevNcOutFilePath, 'se_shape_min_ws', shapeGEVErrMinWS);
+
+  nccreate(retLevNcOutFilePath, 'scale_fit_min_ws', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout});
+  ncwrite(retLevNcOutFilePath, 'scale_fit_min_ws', scaleGEVMinWS);
+
+  nccreate(retLevNcOutFilePath, 'se_scale_min_ws', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout});
+  ncwrite(retLevNcOutFilePath, 'se_scale_min_ws', scaleGEVErrMinWS);
+
+  nccreate(retLevNcOutFilePath, 'location_fit_min_ws', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout});
+  ncwrite(retLevNcOutFilePath, 'location_fit_min_ws', locationGEVMinWS);
+
+  nccreate(retLevNcOutFilePath, 'se_location_min_ws', 'dimensions', {'y', ny, 'x', nx, 'year', nyrout});
+  ncwrite(retLevNcOutFilePath, 'se_location_min_ws', locationGEVErrMinWS);
+  
+  nccreate(retLevNcOutFilePath, 'year_min_ws', 'dimensions', {'y', ny, 'x', nx, 'year_all', nyrall});
+  ncwrite(retLevNcOutFilePath, 'year_min_ws', yMinWS);
 
   
   % mean

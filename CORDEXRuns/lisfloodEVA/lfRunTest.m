@@ -3,7 +3,7 @@ eosDir = '/DATA/JEODPP/eos/projects/CRITECH/';
 ncRootDir = fullfile(eosDir, 'ADAPTATION/ClimateRuns/LisfloodEuroCordex/');
 %ncRootDir = fullfile('/DATA/ClimateRuns/lisflood_eva_test');
 
-nParWorker = 1;
+nParWorker = 4;
 %dx = 250;
 %dy = 300;
 dx = 100;
@@ -27,9 +27,10 @@ ncvarname = 'dis';
 %ncvarname = 'wl';
 
 %scenario = 'rcp45';
-wuChanging = false;
+wuChanging = true;
 %wuChanging = true;
 outDir = './test';
+dbstop at 34
 lfEvaModel(scenario, model, wuChanging, outDir, 'ncRootDir', ncRootDir, 'nParWorker', nParWorker, 'varname', varname, 'ncvarname', ncvarname, 'parObj', parObj, 'dx', dx, 'dy', dy);
 
 delete(parObj);

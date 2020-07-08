@@ -99,14 +99,19 @@ def extract1Model(model, inputNcFlPath, outputNcFlPath):
   bslnYrNc.description = 'baseline year'
   bslnYrNc[:] = bslnYear
 
+  bslnRetLevNc = dsout.createVariable('baseline_return_level', 'f4', ('baseline_rp', 'lon', 'lat'))
+  bslnRetLevNc.description = 'return levels at baseline'
+  bslnRetLevNc[:] = bslnRetLev
+
   retPerNc = dsout.createVariable('baseline_rp_shift', 'f4', ('warming_lev', 'baseline_rp', 'lon', 'lat'))
   retPerNc.description = 'shifted return periods of the baseline return values (years)'
   retPerNc[:] = outYrRetPer
-  retPerNc.coordinates = 'lon lat'
+  retPerNc.coordinates = 'warming_lev baseline_rp lon lat'
 
- #retLevNc = dsout.createVariable('return_level', 'f4', ('year', 'baseline_rp', 'x', 'y'))
- #retLevNc.description = 'return levels at years (m**3)'
- #retLevNc[:] = outYrRetLev
+  retLevNc = dsout.createVariable('return_level', 'f4', ('warming_lev', 'baseline_rp', 'lon', 'lat'))
+  retLevNc.description = 'return levels at warming levels (m**3)'
+  retLevNc[:] = outYrRetLev
+  retLevNc.coordinates = 'warming_lev baseline_rp lon lat'
 
   dsout.close()
   
