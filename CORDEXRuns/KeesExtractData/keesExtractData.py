@@ -20,15 +20,17 @@ from scipy.interpolate import interp1d
 
 
 def extract1Model(inputNcFlPath, outputNcFlPath):
-  bslnYear = 2003
-  w0Year = 1996
-
  # years for Kees
+  bslnYear = 2003
+
+  w0Year = 1996
   w1Year = 2031
   w2Year = 2056
   w3Year = 2086
 
  # years for Claudia Hahn
+  bslnYear = 1996
+  w0Year = 1996
   w1Year = 2025
   w2Year = 2055
   w3Year = 2085
