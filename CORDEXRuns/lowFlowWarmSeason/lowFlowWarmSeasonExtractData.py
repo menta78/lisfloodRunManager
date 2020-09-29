@@ -10,7 +10,7 @@ def extract1Model(scen, model, inputNcFlPath, outputNcFlPath):
   wls = [1.5, 2.0, 3.0, 4.0]
   bslnYear = 1995
   
-  outRetPer = [1.5, 2., 5, 10., 20., 50., 100., 200., 500.]
+  outRetPer = [1.5, 2., 5, 10., 15., 20., 50., 100., 200., 500.]
 
   print('  loading the data ...')
   dsin = netCDF4.Dataset(inputNcFlPath)

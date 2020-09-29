@@ -517,8 +517,11 @@ if __name__ == '__main__':
  #outputNcFlPath = '/DATA/mentalo/Dropbox/notSynced/xAlessandra/minDisWrmSsnEnsemble_10y.nc'
  #saveEnsembleFile(retPer=10)
 
-  outputNcFlPath = '/DATA/mentalo/Dropbox/notSynced/xAlessandra/minDisWrmSsnEnsemble_20y_meanFrq.nc'
-  saveEnsembleFile(retPer=20)
+ #outputNcFlPath = '/DATA/mentalo/Dropbox/notSynced/xAlessandra/minDisWrmSsnEnsemble_20y_meanFrq.nc'
+ #saveEnsembleFile(retPer=20)
+
+  outputNcFlPath = '/DATA/mentalo/Dropbox/notSynced/pesetaRunoffRpShift/disEnsemble_lowExtremes.nc'
+  saveEnsembleFile(retPer=15)
 
  #plotFreqChange15_20_30_40deg()
   plt.show()

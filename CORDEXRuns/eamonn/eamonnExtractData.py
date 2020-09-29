@@ -7,7 +7,7 @@ from getWarmingLevels import getWarmingLevels
 
 
 def extract1Model(scen, model, inputNcFlPath, outputNcFlPath):
-  wls = [1.5, 2.0, 3.0]
+  wls = [1.5, 2.0, 3.0, 4.0]
   bslnYear = 1995
   
   outRetPer = [10., 20., 50., 100., 200., 500.]

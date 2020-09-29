@@ -48,6 +48,21 @@ def getWarmingLevels(scenario, warmingLev):
         'SMHI-RCA4_BC_MOHC-HadGEM2-ES': 2051,
         'SMHI-RCA4_BC_MPI-M-MPI-ESM-LR': 2067
       }
+    elif warmingLev == 4.:
+      wly = {
+        'CLMcom-CCLM4-8-17_BC_CNRM-CERFACS-CNRM-CM5': 2089,
+        'CLMcom-CCLM4-8-17_BC_ICHEC-EC-EARTH': 2090,
+        'CLMcom-CCLM4-8-17_BC_MPI-M-MPI-ESM-LR': 2089,
+        'DMI-HIRHAM5-ICHEC-EC-EARTH_BC': 2086,
+        'IPSL-INERIS-WRF331F_BC': 2073,
+        'KNMI-RACMO22E-ICHEC-EC-EARTH_BC': 2087,
+        'SMHI-RCA4_BC_CNRM-CERFACS-CNRM-CM5': 2089,
+        'SMHI-RCA4_BC_ICHEC-EC-EARTH': 2090,
+        'SMHI-RCA4_BC_IPSL-IPSL-CM5A-MR': 2073,
+        'SMHI-RCA4_BC_MOHC-HadGEM2-ES': 2071,
+        'SMHI-RCA4_BC_MPI-M-MPI-ESM-LR': 2089
+      }
+        
     else:
       raise Exception('warming level not supported: ' + str(warmingLev)) 
   elif scenario == 'rcp45':
@@ -80,6 +95,8 @@ def getWarmingLevels(scenario, warmingLev):
         'SMHI-RCA4_BC_MPI-M-MPI-ESM-LR': 2064
       }
     elif warmingLev == 3.:
+      wly = None
+    elif warmingLev == 4.:
       wly = None
   else:
     raise Exception('scenario not supported: ' + scenario)
