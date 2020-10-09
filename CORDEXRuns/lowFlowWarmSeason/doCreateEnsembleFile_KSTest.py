@@ -80,12 +80,15 @@ def doLoadData(warmingLev=2, retPer=5):
     retpers = ds.variables['baseline_rp'][:]
     irp = retpers == retPer
     retLev = ds.variables['return_level'][iwlev, irp, :, :].squeeze()
+   # putting the pixels that failed the KS test to nan
+    significantKS = ds.variables['significance'][iwlev, :, :].squeeze()
+    retLev[significantKS != 1] = np.nan
    #cnd = retLev < lowflowthreshold
    #retLev[cnd] = np.nan
     mdlRetLev.append(retLev)
     rpShift = ds.variables['baseline_rp_shift'][iwlev, irp, :, :].squeeze()
     rpShift[msk] = np.nan
-   #rpShift[cnd] = np.nan
+    rpShift[significantKS != 1] = np.nan
     mdlvls.append(rpShift)
     
   mdlvls = np.array(mdlvls)
@@ -362,7 +365,7 @@ def saveEnsembleFile(retPer=10):
 
 
   
-  def getSignificance(chmdn, chByModel):
+  def getSignificance(chmdn, chByModel, nmodel):
     posi = np.zeros(chByModel.shape)*np.nan
     posi[chByModel > 0] = 1
     nega = np.zeros(chByModel.shape)*np.nan
@@ -376,12 +379,14 @@ def saveEnsembleFile(retPer=10):
     sgn[chmdn > 0] = (smposi >= sigthr)[chmdn > 0]
     sgn[chmdn < 0] = (smnega >= sigthr)[chmdn < 0]
     sgn[np.isnan(chmdn)] = np.nan
+    # removing the pixels with < 50% models in agreement
+    sgn[nmdl < nmodel/2] = 0
     return sgn
 
-  sing15 = getSignificance(retLevChng_15, retLevChng_15_mdl)
-  sing20 = getSignificance(retLevChng_20, retLevChng_20_mdl)
-  sing30 = getSignificance(retLevChng_30, retLevChng_30_mdl)
-  sing40 = getSignificance(retLevChng_40, retLevChng_40_mdl)
+  sing15 = getSignificance(retLevChng_15, retLevChng_15_mdl, 22)
+  sing20 = getSignificance(retLevChng_20, retLevChng_20_mdl, 22)
+  sing30 = getSignificance(retLevChng_30, retLevChng_30_mdl, 11)
+  sing40 = getSignificance(retLevChng_40, retLevChng_40_mdl, 11)
 
   fqdlt15 = (futFq_15 - baseline)/baseline
   fqdlt20 = (futFq_20 - baseline)/baseline
@@ -391,10 +396,10 @@ def saveEnsembleFile(retPer=10):
   ch20mdls = (futFq_20_mdls - baseline_mdls)/baseline_mdls
   ch30mdls = (futFq_30_mdls - baseline_mdls)/baseline_mdls
   ch40mdls = (futFq_40_mdls - baseline_mdls)/baseline_mdls
-  sing15_fq = getSignificance(fqdlt15, ch15mdls)
-  sing20_fq = getSignificance(fqdlt20, ch20mdls)
-  sing30_fq = getSignificance(fqdlt30, ch30mdls)
-  sing40_fq = getSignificance(fqdlt40, ch40mdls)
+  sing15_fq = getSignificance(fqdlt15, ch15mdls, 22)
+  sing20_fq = getSignificance(fqdlt20, ch20mdls, 22)
+  sing30_fq = getSignificance(fqdlt30, ch30mdls, 11)
+  sing40_fq = getSignificance(fqdlt40, ch40mdls, 11)
 
   dsout = netCDF4.Dataset(outputNcFlPath, 'w')
   dsout.createDimension('x', len(x))
@@ -517,7 +522,7 @@ if __name__ == '__main__':
  #outputNcFlPath = '/DATA/mentalo/Dropbox/notSynced/xAlessandra/minDisWrmSsnEnsemble_10y.nc'
  #saveEnsembleFile(retPer=10)
 
-  outputNcFlPath = '/DATA/mentalo/Dropbox/notSynced/xAlessandra/minDisWrmSsnEnsemble_20y_meanFrq.nc'
+  outputNcFlPath = '/DATA/mentalo/Dropbox/notSynced/xAlessandra/minDisWrmSsnEnsemble_20y.nc'
   saveEnsembleFile(retPer=20)
 
  #outputNcFlPath = '/DATA/mentalo/Dropbox/notSynced/pesetaRunoffRpShift/disEnsemble_lowExtremes.nc'

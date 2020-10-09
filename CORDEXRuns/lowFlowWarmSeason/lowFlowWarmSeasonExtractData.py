@@ -2,6 +2,8 @@ import netCDF4
 import numpy as np
 import os, re
 from scipy.interpolate import interp1d
+from scipy.stats import ks_2samp
+import gc
 
 from getWarmingLevels import getWarmingLevels
 
@@ -29,7 +31,7 @@ def extract1Model(scen, model, inputNcFlPath, outputNcFlPath):
     return lon, lat
 
   def getRetLevAtYear(retLevAll, yearAll, year, interpFunc=None):
-    interpFunc = interp1d(yearAll, retLevAll, axis=1) if interpFunc is None else interpFunc
+    interpFunc = interp1d(yearAll, retLevAll, axis=1, bounds_error=False, fill_value='extrapolate') if interpFunc is None else interpFunc
     retLev = interpFunc(year)
     return retLev, interpFunc
 
@@ -51,10 +53,32 @@ def extract1Model(scen, model, inputNcFlPath, outputNcFlPath):
         rlbsln = retLevBsln[:, ix, iy]
         outRetPer[:, ix, iy] = interp1d(rlcri, inRetPer, axis=0, fill_value='extrapolate')(rlbsln)
     return outRetPer
+
+  def getSignificanceTest(retLev_KSTest, bslnRetLev_KSTest):
+    nx = retLev_KSTest.shape[1]
+    ny = retLev_KSTest.shape[2]
+    outSigTest = np.zeros([nx, ny])*np.nan
+    for ix in range(nx):
+      for iy in range(ny):
+        bsln = bslnRetLev_KSTest[:, ix, iy].squeeze()
+        if np.sum(np.isnan(bsln)) > 0:
+          continue
+        futvl = retLev_KSTest[:, ix, iy].squeeze()
+        st, pval = ks_2samp(bsln, futvl)
+        outSigTest[ix, iy] = pval <= .05
+        pass
+    return outSigTest
     
   interpFunc = None
   bslnRetLev_, interpFunc = getRetLevAtYear(retLev, rlYrs, bslnYear, interpFunc)
   bslnRetLev = getOutRetLev(bslnRetLev_, inRetPer, outRetPer)
+
+  retPerKSTest = 20
+  bslnYears_KSTest = np.arange(bslnYear-14, bslnYear+16)
+  bslnRetLev_KSTest_, _ = getRetLevAtYear(retLev, rlYrs, bslnYears_KSTest, interpFunc)
+  bslnRetLev_KSTest = getOutRetLev(bslnRetLev_KSTest_, inRetPer, retPerKSTest)
+  del bslnRetLev_KSTest_
+  gc.collect()
 
   print('  elaborating ...')
   noutWls = len(wls)
@@ -62,6 +86,7 @@ def extract1Model(scen, model, inputNcFlPath, outputNcFlPath):
   shpOut = [noutWls, shp_[0], shp_[1], shp_[2]]
   outYrRetPer = np.zeros(shpOut)*np.nan
   outYrRetLev = np.zeros(shpOut)*np.nan
+  signTest = np.zeros([noutWls, shp_[1], shp_[2]])*np.nan
   for wl, iwl in zip(wls, range(noutWls)):
     ywls = getWarmingLevels(scen, wl)
     if ywls == None:
@@ -71,6 +96,13 @@ def extract1Model(scen, model, inputNcFlPath, outputNcFlPath):
     outYrRetLev[iwl, :, :, :] = getOutRetLev(yrRetLev, inRetPer, outRetPer)
     outYrRetPer[iwl, :, :, :] = getOutRetPer(inRetPer, yrRetLev, bslnRetLev)
     
+    years_KSTest = np.arange(outYr-15, outYr+15)
+    retLev_KSTest_, _ = getRetLevAtYear(retLev, rlYrs, years_KSTest)
+    retLev_KSTest = getOutRetLev(retLev_KSTest_, inRetPer, retPerKSTest)
+    del retLev_KSTest_
+    gc.collect()
+    signTest[iwl, :, :] = getSignificanceTest(retLev_KSTest, bslnRetLev_KSTest)
+
   outYrRetPer[outYrRetPer < 1] = 1
   print('  saving the output ...')
   if os.path.isfile(outputNcFlPath):
@@ -121,6 +153,10 @@ def extract1Model(scen, model, inputNcFlPath, outputNcFlPath):
   retLevNc = dsout.createVariable('return_level', 'f4', ('warming_lev', 'baseline_rp', 'x', 'y'))
   retLevNc.description = 'return levels at warming levels (m**3)'
   retLevNc[:] = outYrRetLev
+
+  sigNc = dsout.createVariable('significance', 'f4', ('warming_lev', 'x', 'y'))
+  sigNc.description = 'significance of the projected change (ks test on the 20-y return level)'
+  sigNc[:] = signTest
 
   dsout.close()
   
