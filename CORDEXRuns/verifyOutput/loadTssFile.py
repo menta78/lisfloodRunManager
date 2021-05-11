@@ -175,3 +175,26 @@ def loadNewObservationDataset(msrFlPath, statIdFlPath, cacheFilePath, selectStat
   statIds = np.array(statIds)
   return tms, statIds, disMsrs
 
+def saveToNcFile(tms, statIds, dis, filePath):
+  import netCDF4
+  if os.path.isfile(filePath):
+    os.remove(filePath)
+  dsout = netCDF4.Dataset(filePath, 'w')
+  dsout.createDimension('station', len(statIds))
+  dsout.createDimension('time', None)
+
+  statnc = dsout.createVariable('station', 'int', ('station'))
+  statnc[:] = statIds
+  
+  tmnc = dsout.createVariable('time', 'int', ('time'))
+  unitsStr = 'Days since 1970-01-01'
+  tmnum = netCDF4.date2num(tms, unitsStr)
+  tmnc.units = unitsStr
+  tmnc.calendar = 'standard'
+  tmnc[:] = tmnum
+
+  disnc = dsout.createVariable('dis', 'f4', ('time', 'station'))
+  disnc[:] = dis
+
+  dsout.close()
+

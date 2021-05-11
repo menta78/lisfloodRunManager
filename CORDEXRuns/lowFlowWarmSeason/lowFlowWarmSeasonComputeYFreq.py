@@ -22,7 +22,8 @@ def elabModel(scen, model, inputNcFlPath, outputCsvFlPath, mask,
 
   try:
     print('  loading the data ...')
-    _lock.acquire()
+    if not _lock is None:
+      _lock.acquire()
     dsin = netCDF4.Dataset(inputNcFlPath)
     x = dsin.variables['x'][:]
     y = dsin.variables['y'][:]
@@ -34,9 +35,15 @@ def elabModel(scen, model, inputNcFlPath, outputCsvFlPath, mask,
     yrMinFlw = dsin.variables['year_min_ws'][:]
     dsin.close()
   finally:
-    _lock.release()
+    if not _lock is None:
+      _lock.release()
 
-  cntrs, cntrMap = getCountries()
+ # MENTA DEBUG, COMMENTA
+ #cntrs, cntrMap = getCountries()
+ #import pdb; pdb.set_trace()
+ #cntrs = cntrs[cntrs.COUNTRY == 'Cyprus']
+ #mskdbg = (cntrMap == cntrs.values[0,1]).transpose()
+################
 
  #mskDs = netCDF4.Dataset('upArea.nc')
  #upArea = mskDs.variables['upArea'][:].transpose()
@@ -67,11 +74,18 @@ def elabModel(scen, model, inputNcFlPath, outputCsvFlPath, mask,
   for cnt in cntrs.values:
     outdf.loc[cnt[1]]['COUNTRY'] = cnt[0]
 
+  # MENTA DEBUG
+ #yrsAll = yrsAll[-30:]
+ #yrMinFlw = yrMinFlw[-30:,:,:]
+  ###################################
   for yr, mnfl in zip(yrsAll, yrMinFlw):
     print('  elaborating year ' + str(int(yr)))
     print('    interpolating ...')
    #mnfl[smallCtchArea] = np.nan
     mnfl[~mask] = np.nan
+   #MENTA: DEBUG
+   #mnfl[~mskdbg] = np.nan
+   #####
     frq = getOutFrq(inRetPer, mnfl, retLev)
     if not diagnosticsDataDir is None:
       outFlName = os.path.join(diagnosticsDataDir, '_'.join(['droughtFrqDiagnostics', model, scen, str(yr)]))
@@ -121,14 +135,21 @@ def loopModels(inputDir, inputFlPattern, outputDir,
 
   print('initializing parallel pool')
   global _lock, _diagnosticsDataDir, _mask
-  _lock = mp.Lock()
   _diagnosticsDataDir = diagnosticsDataDir
   _mask = mask
-  p = mp.Pool(nParWorker)
-  flitr = p.imap(_elabFileParallel, infls)
+  _lock = None
+  if nParWorker > 1:
+    p = mp.Pool(nParWorker)
+    _lock = mp.Lock()
+    flitr = p.imap(_elabFileParallel, infls)
+  else:
+    p = None
+    _lock = None
+    flitr = map(_elabFileParallel, infls)
   for fl in flitr:
     print('... file ' + fl + ' complete')
-  p.close()
+  if not p is None:
+    p.close()
 
 
 
@@ -287,11 +308,14 @@ if __name__ == '__main__':
   inputDir = '/ClimateRun4/multi-hazard/eva/'
   inputFlPattern = 'projection_dis_(rcp45|rcp85)_(.*)_wuConst_statistics.nc'
   outputDir = '/DATA/mentalo/Dropbox/notSynced/xGustavo/lowFlowWrmSsnByCountry'
+  outputDir = '/DATA/mentalo/Dropbox/notSynced/xGustavo/lowFlowWrmSsnByCountry_debug'
   diagnosticsDataDir = '/DATA/ClimateRuns/droughtFreqDiagnostics/'
   #baselineEnsembleFilePath = '/DATA/mentalo/Dropbox/notSynced/xAlessandra/minDisWrmSsnEnsemble.nc'
   baselineEnsembleFilePath = '/DATA/mentalo/Dropbox/notSynced/xAlessandra/minDisWrmSsnEnsemble_5y.nc'
+  baselineEnsembleFilePath = '/DATA/mentalo/Dropbox/notSynced/xAlessandra/minDisWrmSsnEnsemble_20y_meanFrq_90_10.nc'
+  nParWorker = 1
 
- #loopModels(inputDir, inputFlPattern, outputDir, baselineEnsembleFilePath, diagnosticsDataDir=diagnosticsDataDir)
+  loopModels(inputDir, inputFlPattern, outputDir, baselineEnsembleFilePath, diagnosticsDataDir=diagnosticsDataDir, nParWorker=nParWorker)
   plotRetPerDiagnostic15_20_30_40deg(baselineEnsembleFilePath, diagnosticsDataDir)
 
 

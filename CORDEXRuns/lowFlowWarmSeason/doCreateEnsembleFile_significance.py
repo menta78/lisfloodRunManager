@@ -322,7 +322,7 @@ def plotRlChange15_20_30deg():
   f.savefig('rlPercChng.png', dpi=200)
 
 
-def saveEnsembleFile(retPer=10, percUp=90, percDown=10):
+def saveEnsembleFile(retPer=10):
   prototypeFlPth = 'upArea.nc' 
 
   lon, lat, x, y, retLev, retLevByMdl = doLoadBaseline(retPer=retPer)
@@ -344,29 +344,13 @@ def saveEnsembleFile(retPer=10, percUp=90, percDown=10):
   retLevChng_40_mdl = (rlByMdl_40 - retLevByMdl)/retLevByMdl
 
   retLevChng_15 = np.nanmedian(retLevChng_15_mdl, 0)
-  retLevChng_15_up = np.nanpercentile(retLevChng_15_mdl, percUp, 0)
-  retLevChng_15_dn = np.nanpercentile(retLevChng_15_mdl, percDown, 0)
   retLevChng_20 = np.nanmedian(retLevChng_20_mdl, 0)
-  retLevChng_20_up = np.nanpercentile(retLevChng_20_mdl, percUp, 0)
-  retLevChng_20_dn = np.nanpercentile(retLevChng_20_mdl, percDown, 0)
   retLevChng_30 = np.nanmedian(retLevChng_30_mdl, 0)
-  retLevChng_30_up = np.nanpercentile(retLevChng_30_mdl, percUp, 0)
-  retLevChng_30_dn = np.nanpercentile(retLevChng_30_mdl, percDown, 0)
   retLevChng_40 = np.nanmedian(retLevChng_40_mdl, 0)
-  retLevChng_40_up = np.nanpercentile(retLevChng_40_mdl, percUp, 0)
-  retLevChng_40_dn = np.nanpercentile(retLevChng_40_mdl, percDown, 0)
   retLevChng_15[cnd] = np.nan
-  retLevChng_15_up[cnd] = np.nan
-  retLevChng_15_dn[cnd] = np.nan
   retLevChng_20[cnd] = np.nan
-  retLevChng_20_up[cnd] = np.nan
-  retLevChng_20_dn[cnd] = np.nan
   retLevChng_30[cnd] = np.nan
-  retLevChng_30_up[cnd] = np.nan
-  retLevChng_30_dn[cnd] = np.nan
   retLevChng_40[cnd] = np.nan
-  retLevChng_40_up[cnd] = np.nan
-  retLevChng_40_dn[cnd] = np.nan
 
 
 
@@ -376,8 +360,28 @@ def saveEnsembleFile(retPer=10, percUp=90, percDown=10):
   futFq_40, futFq_40_mdls = doLoadDiagnosticData(diagnosticsDataDir, 4.0)
   baseline, baseline_mdls = doLoadDiagnosticData(diagnosticsDataDir, 0)
 
-  futFq_15_up = np.percentile(futFq_15_mdls, percUp, 0)
 
+  
+  def getSignificance(chmdn, chByModel):
+    posi = np.zeros(chByModel.shape)*np.nan
+    posi[chByModel > 0] = 1
+    nega = np.zeros(chByModel.shape)*np.nan
+    nega[chByModel < 0] = 1
+    mdlvalid = ~np.isnan(chByModel)
+    nmdl = np.nansum(mdlvalid, 0)
+    sigthr = np.floor(nmdl/3*2)
+    smposi = np.nansum(posi, 0)
+    smnega = np.nansum(nega, 0)
+    sgn = np.zeros(chmdn.shape)
+    sgn[chmdn > 0] = (smposi >= sigthr)[chmdn > 0]
+    sgn[chmdn < 0] = (smnega >= sigthr)[chmdn < 0]
+    sgn[np.isnan(chmdn)] = np.nan
+    return sgn
+
+  sing15 = getSignificance(retLevChng_15, retLevChng_15_mdl)
+  sing20 = getSignificance(retLevChng_20, retLevChng_20_mdl)
+  sing30 = getSignificance(retLevChng_30, retLevChng_30_mdl)
+  sing40 = getSignificance(retLevChng_40, retLevChng_40_mdl)
 
   fqdlt15 = (futFq_15 - baseline)/baseline
   fqdlt20 = (futFq_20 - baseline)/baseline
@@ -387,30 +391,10 @@ def saveEnsembleFile(retPer=10, percUp=90, percDown=10):
   ch20mdls = (futFq_20_mdls - baseline_mdls)/baseline_mdls
   ch30mdls = (futFq_30_mdls - baseline_mdls)/baseline_mdls
   ch40mdls = (futFq_40_mdls - baseline_mdls)/baseline_mdls
-  
-  fqchng15_md = np.median(ch15mdls, 0)
-  fqchng15_up = np.nanpercentile(ch15mdls, percUp, 0)
-  fqchng15_dn = np.nanpercentile(ch15mdls, percDown, 0)
-  fqchng15_up[fqchng15_up < fqdlt15] = fqdlt15[fqchng15_up < fqdlt15]
-  fqchng15_dn[fqchng15_dn > fqdlt15] = fqdlt15[fqchng15_dn > fqdlt15]
-  
-  fqchng20_md = np.median(ch20mdls, 0)
-  fqchng20_up = np.nanpercentile(ch20mdls, percUp, 0)
-  fqchng20_dn = np.nanpercentile(ch20mdls, percDown, 0)
-  fqchng20_up[fqchng20_up < fqdlt20] = fqdlt20[fqchng20_up < fqdlt20]
-  fqchng20_dn[fqchng20_dn > fqdlt20] = fqdlt20[fqchng20_dn > fqdlt20]
-  
-  fqchng30_md = np.median(ch30mdls, 0)
-  fqchng30_up = np.nanpercentile(ch30mdls, percUp, 0)
-  fqchng30_dn = np.nanpercentile(ch30mdls, percDown, 0)
-  fqchng30_up[fqchng30_up < fqdlt30] = fqdlt30[fqchng30_up < fqdlt30]
-  fqchng30_dn[fqchng30_dn > fqdlt30] = fqdlt30[fqchng30_dn > fqdlt30]
-  
-  fqchng40_md = np.median(ch40mdls, 0)
-  fqchng40_up = np.nanpercentile(ch40mdls, percUp, 0)
-  fqchng40_dn = np.nanpercentile(ch40mdls, percDown, 0)
-  fqchng40_up[fqchng40_up < fqdlt40] = fqdlt40[fqchng40_up < fqdlt40]
-  fqchng40_dn[fqchng40_dn > fqdlt40] = fqdlt40[fqchng40_dn > fqdlt40]
+  sing15_fq = getSignificance(fqdlt15, ch15mdls)
+  sing20_fq = getSignificance(fqdlt20, ch20mdls)
+  sing30_fq = getSignificance(fqdlt30, ch30mdls)
+  sing40_fq = getSignificance(fqdlt40, ch40mdls)
 
   dsout = netCDF4.Dataset(outputNcFlPath, 'w')
   dsout.createDimension('x', len(x))
@@ -447,31 +431,27 @@ def saveEnsembleFile(retPer=10, percUp=90, percDown=10):
 
   rlChng15 = dsout.createVariable('return_level_perc_chng_15', 'f4', ('x', 'y'))
   rlChng15[:] = retLevChng_15*100
-  rlChng15_up = dsout.createVariable('return_level_perc_chng_15_up', 'f4', ('x', 'y'))
-  rlChng15_up[:] = retLevChng_15_up*100
-  rlChng15_dn = dsout.createVariable('return_level_perc_chng_15_dn', 'f4', ('x', 'y'))
-  rlChng15_dn[:] = retLevChng_15_dn*100
+
+  sign15Nc = dsout.createVariable('significant_15', 'i1', ('x', 'y'))
+  sign15Nc[:] = sing15
 
   rlChng20 = dsout.createVariable('return_level_perc_chng_20', 'f4', ('x', 'y'))
   rlChng20[:] = retLevChng_20*100
-  rlChng20_up = dsout.createVariable('return_level_perc_chng_20_up', 'f4', ('x', 'y'))
-  rlChng20_up[:] = retLevChng_20_up*100
-  rlChng20_dn = dsout.createVariable('return_level_perc_chng_20_dn', 'f4', ('x', 'y'))
-  rlChng20_dn[:] = retLevChng_20_dn*100
+
+  sign20Nc = dsout.createVariable('significant_20', 'i1', ('x', 'y'))
+  sign20Nc[:] = sing20
 
   rlChng30 = dsout.createVariable('return_level_perc_chng_30', 'f4', ('x', 'y'))
   rlChng30[:] = retLevChng_30*100
-  rlChng30_up = dsout.createVariable('return_level_perc_chng_30_up', 'f4', ('x', 'y'))
-  rlChng30_up[:] = retLevChng_30_up*100
-  rlChng30_dn = dsout.createVariable('return_level_perc_chng_30_dn', 'f4', ('x', 'y'))
-  rlChng30_dn[:] = retLevChng_30_dn*100
+
+  sign30Nc = dsout.createVariable('significant_30', 'i1', ('x', 'y'))
+  sign30Nc[:] = sing30
 
   rlChng40 = dsout.createVariable('return_level_perc_chng_40', 'f4', ('x', 'y'))
   rlChng40[:] = retLevChng_40*100
-  rlChng40_up = dsout.createVariable('return_level_perc_chng_40_up', 'f4', ('x', 'y'))
-  rlChng40_up[:] = retLevChng_40_up*100
-  rlChng40_dn = dsout.createVariable('return_level_perc_chng_40_dn', 'f4', ('x', 'y'))
-  rlChng40_dn[:] = retLevChng_40_dn*100
+
+  sign40Nc = dsout.createVariable('significant_40', 'i1', ('x', 'y'))
+  sign40Nc[:] = sing40
 
   rpshift15 = dsout.createVariable('baseline_rp_shift_15', 'f4', ('x', 'y'))
   rpshift15[:] = futRp_15
@@ -488,34 +468,30 @@ def saveEnsembleFile(retPer=10, percUp=90, percDown=10):
   dlt = (futFq_15 - baseline)/baseline*100
   fqshift15 = dsout.createVariable('frequency_prc_chng_15', 'f4', ('x', 'y'))
   fqshift15[:] = dlt
-  fqshift15_up = dsout.createVariable('frequency_prc_chng_15_up', 'f4', ('x', 'y'))
-  fqshift15_up[:] = fqchng15_up*100
-  fqshift15_dn = dsout.createVariable('frequency_prc_chng_15_dn', 'f4', ('x', 'y'))
-  fqshift15_dn[:] = fqchng15_dn*100
+
+  sign15FqNc = dsout.createVariable('significant_fq_chng_15', 'i1', ('x', 'y'))
+  sign15FqNc[:] = sing15_fq
 
   dlt = (futFq_20 - baseline)/baseline*100
   fqshift20 = dsout.createVariable('frequency_prc_chng_20', 'f4', ('x', 'y'))
   fqshift20[:] = dlt
-  fqshift20_up = dsout.createVariable('frequency_prc_chng_20_up', 'f4', ('x', 'y'))
-  fqshift20_up[:] = fqchng20_up*100
-  fqshift20_dn = dsout.createVariable('frequency_prc_chng_20_dn', 'f4', ('x', 'y'))
-  fqshift20_dn[:] = fqchng20_dn*100
+
+  sign20FqNc = dsout.createVariable('significant_fq_chng_20', 'i1', ('x', 'y'))
+  sign20FqNc[:] = sing20_fq
 
   dlt = (futFq_30 - baseline)/baseline*100
   fqshift30 = dsout.createVariable('frequency_prc_chng_30', 'f4', ('x', 'y'))
   fqshift30[:] = dlt
-  fqshift30_up = dsout.createVariable('frequency_prc_chng_30_up', 'f4', ('x', 'y'))
-  fqshift30_up[:] = fqchng30_up*100
-  fqshift30_dn = dsout.createVariable('frequency_prc_chng_30_dn', 'f4', ('x', 'y'))
-  fqshift30_dn[:] = fqchng30_dn*100
+
+  sign30FqNc = dsout.createVariable('significant_fq_chng_30', 'i1', ('x', 'y'))
+  sign30FqNc[:] = sing30_fq
 
   dlt = (futFq_40 - baseline)/baseline*100
   fqshift40 = dsout.createVariable('frequency_prc_chng_40', 'f4', ('x', 'y'))
   fqshift40[:] = dlt
-  fqshift40_up = dsout.createVariable('frequency_prc_chng_40_up', 'f4', ('x', 'y'))
-  fqshift40_up[:] = fqchng40_up*100
-  fqshift40_dn = dsout.createVariable('frequency_prc_chng_40_dn', 'f4', ('x', 'y'))
-  fqshift40_dn[:] = fqchng40_dn*100
+
+  sign40FqNc = dsout.createVariable('significant_fq_chng_40', 'i1', ('x', 'y'))
+  sign40FqNc[:] = sing40_fq
 
   dsout.close()
 
